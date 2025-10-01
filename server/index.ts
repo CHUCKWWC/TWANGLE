@@ -12,7 +12,7 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-09-30.clover",
+  apiVersion: "2024-11-20.acacia",
 });
 
 app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -53,8 +53,17 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
           const customer = await stripe.customers.retrieve(customerId);
           if (customer.deleted) break;
           
-          const userId = customer.metadata?.userId;
-          if (!userId) break;
+          let userId = customer.metadata?.userId;
+          
+          if (!userId) {
+            const user = await storage.getUserByStripeCustomerId(customerId);
+            if (!user) {
+              console.warn(`Webhook: No user found for customer ${customerId}, skipping subscription creation`);
+              break;
+            }
+            userId = user.id;
+            await stripe.customers.update(customerId, { metadata: { userId } });
+          }
 
           await storage.upsertSubscription({
             userId,
@@ -74,8 +83,17 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
         const customer = await stripe.customers.retrieve(customerId);
         if (customer.deleted) break;
         
-        const userId = customer.metadata?.userId;
-        if (!userId) break;
+        let userId = customer.metadata?.userId;
+        
+        if (!userId) {
+          const user = await storage.getUserByStripeCustomerId(customerId);
+          if (!user) {
+            console.warn(`Webhook: No user found for customer ${customerId}, skipping subscription update`);
+            break;
+          }
+          userId = user.id;
+          await stripe.customers.update(customerId, { metadata: { userId } });
+        }
 
         await storage.upsertSubscription({
           userId,
