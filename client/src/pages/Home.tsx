@@ -48,14 +48,8 @@ export default function Home() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [chatMessages, setChatMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: "Hello! I'm here to support you on your relationship journey. Based on your attachment profile, I can help you navigate communication, conflicts, and connection. What would you like to explore today?",
-      timestamp: new Date(),
-    },
-  ]);
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [isLoadingChat, setIsLoadingChat] = useState(false);
 
   const handleStartAssessment = () => {
     setCurrentView('assessment');
@@ -84,24 +78,58 @@ export default function Home() {
     }
   };
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
       content,
       timestamp: new Date(),
     };
-    setChatMessages([...chatMessages, newMessage]);
     
-    setTimeout(() => {
-      const aiResponse: Message = {
+    const updatedMessages = [...chatMessages, newMessage];
+    setChatMessages(updatedMessages);
+    setIsLoadingChat(true);
+    
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: updatedMessages.map(m => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response');
+      }
+
+      const data = await response.json();
+      
+      const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: "That's a great question. Based on your attachment profile, I recommend focusing on clear communication patterns and building trust through consistent actions. Would you like me to share some specific strategies?",
+        content: data.message.content,
         timestamp: new Date(),
       };
-      setChatMessages(prev => [...prev, aiResponse]);
-    }, 1500);
+      
+      setChatMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "I'm sorry, I'm having trouble responding right now. Please try again in a moment.",
+        timestamp: new Date(),
+      };
+      setChatMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoadingChat(false);
+    }
   };
 
   const sampleScores: AttachmentScore = {
@@ -173,7 +201,7 @@ export default function Home() {
           <AICoachChat
             messages={chatMessages}
             onSendMessage={handleSendMessage}
-            onSaveSummary={() => console.log('Save summary clicked')}
+            isLoading={isLoadingChat}
           />
         )}
 
