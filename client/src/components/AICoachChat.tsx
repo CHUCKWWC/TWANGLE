@@ -74,10 +74,10 @@ export default function AICoachChat({
                 <Heart className="w-8 h-8 text-primary" />
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-semibold mb-3">
-                Your AI Relationship Coach
+                Coach Charles
               </h1>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                Expert guidance based on research-backed methods. Ask me anything about your relationship.
+                Your AI relationship coach with expert guidance based on research-backed methods. Ask me anything about your relationship.
               </p>
             </div>
             
@@ -113,7 +113,7 @@ export default function AICoachChat({
                   </Avatar>
                   <div className="flex-1 space-y-2 pt-1">
                     <div className="font-semibold text-sm">
-                      {message.role === 'user' ? 'You' : 'Relationship Coach'}
+                      {message.role === 'user' ? 'You' : 'Coach Charles'}
                     </div>
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                       <p className="text-foreground leading-relaxed whitespace-pre-wrap">
@@ -134,7 +134,7 @@ export default function AICoachChat({
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 pt-1">
-                    <div className="font-semibold text-sm mb-2">Relationship Coach</div>
+                    <div className="font-semibold text-sm mb-2">Coach Charles</div>
                     <div className="flex gap-1">
                       <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                       <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -157,7 +157,7 @@ export default function AICoachChat({
               value={input}
               onChange={handleInput}
               onKeyDown={handleKeyDown}
-              placeholder="Message your relationship coach..."
+              placeholder="Message Coach Charles..."
               className="flex-1 min-h-[52px] max-h-[200px] resize-none"
               rows={1}
               disabled={isLoading}
