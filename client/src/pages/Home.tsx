@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import WelcomeHero from "@/components/WelcomeHero";
 import AssessmentQuestion, { type Question } from "@/components/AssessmentQuestion";
 import AttachmentResults, { type AttachmentScore } from "@/components/AttachmentResults";
@@ -7,6 +7,8 @@ import RetreatBuilder from "@/components/RetreatBuilder";
 import ExercisesLibrary from "@/components/ExercisesLibrary";
 import WeeklySummaries from "@/components/WeeklySummaries";
 import ThemeToggle from "@/components/ThemeToggle";
+import { FeedbackButton } from "@/components/FeedbackButton";
+import { RelationshipProgressDialog } from "@/components/RelationshipProgressDialog";
 import { BookOpen, FileText } from "lucide-react";
 
 type View = 'welcome' | 'assessment' | 'results' | 'coach' | 'retreat' | 'exercises' | 'summaries';
@@ -51,6 +53,25 @@ export default function Home() {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
+  const [showProgressDialog, setShowProgressDialog] = useState(false);
+
+  useEffect(() => {
+    const lastProgressCheck = localStorage.getItem('lastProgressCheck');
+    const now = new Date();
+    
+    if (!lastProgressCheck) {
+      const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      localStorage.setItem('lastProgressCheck', oneWeekFromNow.toISOString());
+      return;
+    }
+
+    const lastCheck = new Date(lastProgressCheck);
+    if (now > lastCheck) {
+      setTimeout(() => setShowProgressDialog(true), 3000);
+      const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      localStorage.setItem('lastProgressCheck', nextWeek.toISOString());
+    }
+  }, []);
 
   const handleStartAssessment = () => {
     setCurrentView('assessment');
@@ -170,7 +191,10 @@ export default function Home() {
                 Exercises
               </button>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-3">
+              <FeedbackButton />
+              <ThemeToggle />
+            </div>
           </div>
         </header>
       )}
@@ -234,6 +258,11 @@ export default function Home() {
 
         {currentView === 'summaries' && <WeeklySummaries />}
       </div>
+
+      <RelationshipProgressDialog 
+        open={showProgressDialog} 
+        onOpenChange={setShowProgressDialog}
+      />
     </div>
   );
 }
