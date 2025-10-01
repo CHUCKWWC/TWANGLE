@@ -9,6 +9,7 @@ import WeeklySummaries from "@/components/WeeklySummaries";
 import ThemeToggle from "@/components/ThemeToggle";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { RelationshipProgressDialog } from "@/components/RelationshipProgressDialog";
+import { UserMenu } from "@/components/UserMenu";
 import { BookOpen, FileText } from "lucide-react";
 
 type View = 'welcome' | 'assessment' | 'results' | 'coach' | 'retreat' | 'exercises' | 'summaries';
@@ -194,6 +195,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <FeedbackButton />
               <ThemeToggle />
+              <UserMenu />
             </div>
           </div>
         </header>
