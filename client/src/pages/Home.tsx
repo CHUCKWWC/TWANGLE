@@ -5,10 +5,11 @@ import AttachmentResults, { type AttachmentScore } from "@/components/Attachment
 import AICoachChat, { type Message } from "@/components/AICoachChat";
 import RetreatBuilder from "@/components/RetreatBuilder";
 import ExercisesLibrary from "@/components/ExercisesLibrary";
+import WeeklySummaries from "@/components/WeeklySummaries";
 import ThemeToggle from "@/components/ThemeToggle";
-import { BookOpen } from "lucide-react";
+import { BookOpen, FileText } from "lucide-react";
 
-type View = 'welcome' | 'assessment' | 'results' | 'coach' | 'retreat' | 'exercises';
+type View = 'welcome' | 'assessment' | 'results' | 'coach' | 'retreat' | 'exercises' | 'summaries';
 
 const SAMPLE_QUESTIONS: Question[] = [
   {
@@ -153,6 +154,14 @@ export default function Home() {
                 Twangle
               </button>
               <button
+                onClick={() => setCurrentView('summaries')}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded"
+                data-testid="link-summaries"
+              >
+                <FileText className="w-4 h-4" />
+                Summaries
+              </button>
+              <button
                 onClick={() => setCurrentView('exercises')}
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded"
                 data-testid="link-exercises"
@@ -221,6 +230,8 @@ export default function Home() {
         )}
 
         {currentView === 'exercises' && <ExercisesLibrary />}
+
+        {currentView === 'summaries' && <WeeklySummaries />}
       </div>
     </div>
   );
