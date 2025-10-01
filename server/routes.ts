@@ -77,6 +77,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/summaries/generate", async (req, res) => {
+    try {
+      const { messages, sessionId } = req.body;
+
+      if (!messages || !Array.isArray(messages) || messages.length === 0) {
+        return res.status(400).json({ error: "Messages array is required" });
+      }
+
+      let currentSessionId = sessionId;
+      if (!currentSessionId) {
+        const session = await storage.createChatSession({
+          userId: null,
+          messageCount: messages.length,
+        });
+        currentSessionId = session.id;
+      } else {
+        await storage.updateChatSession(currentSessionId, {
+          lastMessageAt: new Date(),
+          messageCount: messages.length,
+        });
+      }
+
+      const conversationText = messages
+        .map((msg: any) => `${msg.role === 'user' ? 'User' : 'Coach Charles'}: ${msg.content}`)
+        .join('\n\n');
+
+      const summaryPrompt = `As Coach Charles, analyze this coaching conversation and provide:
+
+1. A concise summary of the main topics discussed and insights shared (2-3 paragraphs)
+2. A list of 3-5 specific, actionable steps this couple should work on during the upcoming week
+
+Format your response as JSON with this structure:
+{
+  "summary": "The summary text here...",
+  "actionItems": [
+    "Specific action item 1",
+    "Specific action item 2",
+    "Specific action item 3"
+  ]
+}
+
+Conversation:
+${conversationText}`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are Coach Charles, an expert relationship coach. Generate summaries and action items in JSON format.",
+          },
+          {
+            role: "user",
+            content: summaryPrompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 1500,
+        response_format: { type: "json_object" },
+      });
+
+      const responseContent = completion.choices[0].message.content;
+      const parsedResponse = JSON.parse(responseContent || "{}");
+
+      const weeklySummary = await storage.createWeeklySummary({
+        sessionId: currentSessionId,
+        userId: null,
+        summary: parsedResponse.summary || "",
+        actionItems: parsedResponse.actionItems || [],
+      });
+
+      res.json({
+        summary: weeklySummary,
+      });
+    } catch (error: any) {
+      console.error("Summary generation error:", error);
+      res.status(500).json({
+        error: "Failed to generate weekly summary",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/summaries", async (req, res) => {
+    try {
+      const userId = req.query.userId as string | undefined;
+      const summaries = await storage.getWeeklySummaries(userId);
+      res.json({ summaries });
+    } catch (error: any) {
+      console.error("Get summaries error:", error);
+      res.status(500).json({
+        error: "Failed to get summaries",
+        details: error.message,
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
