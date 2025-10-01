@@ -17,7 +17,7 @@ export default function Login() {
           </h1>
           
           <p className="text-lg text-muted-foreground max-w-sm mx-auto">
-            Your relationship coaching companion. Connect with Coach Charles and strengthen your bond.
+            Your relationship coaching companion.
           </p>
         </div>
 
