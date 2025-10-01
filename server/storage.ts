@@ -20,6 +20,7 @@ import { randomUUID } from "crypto";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByFacebookId(facebookId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
   createChatSession(session: InsertChatSession): Promise<ChatSession>;
@@ -67,9 +68,23 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getUserByFacebookId(facebookId: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.facebookId === facebookId,
+    );
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      id,
+      username: insertUser.username ?? null,
+      password: insertUser.password ?? null,
+      facebookId: insertUser.facebookId ?? null,
+      email: insertUser.email ?? null,
+      name: insertUser.name ?? null,
+      profilePicture: insertUser.profilePicture ?? null,
+    };
     this.users.set(id, user);
     return user;
   }
