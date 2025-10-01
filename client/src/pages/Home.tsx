@@ -164,9 +164,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      {currentView !== 'welcome' && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <header className={`fixed top-0 left-0 right-0 z-50 ${currentView === 'welcome' ? 'bg-transparent' : 'bg-background/80 backdrop-blur-md border-b border-border'}`}>
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          {currentView !== 'welcome' && (
             <div className="flex items-center gap-6">
               <button
                 onClick={() => setCurrentView('welcome')}
@@ -192,14 +192,15 @@ export default function Home() {
                 Exercises
               </button>
             </div>
-            <div className="flex items-center gap-3">
-              <FeedbackButton />
-              <ThemeToggle />
-              <UserMenu />
-            </div>
+          )}
+          {currentView === 'welcome' && <div />}
+          <div className="flex items-center gap-3">
+            <FeedbackButton />
+            <ThemeToggle />
+            <UserMenu />
           </div>
-        </header>
-      )}
+        </div>
+      </header>
 
       <div className={currentView !== 'welcome' ? 'pt-16' : ''}>
         {currentView === 'welcome' && (
