@@ -21,15 +21,7 @@ export default function Login() {
           </p>
         </div>
 
-        <div className="pt-8 flex flex-col items-center gap-4">
-          <FacebookLoginButton />
-          
-          <p className="text-xs text-muted-foreground max-w-xs">
-            By continuing, you agree to our <a href="/terms" className="text-primary underline" data-testid="link-terms">Terms of Service</a> and <a href="/privacy" className="text-primary underline" data-testid="link-privacy">Privacy Policy</a>
-          </p>
-        </div>
-
-        <div className="pt-8 space-y-2">
+        <div className="pt-6 space-y-2">
           <h2 className="font-semibold text-foreground">What you'll get:</h2>
           <ul className="text-sm text-muted-foreground space-y-2 max-w-xs mx-auto">
             <li>✓ Personalized AI relationship coaching</li>
@@ -37,6 +29,14 @@ export default function Login() {
             <li>✓ Custom retreat planning</li>
             <li>✓ Weekly progress summaries</li>
           </ul>
+        </div>
+
+        <div className="pt-8 flex flex-col items-center gap-4">
+          <FacebookLoginButton />
+          
+          <p className="text-xs text-muted-foreground max-w-xs">
+            By continuing, you agree to our <a href="/terms" className="text-primary underline" data-testid="link-terms">Terms of Service</a> and <a href="/privacy" className="text-primary underline" data-testid="link-privacy">Privacy Policy</a>
+          </p>
         </div>
       </div>
     </div>
