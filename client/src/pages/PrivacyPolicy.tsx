@@ -49,7 +49,7 @@ export default function PrivacyPolicy() {
               <li>Messages and conversations with Coach Charles (AI)</li>
               <li>Feedback and survey responses</li>
               <li>Relationship progress notes</li>
-              <li>Retreat plans and preferences</li>
+              <li>DIY Couples retreat plans and preferences</li>
             </ul>
 
             <h3 className="font-semibold text-xl mb-3 mt-4">2.3 Automatically Collected Information</h3>
