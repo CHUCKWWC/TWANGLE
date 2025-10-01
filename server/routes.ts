@@ -297,6 +297,104 @@ ${conversationText}`;
     }
   });
 
+  app.post("/api/auth/facebook", async (req, res) => {
+    try {
+      const { accessToken, userID, name, email, picture } = req.body;
+
+      if (!accessToken || !userID) {
+        return res.status(400).json({ error: "Access token and user ID are required" });
+      }
+
+      const response = await fetch(
+        `https://graph.facebook.com/me?access_token=${accessToken}&fields=id,name,email`
+      );
+
+      if (!response.ok) {
+        return res.status(401).json({ error: "Invalid Facebook token" });
+      }
+
+      const fbData = await response.json();
+
+      if (fbData.id !== userID) {
+        return res.status(401).json({ error: "Token user ID mismatch" });
+      }
+
+      let user = await storage.getUserByFacebookId(userID);
+
+      if (!user) {
+        user = await storage.createUser({
+          facebookId: userID,
+          name: name || fbData.name || null,
+          email: email || fbData.email || null,
+          profilePicture: picture?.data?.url || null,
+          username: null,
+          password: null,
+        });
+      }
+
+      (req.session as any).userId = user.id;
+
+      res.json({ user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        profilePicture: user.profilePicture,
+      }});
+    } catch (error: any) {
+      console.error("Facebook auth error:", error);
+      res.status(500).json({
+        error: "Failed to authenticate with Facebook",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(userId);
+
+      if (!user) {
+        return res.status(401).json({ error: "User not found" });
+      }
+
+      res.json({ user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        profilePicture: user.profilePicture,
+      }});
+    } catch (error: any) {
+      console.error("Get current user error:", error);
+      res.status(500).json({
+        error: "Failed to get current user",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).json({ error: "Failed to logout" });
+        }
+        res.json({ success: true });
+      });
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      res.status(500).json({
+        error: "Failed to logout",
+        details: error.message,
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
