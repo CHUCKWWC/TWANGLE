@@ -2,9 +2,18 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import OpenAI from "openai";
+import Stripe from "stripe";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+});
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-09-30.clover",
 });
 
 const SYSTEM_PROMPT = `You are Coach Charles, an expert relationship coach trained in research-backed methods including:
@@ -427,6 +436,114 @@ ${conversationText}`;
       console.error("Logout error:", error);
       res.status(500).json({
         error: "Failed to logout",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/billing/checkout", async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      let stripeCustomerId = user.stripeCustomerId;
+
+      if (!stripeCustomerId) {
+        const customer = await stripe.customers.create({
+          email: user.email ?? undefined,
+          name: user.name ?? undefined,
+          metadata: { userId: user.id },
+        });
+        stripeCustomerId = customer.id;
+        await storage.updateUser(userId, { stripeCustomerId: customer.id });
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        customer: stripeCustomerId,
+        mode: 'subscription',
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price: process.env.STRIPE_PRICE_ID,
+            quantity: 1,
+          },
+        ],
+        success_url: `${req.headers.origin}/pay/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.origin}/pay/cancel`,
+      });
+
+      res.json({ url: session.url });
+    } catch (error: any) {
+      console.error("Checkout creation error:", error);
+      res.status(500).json({
+        error: "Failed to create checkout session",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/billing/portal", async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.stripeCustomerId) {
+        return res.status(404).json({ error: "No billing account found" });
+      }
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${req.headers.origin}/`,
+      });
+
+      res.json({ url: session.url });
+    } catch (error: any) {
+      console.error("Portal creation error:", error);
+      res.status(500).json({
+        error: "Failed to create billing portal session",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/billing/status", async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const subscription = await storage.getSubscriptionByUserId(userId);
+
+      if (!subscription) {
+        return res.json({
+          active: false,
+          status: null,
+          currentPeriodEnd: null,
+        });
+      }
+
+      const isActive = subscription.status === 'active' || subscription.status === 'trialing';
+
+      res.json({
+        active: isActive,
+        status: subscription.status,
+        currentPeriodEnd: subscription.currentPeriodEnd,
+      });
+    } catch (error: any) {
+      console.error("Get billing status error:", error);
+      res.status(500).json({
+        error: "Failed to get billing status",
         details: error.message,
       });
     }
