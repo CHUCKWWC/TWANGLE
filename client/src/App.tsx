@@ -39,7 +39,11 @@ function AuthenticatedApp() {
     currentPath === "/paywall" || 
     currentPath.startsWith("/pay/");
 
-  const { data: subscriptionStatus, isLoading: isLoadingSubscription } = useQuery({
+  const { data: subscriptionStatus, isLoading: isLoadingSubscription } = useQuery<{
+    active: boolean;
+    status: string | null;
+    currentPeriodEnd: string | null;
+  }>({
     queryKey: ['/api/billing/status'],
     enabled: !!user && !isPublicPage,
     staleTime: 1000 * 60 * 5,
