@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Heart, Send, User, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { SessionFeedbackDialog } from "@/components/SessionFeedbackDialog";
 
 export interface Message {
   id: string;
@@ -35,6 +36,8 @@ export default function AICoachChat({
 }: AICoachChatProps) {
   const [input, setInput] = useState("");
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [lastFeedbackMessageCount, setLastFeedbackMessageCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
@@ -45,7 +48,15 @@ export default function AICoachChat({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+    
+    const assistantMessages = messages.filter(m => m.role === 'assistant');
+    if (assistantMessages.length > 0 && assistantMessages.length % 6 === 0 && assistantMessages.length !== lastFeedbackMessageCount) {
+      setTimeout(() => {
+        setShowFeedbackDialog(true);
+        setLastFeedbackMessageCount(assistantMessages.length);
+      }, 2000);
+    }
+  }, [messages, lastFeedbackMessageCount]);
 
   const handleSend = () => {
     if (input.trim() && !isLoading) {
@@ -240,6 +251,11 @@ export default function AICoachChat({
           </p>
         </div>
       </div>
+
+      <SessionFeedbackDialog 
+        open={showFeedbackDialog}
+        onOpenChange={setShowFeedbackDialog}
+      />
     </div>
   );
 }
