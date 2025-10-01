@@ -56,7 +56,7 @@ export default function Paywall() {
         <CardContent className="space-y-6">
           <div className="text-center">
             <div className="text-4xl font-bold text-primary">
-              $19.99<span className="text-xl text-muted-foreground">/month</span>
+              $9.99<span className="text-xl text-muted-foreground">/month</span>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
               Cancel anytime, no questions asked
