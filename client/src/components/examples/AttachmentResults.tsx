@@ -14,6 +14,7 @@ export default function AttachmentResultsExample() {
       hasRedFlags={false}
       onTalkToCoach={() => console.log('Talk to coach clicked')}
       onPlanRetreat={() => console.log('Plan retreat clicked')}
+      onViewExercises={() => console.log('View exercises clicked')}
     />
   );
 }

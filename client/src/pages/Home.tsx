@@ -4,9 +4,11 @@ import AssessmentQuestion, { type Question } from "@/components/AssessmentQuesti
 import AttachmentResults, { type AttachmentScore } from "@/components/AttachmentResults";
 import AICoachChat, { type Message } from "@/components/AICoachChat";
 import RetreatBuilder from "@/components/RetreatBuilder";
+import ExercisesLibrary from "@/components/ExercisesLibrary";
 import ThemeToggle from "@/components/ThemeToggle";
+import { BookOpen } from "lucide-react";
 
-type View = 'welcome' | 'assessment' | 'results' | 'coach' | 'retreat';
+type View = 'welcome' | 'assessment' | 'results' | 'coach' | 'retreat' | 'exercises';
 
 const SAMPLE_QUESTIONS: Question[] = [
   {
@@ -114,13 +116,23 @@ export default function Home() {
       {currentView !== 'welcome' && (
         <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-            <button
-              onClick={() => setCurrentView('welcome')}
-              className="font-display font-semibold text-xl text-primary hover-elevate px-2 py-1 rounded"
-              data-testid="link-home"
-            >
-              Twangle
-            </button>
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => setCurrentView('welcome')}
+                className="font-display font-semibold text-xl text-primary hover-elevate px-2 py-1 rounded"
+                data-testid="link-home"
+              >
+                Twangle
+              </button>
+              <button
+                onClick={() => setCurrentView('exercises')}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded"
+                data-testid="link-exercises"
+              >
+                <BookOpen className="w-4 h-4" />
+                Exercises
+              </button>
+            </div>
             <ThemeToggle />
           </div>
         </header>
@@ -153,6 +165,7 @@ export default function Home() {
             hasRedFlags={false}
             onTalkToCoach={() => setCurrentView('coach')}
             onPlanRetreat={() => setCurrentView('retreat')}
+            onViewExercises={() => setCurrentView('exercises')}
           />
         )}
 
@@ -178,6 +191,8 @@ export default function Home() {
             }}
           />
         )}
+
+        {currentView === 'exercises' && <ExercisesLibrary />}
       </div>
     </div>
   );
