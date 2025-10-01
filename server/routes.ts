@@ -478,6 +478,70 @@ ${conversationText}`;
     }
   });
 
+  // Development-only bypass for testing
+  app.post("/api/auth/dev-login", async (req, res) => {
+    if (process.env.NODE_ENV !== "development") {
+      return res.status(404).json({ error: "Not found" });
+    }
+
+    try {
+      // Create or get test user
+      let user = await storage.getUserByFacebookId("dev-test-user");
+
+      if (!user) {
+        user = await storage.createUser({
+          facebookId: "dev-test-user",
+          name: "Test User",
+          email: "test@twangle.dev",
+          profilePicture: null,
+          username: null,
+          password: null,
+        });
+
+        // Create a test subscription
+        await storage.createSubscription({
+          userId: user.id,
+          stripeSubscriptionId: "dev-subscription",
+          stripePriceId: process.env.STRIPE_PRICE_ID || "price_test",
+          status: "active",
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        });
+      }
+
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error("Session regeneration error:", err);
+          return res.status(500).json({ error: "Failed to create session" });
+        }
+
+        (req.session as any).userId = user.id;
+
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("Session save error:", saveErr);
+            return res.status(500).json({ error: "Failed to save session" });
+          }
+
+          res.json({ 
+            user: {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              profilePicture: user.profilePicture,
+            }
+          });
+        });
+      });
+    } catch (error: any) {
+      console.error("Dev login error:", error);
+      res.status(500).json({
+        error: "Failed to dev login",
+        details: error.message,
+      });
+    }
+  });
+
   app.post("/api/billing/checkout", requireAuth, async (req, res) => {
     try {
       const userId = (req.session as any).userId;
