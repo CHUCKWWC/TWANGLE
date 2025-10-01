@@ -24,8 +24,12 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
-import { Pool } from "@neondatabase/serverless";
+import { Pool, neonConfig } from "@neondatabase/serverless";
 import { eq, and, or, desc } from "drizzle-orm";
+import ws from "ws";
+
+// Configure Neon to use WebSocket for Node.js environment
+neonConfig.webSocketConstructor = ws;
 
 // modify the interface with any CRUD methods
 // you might need
