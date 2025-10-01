@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Router as WouterRouter } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,7 +10,7 @@ import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import NotFound from "@/pages/not-found";
 
-function Router() {
+function AppRoutes() {
   return (
     <Switch>
       <Route path="/" component={Home}/>
@@ -23,6 +23,12 @@ function Router() {
 
 function AuthenticatedApp() {
   const { user, isLoading } = useAuth();
+  const currentPath = window.location.pathname;
+  const isLegalPage = currentPath === "/terms" || currentPath === "/privacy";
+
+  if (isLegalPage) {
+    return <AppRoutes />;
+  }
 
   if (isLoading) {
     return (
@@ -39,17 +45,19 @@ function AuthenticatedApp() {
     return <Login />;
   }
 
-  return <Router />;
+  return <AppRoutes />;
 }
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <AuthenticatedApp />
-        </AuthProvider>
+        <WouterRouter>
+          <AuthProvider>
+            <Toaster />
+            <AuthenticatedApp />
+          </AuthProvider>
+        </WouterRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
