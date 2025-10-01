@@ -1,20 +1,27 @@
-import { User as UserIcon } from "lucide-react";
+// Reference: blueprint:javascript_log_in_with_replit
+import { LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 export function UserMenu() {
-  const user = {
-    name: "Test User",
-    email: "test@twangle.dev",
-  };
+  const { user } = useAuth();
 
-  const initials = "TU";
+  if (!user) return null;
+
+  const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'User';
+  const initials = [user.firstName?.[0], user.lastName?.[0]]
+    .filter(Boolean)
+    .join('')
+    .toUpperCase() || 'U';
 
   return (
     <DropdownMenu>
@@ -26,6 +33,13 @@ export function UserMenu() {
           data-testid="button-user-menu"
         >
           <Avatar className="w-8 h-8">
+            {user.profileImageUrl && (
+              <AvatarImage 
+                src={user.profileImageUrl} 
+                alt={displayName}
+                className="object-cover"
+              />
+            )}
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
         </Button>
@@ -33,10 +47,21 @@ export function UserMenu() {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">{user.name}</p>
-            <p className="text-xs text-muted-foreground">{user.email}</p>
+            <p className="text-sm font-medium" data-testid="text-user-name">{displayName}</p>
+            {user.email && (
+              <p className="text-xs text-muted-foreground" data-testid="text-user-email">
+                {user.email}
+              </p>
+            )}
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <a href="/api/logout" data-testid="button-logout" className="w-full cursor-pointer">
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Log out</span>
+          </a>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
