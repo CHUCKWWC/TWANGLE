@@ -2,7 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Heart, Send, User } from "lucide-react";
+import { Heart, Send, User, FileText } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export interface Message {
   id: string;
@@ -15,6 +17,7 @@ interface AICoachChatProps {
   messages: Message[];
   onSendMessage: (message: string) => void;
   isLoading?: boolean;
+  onViewSummaries?: () => void;
 }
 
 const SUGGESTED_PROMPTS = [
@@ -28,10 +31,13 @@ export default function AICoachChat({
   messages,
   onSendMessage,
   isLoading = false,
+  onViewSummaries,
 }: AICoachChatProps) {
   const [input, setInput] = useState("");
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -62,6 +68,47 @@ export default function AICoachChat({
     setInput(e.target.value);
     e.target.style.height = 'auto';
     e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+  };
+
+  const handleGenerateSummary = async () => {
+    if (messages.length === 0) {
+      toast({
+        title: "No messages yet",
+        description: "Have a conversation first before generating a summary",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingSummary(true);
+    try {
+      await apiRequest("POST", "/api/summaries/generate", {
+        messages: messages.map(m => ({
+          role: m.role,
+          content: m.content,
+        })),
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ["/api/summaries"] });
+
+      toast({
+        title: "Weekly summary generated!",
+        description: "Your coaching session summary and action items are ready",
+      });
+
+      if (onViewSummaries) {
+        onViewSummaries();
+      }
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate summary. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingSummary(false);
+    }
   };
 
   return (
@@ -151,6 +198,21 @@ export default function AICoachChat({
 
       <div className="border-t border-border bg-background">
         <div className="max-w-3xl mx-auto px-4 py-4">
+          {messages.length > 0 && (
+            <div className="mb-3 flex justify-center">
+              <Button
+                onClick={handleGenerateSummary}
+                disabled={isGeneratingSummary || isLoading}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                data-testid="button-generate-summary"
+              >
+                <FileText className="w-4 h-4" />
+                {isGeneratingSummary ? "Generating..." : "Generate Weekly Summary"}
+              </Button>
+            </div>
+          )}
           <div className="flex gap-3 items-end">
             <Textarea
               ref={textareaRef}
