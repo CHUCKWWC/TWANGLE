@@ -1,4 +1,17 @@
-import { type User, type InsertUser, type ChatSession, type InsertChatSession, type WeeklySummary, type InsertWeeklySummary } from "@shared/schema";
+import { 
+  type User, 
+  type InsertUser, 
+  type ChatSession, 
+  type InsertChatSession, 
+  type WeeklySummary, 
+  type InsertWeeklySummary,
+  type SessionFeedback,
+  type InsertSessionFeedback,
+  type RelationshipProgress,
+  type InsertRelationshipProgress,
+  type GeneralFeedback,
+  type InsertGeneralFeedback
+} from "@shared/schema";
 import { randomUUID } from "crypto";
 
 // modify the interface with any CRUD methods
@@ -16,17 +29,32 @@ export interface IStorage {
   createWeeklySummary(summary: InsertWeeklySummary): Promise<WeeklySummary>;
   getWeeklySummaries(userId?: string): Promise<WeeklySummary[]>;
   getWeeklySummaryBySession(sessionId: string): Promise<WeeklySummary | undefined>;
+  
+  createSessionFeedback(feedback: InsertSessionFeedback): Promise<SessionFeedback>;
+  getSessionFeedback(userId?: string): Promise<SessionFeedback[]>;
+  
+  createRelationshipProgress(progress: InsertRelationshipProgress): Promise<RelationshipProgress>;
+  getRelationshipProgress(userId?: string): Promise<RelationshipProgress[]>;
+  
+  createGeneralFeedback(feedback: InsertGeneralFeedback): Promise<GeneralFeedback>;
+  getGeneralFeedback(userId?: string, feedbackType?: string): Promise<GeneralFeedback[]>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private chatSessions: Map<string, ChatSession>;
   private weeklySummaries: Map<string, WeeklySummary>;
+  private sessionFeedback: Map<string, SessionFeedback>;
+  private relationshipProgress: Map<string, RelationshipProgress>;
+  private generalFeedback: Map<string, GeneralFeedback>;
 
   constructor() {
     this.users = new Map();
     this.chatSessions = new Map();
     this.weeklySummaries = new Map();
+    this.sessionFeedback = new Map();
+    this.relationshipProgress = new Map();
+    this.generalFeedback = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -99,6 +127,76 @@ export class MemStorage implements IStorage {
     return Array.from(this.weeklySummaries.values()).find(
       (summary) => summary.sessionId === sessionId,
     );
+  }
+
+  async createSessionFeedback(insertFeedback: InsertSessionFeedback): Promise<SessionFeedback> {
+    const id = randomUUID();
+    const feedback: SessionFeedback = {
+      id,
+      sessionId: insertFeedback.sessionId ?? null,
+      userId: insertFeedback.userId ?? null,
+      rating: insertFeedback.rating,
+      feedbackText: insertFeedback.feedbackText ?? null,
+      createdAt: new Date(),
+    };
+    this.sessionFeedback.set(id, feedback);
+    return feedback;
+  }
+
+  async getSessionFeedback(userId?: string): Promise<SessionFeedback[]> {
+    const feedback = Array.from(this.sessionFeedback.values());
+    if (userId) {
+      return feedback.filter(f => f.userId === userId);
+    }
+    return feedback.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async createRelationshipProgress(insertProgress: InsertRelationshipProgress): Promise<RelationshipProgress> {
+    const id = randomUUID();
+    const progress: RelationshipProgress = {
+      id,
+      userId: insertProgress.userId ?? null,
+      weekStartDate: insertProgress.weekStartDate,
+      relationshipScore: insertProgress.relationshipScore,
+      improvementNotes: insertProgress.improvementNotes ?? null,
+      createdAt: new Date(),
+    };
+    this.relationshipProgress.set(id, progress);
+    return progress;
+  }
+
+  async getRelationshipProgress(userId?: string): Promise<RelationshipProgress[]> {
+    const progress = Array.from(this.relationshipProgress.values());
+    if (userId) {
+      return progress.filter(p => p.userId === userId);
+    }
+    return progress.sort((a, b) => b.weekStartDate.getTime() - a.weekStartDate.getTime());
+  }
+
+  async createGeneralFeedback(insertFeedback: InsertGeneralFeedback): Promise<GeneralFeedback> {
+    const id = randomUUID();
+    const feedback: GeneralFeedback = {
+      id,
+      userId: insertFeedback.userId ?? null,
+      feedbackType: insertFeedback.feedbackType,
+      category: insertFeedback.category,
+      description: insertFeedback.description,
+      rating: insertFeedback.rating ?? null,
+      createdAt: new Date(),
+    };
+    this.generalFeedback.set(id, feedback);
+    return feedback;
+  }
+
+  async getGeneralFeedback(userId?: string, feedbackType?: string): Promise<GeneralFeedback[]> {
+    let feedback = Array.from(this.generalFeedback.values());
+    if (userId) {
+      feedback = feedback.filter(f => f.userId === userId);
+    }
+    if (feedbackType) {
+      feedback = feedback.filter(f => f.feedbackType === feedbackType);
+    }
+    return feedback.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 }
 
