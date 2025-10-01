@@ -299,14 +299,37 @@ ${conversationText}`;
 
   app.post("/api/auth/facebook", async (req, res) => {
     try {
-      const { accessToken, userID, name, email, picture } = req.body;
+      const origin = req.get("origin");
+      const referer = req.get("referer");
+      const allowedOrigins = [
+        `http://localhost:${process.env.PORT || 5000}`,
+        `https://localhost:${process.env.PORT || 5000}`,
+      ];
+      
+      if (process.env.REPLIT_DOMAINS) {
+        const replitDomains = process.env.REPLIT_DOMAINS.split(',');
+        replitDomains.forEach(domain => {
+          allowedOrigins.push(`https://${domain.trim()}`);
+        });
+      }
+
+      if (!origin && !referer) {
+        return res.status(403).json({ error: "Missing origin header" });
+      }
+
+      const requestOrigin = origin || (referer ? new URL(referer).origin : null);
+      if (!requestOrigin || !allowedOrigins.some(allowed => requestOrigin.startsWith(allowed))) {
+        return res.status(403).json({ error: "Invalid origin" });
+      }
+
+      const { accessToken, userID } = req.body;
 
       if (!accessToken || !userID) {
         return res.status(400).json({ error: "Access token and user ID are required" });
       }
 
       const response = await fetch(
-        `https://graph.facebook.com/me?access_token=${accessToken}&fields=id,name,email`
+        `https://graph.facebook.com/me?access_token=${accessToken}&fields=id,name,email,picture.type(large)`
       );
 
       if (!response.ok) {
@@ -319,27 +342,41 @@ ${conversationText}`;
         return res.status(401).json({ error: "Token user ID mismatch" });
       }
 
-      let user = await storage.getUserByFacebookId(userID);
+      let user = await storage.getUserByFacebookId(fbData.id);
 
       if (!user) {
         user = await storage.createUser({
-          facebookId: userID,
-          name: name || fbData.name || null,
-          email: email || fbData.email || null,
-          profilePicture: picture?.data?.url || null,
+          facebookId: fbData.id,
+          name: fbData.name || null,
+          email: fbData.email || null,
+          profilePicture: fbData.picture?.data?.url || null,
           username: null,
           password: null,
         });
       }
 
-      (req.session as any).userId = user.id;
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error("Session regeneration error:", err);
+          return res.status(500).json({ error: "Failed to create session" });
+        }
 
-      res.json({ user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        profilePicture: user.profilePicture,
-      }});
+        (req.session as any).userId = user.id;
+
+        req.session.save((saveErr) => {
+          if (saveErr) {
+            console.error("Session save error:", saveErr);
+            return res.status(500).json({ error: "Failed to save session" });
+          }
+
+          res.json({ user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            profilePicture: user.profilePicture,
+          }});
+        });
+      });
     } catch (error: any) {
       console.error("Facebook auth error:", error);
       res.status(500).json({

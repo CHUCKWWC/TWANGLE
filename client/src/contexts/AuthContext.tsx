@@ -34,14 +34,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (facebookResponse: any) => {
-      const response = (await apiRequest("/api/auth/facebook", "POST", {
+      const response = await apiRequest("POST", "/api/auth/facebook", {
         accessToken: facebookResponse.authResponse.accessToken,
         userID: facebookResponse.authResponse.userID,
         name: facebookResponse.name,
         email: facebookResponse.email,
         picture: facebookResponse.picture,
-      })) as unknown as { user: User };
-      return response;
+      });
+      const data = await response.json();
+      return data as { user: User };
     },
     onSuccess: (data) => {
       setUser(data.user);
@@ -51,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("/api/auth/logout", "POST", {});
+      await apiRequest("POST", "/api/auth/logout", {});
     },
     onSuccess: () => {
       setUser(null);
