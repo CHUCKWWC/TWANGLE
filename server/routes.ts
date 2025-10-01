@@ -8,13 +8,12 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-11-20.acacia",
-});
+// Stripe is optional for development/testing
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2024-11-20.acacia",
+    })
+  : null;
 
 // Default test user for development (no auth required)
 let defaultUserId: string | null = null;
@@ -85,6 +84,13 @@ Format your responses for mobile readability:
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/chat", async (req, res) => {
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(501).json({ 
+        error: "AI chat not configured", 
+        message: "OpenAI API key is not available" 
+      });
+    }
+
     try {
       const { messages } = req.body;
 
@@ -123,6 +129,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/summaries/generate", async (req, res) => {
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(501).json({ 
+        error: "AI summaries not configured", 
+        message: "OpenAI API key is not available" 
+      });
+    }
+
     try {
       const userId = await getDefaultUser();
       const { messages, sessionId } = req.body;
@@ -359,6 +372,13 @@ ${conversationText}`;
   });
 
   app.post("/api/billing/checkout", async (req, res) => {
+    if (!stripe) {
+      return res.status(501).json({ 
+        error: "Billing not configured", 
+        message: "Stripe integration is not available" 
+      });
+    }
+
     try {
       const userId = await getDefaultUser();
       const user = await storage.getUser(userId);
@@ -403,6 +423,13 @@ ${conversationText}`;
   });
 
   app.post("/api/billing/portal", async (req, res) => {
+    if (!stripe) {
+      return res.status(501).json({ 
+        error: "Billing not configured", 
+        message: "Stripe integration is not available" 
+      });
+    }
+
     try {
       const userId = await getDefaultUser();
       const user = await storage.getUser(userId);
