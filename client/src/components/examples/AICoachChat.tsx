@@ -1,46 +1,64 @@
 import { useState } from 'react';
-import AICoachChat from '../AICoachChat';
+import AICoachChat, { type Message } from '../AICoachChat';
 
 export default function AICoachChatExample() {
-  const [messages, setMessages] = useState([
-    {
-      id: '1',
-      role: 'assistant' as const,
-      content: "Hello! I'm here to support you on your relationship journey. Based on your attachment profile, I can help you navigate communication, conflicts, and connection. What would you like to explore today?",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSend = (message: string) => {
-    setMessages([
-      ...messages,
-      {
-        id: Date.now().toString(),
-        role: 'user' as const,
-        content: message,
-        timestamp: new Date(),
-      },
-    ]);
+  const handleSendMessage = async (content: string) => {
+    const newMessage = {
+      id: Date.now().toString(),
+      role: 'user' as const,
+      content,
+      timestamp: new Date(),
+    };
     
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant' as const,
-          content: "That's a great question. Based on your secure-anxious attachment mix, I recommend focusing on clear communication patterns. Let me share some specific strategies...",
-          timestamp: new Date(),
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      ]);
-    }, 1500);
+        body: JSON.stringify({
+          messages: updatedMessages.map(m => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      const data = await response.json();
+      
+      const aiResponse = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant' as const,
+        content: data.message.content,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Error:', error);
+      const errorMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant' as const,
+        content: "I'm sorry, I'm having trouble responding right now. Please try again in a moment.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <AICoachChat
       messages={messages}
-      onSendMessage={handleSend}
-      onSaveSummary={() => console.log('Save summary clicked')}
-      isLoading={false}
+      onSendMessage={handleSendMessage}
+      isLoading={isLoading}
     />
   );
 }
