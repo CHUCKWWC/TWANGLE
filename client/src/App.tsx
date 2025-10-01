@@ -6,12 +6,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
+import TermsOfService from "@/pages/TermsOfService";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home}/>
+      <Route path="/terms" component={TermsOfService}/>
+      <Route path="/privacy" component={PrivacyPolicy}/>
       <Route component={NotFound} />
     </Switch>
   );

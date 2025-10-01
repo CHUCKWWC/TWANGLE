@@ -25,7 +25,7 @@ export default function Login() {
           <FacebookLoginButton />
           
           <p className="text-xs text-muted-foreground max-w-xs">
-            By continuing, you agree to our Terms of Service and Privacy Policy
+            By continuing, you agree to our <a href="/terms" className="text-primary underline" data-testid="link-terms">Terms of Service</a> and <a href="/privacy" className="text-primary underline" data-testid="link-privacy">Privacy Policy</a>
           </p>
         </div>
 
