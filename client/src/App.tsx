@@ -11,6 +11,7 @@ import PaySuccess from "@/pages/PaySuccess";
 import PayCancel from "@/pages/PayCancel";
 import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import OAuthCallback from "@/pages/OAuthCallback";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 
@@ -23,6 +24,7 @@ function AppRoutes() {
       <Route path="/pay/cancel" component={PayCancel}/>
       <Route path="/terms" component={TermsOfService}/>
       <Route path="/privacy" component={PrivacyPolicy}/>
+      <Route path="/oauth" component={OAuthCallback}/>
       <Route component={NotFound} />
     </Switch>
   );
@@ -37,6 +39,7 @@ function AuthenticatedApp() {
     currentPath === "/terms" || 
     currentPath === "/privacy" || 
     currentPath === "/paywall" || 
+    currentPath === "/oauth" || 
     currentPath.startsWith("/pay/");
 
   const { data: subscriptionStatus, isLoading: isLoadingSubscription } = useQuery<{
