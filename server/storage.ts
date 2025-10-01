@@ -1,6 +1,7 @@
 import { 
   type User, 
-  type InsertUser, 
+  type InsertUser,
+  type UpsertUser,
   type ChatSession, 
   type InsertChatSession, 
   type WeeklySummary, 
@@ -30,9 +31,9 @@ import { eq, and, or, desc } from "drizzle-orm";
 // you might need
 
 export interface IStorage {
+  // User operations (Reference: blueprint:javascript_log_in_with_replit)
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  getUserByFacebookId(facebookId: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
   getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
@@ -83,16 +84,33 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
+  // Reference: blueprint:javascript_log_in_with_replit
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const existing = this.users.get(userData.id!);
+    const now = new Date();
+    
+    if (existing) {
+      const updated: User = {
+        ...existing,
+        ...userData,
+        updatedAt: now,
+      };
+      this.users.set(userData.id!, updated);
+      return updated;
+    }
 
-  async getUserByFacebookId(facebookId: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.facebookId === facebookId,
-    );
+    const user: User = {
+      id: userData.id!,
+      email: userData.email ?? null,
+      firstName: userData.firstName ?? null,
+      lastName: userData.lastName ?? null,
+      profileImageUrl: userData.profileImageUrl ?? null,
+      stripeCustomerId: userData.stripeCustomerId ?? null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.users.set(user.id, user);
+    return user;
   }
 
   async getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined> {
@@ -103,15 +121,16 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
+    const now = new Date();
     const user: User = { 
       id,
-      username: insertUser.username ?? null,
-      password: insertUser.password ?? null,
-      facebookId: insertUser.facebookId ?? null,
       email: insertUser.email ?? null,
-      name: insertUser.name ?? null,
-      profilePicture: insertUser.profilePicture ?? null,
+      firstName: insertUser.firstName ?? null,
+      lastName: insertUser.lastName ?? null,
+      profileImageUrl: insertUser.profileImageUrl ?? null,
       stripeCustomerId: insertUser.stripeCustomerId ?? null,
+      createdAt: now,
+      updatedAt: now,
     };
     this.users.set(id, user);
     return user;
@@ -323,13 +342,19 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const result = await this.db.select().from(users).where(eq(users.username, username)).limit(1);
-    return result[0];
-  }
-
-  async getUserByFacebookId(facebookId: string): Promise<User | undefined> {
-    const result = await this.db.select().from(users).where(eq(users.facebookId, facebookId)).limit(1);
+  // Reference: blueprint:javascript_log_in_with_replit
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const result = await this.db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
     return result[0];
   }
 
