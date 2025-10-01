@@ -16,25 +16,40 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2024-11-20.acacia",
 });
 
-async function requireAuth(req: Request, res: Response, next: NextFunction) {
-  if (!req.session?.userId) {
-    return res.status(401).json({ error: "Not authenticated" });
-  }
-  next();
-}
+// Default test user for development (no auth required)
+let defaultUserId: string | null = null;
 
-async function requireSubscription(req: Request, res: Response, next: NextFunction) {
-  if (!req.session?.userId) {
-    return res.status(401).json({ error: "Not authenticated" });
+async function getDefaultUser() {
+  if (defaultUserId) {
+    return defaultUserId;
   }
 
-  const subscription = await storage.getSubscriptionByUserId(req.session.userId);
+  // Get or create default test user
+  let user = await storage.getUserByFacebookId("default-test-user");
   
-  if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trialing')) {
-    return res.status(403).json({ error: "Active subscription required" });
+  if (!user) {
+    user = await storage.createUser({
+      facebookId: "default-test-user",
+      name: "Test User",
+      email: "test@twangle.dev",
+      profilePicture: null,
+      username: null,
+      password: null,
+    });
+
+    // Create active subscription for test user
+    await storage.createSubscription({
+      userId: user.id,
+      stripeSubscriptionId: "test-subscription",
+      stripePriceId: process.env.STRIPE_PRICE_ID || "price_test",
+      status: "active",
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+    });
   }
 
-  next();
+  defaultUserId = user.id;
+  return defaultUserId;
 }
 
 const SYSTEM_PROMPT = `You are Coach Charles, an expert relationship coach trained in research-backed methods including:
@@ -69,7 +84,7 @@ Format your responses for mobile readability:
 - End with a reflection question or next step`;
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  app.post("/api/chat", requireSubscription, async (req, res) => {
+  app.post("/api/chat", async (req, res) => {
     try {
       const { messages } = req.body;
 
@@ -107,9 +122,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/summaries/generate", requireSubscription, async (req, res) => {
+  app.post("/api/summaries/generate", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const { messages, sessionId } = req.body;
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -196,9 +211,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/summaries", requireSubscription, async (req, res) => {
+  app.get("/api/summaries", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const summaries = await storage.getWeeklySummaries(userId);
       res.json({ summaries });
     } catch (error: any) {
@@ -210,9 +225,9 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/session", requireSubscription, async (req, res) => {
+  app.post("/api/feedback/session", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const { sessionId, rating, feedbackText } = req.body;
 
       if (!rating || rating < 1 || rating > 5) {
@@ -243,9 +258,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/session", requireSubscription, async (req, res) => {
+  app.get("/api/feedback/session", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const feedback = await storage.getSessionFeedback(userId);
       res.json({ feedback });
     } catch (error: any) {
@@ -257,9 +272,9 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/progress", requireSubscription, async (req, res) => {
+  app.post("/api/feedback/progress", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const { weekStartDate, relationshipScore, improvementNotes } = req.body;
 
       if (!weekStartDate) {
@@ -287,9 +302,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/progress", requireSubscription, async (req, res) => {
+  app.get("/api/feedback/progress", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const progress = await storage.getRelationshipProgress(userId);
       res.json({ progress });
     } catch (error: any) {
@@ -301,9 +316,9 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/general", requireSubscription, async (req, res) => {
+  app.post("/api/feedback/general", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const { feedbackType, category, description, rating } = req.body;
 
       if (!feedbackType || !category || !description) {
@@ -328,9 +343,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/general", requireSubscription, async (req, res) => {
+  app.get("/api/feedback/general", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const feedbackType = req.query.feedbackType as string | undefined;
       const feedback = await storage.getGeneralFeedback(userId, feedbackType);
       res.json({ feedback });
@@ -542,9 +557,9 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/billing/checkout", requireAuth, async (req, res) => {
+  app.post("/api/billing/checkout", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
@@ -586,9 +601,9 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/billing/portal", requireAuth, async (req, res) => {
+  app.post("/api/billing/portal", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const user = await storage.getUser(userId);
       if (!user || !user.stripeCustomerId) {
         return res.status(404).json({ error: "No billing account found" });
@@ -609,9 +624,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/billing/status", requireAuth, async (req, res) => {
+  app.get("/api/billing/status", async (req, res) => {
     try {
-      const userId = (req.session as any).userId;
+      const userId = await getDefaultUser();
       const subscription = await storage.getSubscriptionByUserId(userId);
 
       if (!subscription) {
