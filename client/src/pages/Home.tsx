@@ -211,6 +211,7 @@ export default function Home() {
             messages={chatMessages}
             onSendMessage={handleSendMessage}
             isLoading={isLoadingChat}
+            onViewSummaries={() => setCurrentView('summaries')}
           />
         )}
 
