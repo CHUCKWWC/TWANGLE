@@ -1,0 +1,544 @@
+r.stripe.com/b:1  Failed to load resource: net::ERR_NETWORK_CHANGED
+r.stripe.com/b:1  Failed to load resource: net::ERR_NETWORK_CHANGED
+r.stripe.com/b:1  Failed to load resource: net::ERR_NETWORK_CHANGED
+r.stripe.com/b:1  Failed to load resource: net::ERR_NETWORK_CHANGED
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+ 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+TwangleGenie:1 The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+TwangleGenie:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+TwangleGenie:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+ [LaunchDarkly] LaunchDarkly client initialized
+TwangleGenie:1 Access to fetch at 'https://sp.replit.com/v1/i' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+sp.replit.com/v1/i:1  Failed to load resource: net::ERR_FAILED
+ Adding extension: GPT-Replit - ChatGPT in your Repl. Object
+[GroupMarkerNotSet(crbug.com/242999)!:A020580104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A020580104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A020580104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A020580104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A020580104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A020580104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0F0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0F0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0F0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0F0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0F0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0F0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+ Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'battery'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'layout-animations'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'navigation-override'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'oversized-images'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'publickey-credentials'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'speaker-selection'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'unoptimized-images'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'unsized-media'.
+_ @ framework-2207b18187240fa0.js:1
+ Unrecognized feature: 'pointer-lock'.
+_ @ framework-2207b18187240fa0.js:1
+ Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-2207b18187240fa0.js:1
+ Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-2207b18187240fa0.js:1
+ WebSocket is already in CLOSING or CLOSED state.
+send @ 6631-996c64b96e161f20.js:1
+ WebSocket is already in CLOSING or CLOSED state.
+send @ 6631-996c64b96e161f20.js:1
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A050580104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 Uncaught (in promise) 
+[GroupMarkerNotSet(crbug.com/242999)!:A0C0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0C0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0C0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0C0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0C0570104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 Uncaught (in promise) 
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A080480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 Uncaught (in promise) 
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A0E0480004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 Uncaught (in promise) 
+ WebSocket connection to 'wss://eval.worf.platform.replit.com/wsv2/v2.public.Q2dZSXV1ajB4Z1lTQmdqWmhQWEdCaUlFZDI5eVpqQUFPcjRCQ2lSa1lqVmlNV1JpT1MxbE0yWmlMVFF3Wm1ZdE9UVmpaUzB4Wm1GaVpqWXhOR0poTVRVU0EyNXBlQm9XY21Wd2JHbDBMWEpsY0d3dFptbHNaWE10ZDI5eVppSU1WSGRoYm1kc1pVZGxibWxsS2c1amFHRnliR1Z6ZDJGMGMyOXVOa0pPQ2hkeVpYQnNhWFF0Y21Wd2JDMWliRzlqYTNNdGQyOXlaaElWY21Wd2JHbDBMWEpsY0d3dGJXVjBZUzEzYjNKbUdoeHlaWEJzYVhRdGJXRnlaMkZ5YVc1bExXSnNiMk5yY3kxM2IzSm1TZ2NJaTdMcUZCQUJVQUI0QUZJakNBRVFnSUNBZ0NBWkFBQUFBQUFBRUVBaEFBQUFBQUFBRUVBb2dJQ0FnTWdCTUFKZ0Eyb1ZD...M0pUSkNNRXhuYkVsUlNuWlFUa0p2VFRsMEpUSkNjV0pFT1hnd2FuQk1aM0pFUTNwWVowRm9XVkpuVFhwcWF6Vm5iR2dsTWtaeGVUbHBWVzFVTkdGdmNsWlNiekZxWkNVeVFtaDJTbmhhV0ZFemMzTnZialJQYVVaU1lUQllWMFZ6ZW10eWFUZ2xNa0pDY1dZNU5scFBUSHBCUzFSdlYxZDBOREZCVjJacFRtYzNXRlkxVW5WV1JGbEdKVEpDZEhGMVdFSjBZbE5xUWtoUFlVdENXVlZxY1dWVFUwOUhkVFp3YWlVeVFsWnBNWHBqVFVSWVMzRm1aRGxzTm1kWE5sTmtaVnBFYkNVeVFsbzRSVEoxVERkV2FUWjNKVE5FSlRORUg5HpTdOZ4VhnQLToUcAtzNtB6L3yY2PtAgfAa0qsN1K4c2WBBlwA29Y06cbS27hkqGlEUTudC72pNUXYSgwg4.Q2dad2NtOWtPak1pQ25KbGNHeHBkQzVqYjIwPQ' failed: 
+(anonymous) @ 5699-bff204a4948698f5.js:1
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A050580104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 Uncaught (in promise) 
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A050580104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+ WebSocket is already in CLOSING or CLOSED state.
+send @ 6631-996c64b96e161f20.js:1
+ WebSocket is already in CLOSING or CLOSED state.
+send @ 6631-996c64b96e161f20.js:1
+[GroupMarkerNotSet(crbug.com/242999)!:A010490004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A010490004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A010490004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A010490004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A010490004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A010490004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A010490004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A010490004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A010490004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[GroupMarkerNotSet(crbug.com/242999)!:A010490004370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 Uncaught (in promise) 
+TwangleGenie:1 Uncaught (in promise) 
+ [Coframe] Error initializing SDK 
+(anonymous) @ _app-154fcbfad91352fd.js:34
+TwangleGenie:1 Access to XMLHttpRequest at 'https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_FAILED
+TwangleGenie:1 Access to XMLHttpRequest at 'https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_FAILED
+TwangleGenie:1 Access to XMLHttpRequest at 'https://events.launchdarkly.com/events/diagnostic/62b35a865152ab14c5942820' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+events.launchdarkly.com/events/diagnostic/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_FAILED
+TwangleGenie:1 Access to XMLHttpRequest at 'https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820' from origin 'https://replit.com' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_FAILED
+TwangleGenie:1 Access to XMLHttpRequest at 'https://events.launchdarkly.com/events/diagnostic/62b35a865152ab14c5942820' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+events.launchdarkly.com/events/diagnostic/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_FAILED
+TwangleGenie:1 Access to XMLHttpRequest at 'https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_FAILED
+TwangleGenie:1 Access to XMLHttpRequest at 'https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820' from origin 'https://replit.com' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_FAILED
+TwangleGenie:1 Access to XMLHttpRequest at 'https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_FAILED
+TwangleGenie:1 Access to XMLHttpRequest at 'https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_FAILED
+TwangleGenie:1 Access to XMLHttpRequest at 'https://events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820' from origin 'https://replit.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: net::ERR_FAILED
+events.launchdarkly.com/events/bulk/62b35a865152ab14c5942820:1  Failed to load resource: the server responded with a status of 404 ()
+_app-154fcbfad91352fd.js:34 [LaunchDarkly] Received error 404 for event posting - giving up permanently
+(anonymous) @ _app-154fcbfad91352fd.js:34
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+5699-bff204a4948698f5.js:1 WebSocket connection to 'wss://eval.worf.platform.replit.com/wsv2/v2.public.Q2dZSWlvNzF4Z1lTQmdpcHF2WEdCaUlFZDI5eVpqQUFPcjRCQ2lSa1lqVmlNV1JpT1MxbE0yWmlMVFF3Wm1ZdE9UVmpaUzB4Wm1GaVpqWXhOR0poTVRVU0EyNXBlQm9XY21Wd2JHbDBMWEpsY0d3dFptbHNaWE10ZDI5eVppSU1WSGRoYm1kc1pVZGxibWxsS2c1amFHRnliR1Z6ZDJGMGMyOXVOa0pPQ2hkeVpYQnNhWFF0Y21Wd2JDMWliRzlqYTNNdGQyOXlaaElWY21Wd2JHbDBMWEpsY0d3dGJXVjBZUzEzYjNKbUdoeHlaWEJzYVhRdGJXRnlaMkZ5YVc1bExXSnNiMk5yY3kxM2IzSm1TZ2NJaTdMcUZCQUJVQUI0QUZJakNBRVFnSUNBZ0NBWkFBQUFBQUFBRUVBaEFBQUFBQUFBRUVBb2dJQ0FnTWdCTUFKZ0Eyb1ZD...ktNbU55YzFkbGEyZFNNbHBvVFRGamRHRXlhVEpTYjFSbk4zVTRSRWc1U1dweVZtVkxOVTlEWkdzMWJ6bGpURFlsTWtack1YQjBNMHg1UnlVeVFrTkVhbnBTSlRKQ2RUUnBNemx5UlhSSlNXTm5KVEpHV0ZCblNsSmlTM1JFUW5GbFFuRXdVVU5OZUdsTGFuSk1ZVEk0WWs1UGRGQk9aRWQxVG10T1psbDZZa3BZU2prMk1VdENVa1EzWVdaV1VWVkdiVlJtZHpSQ1JIQmxOVnAyZEhwSVJFNXBRU1V5UmpKeGVqZDRUR2xpWjNSSmNUQnBRa3B1TUhNbE1rWk5NR1JDWlVsaldrbGxRVzAyU1VSYWEzQnFORkVsTTBRbE0wUT2KZII3nkePrxT_dKltc0MR1SZtCMeGNuct0m029oalnbkE4FCqfeIzdoWIdIYz5wX7IjNMK0dC07islc70ySYN.Q2dad2NtOWtPak1pQ25KbGNHeHBkQzVqYjIwPQ' failed: 
+(anonymous) @ 5699-bff204a4948698f5.js:1
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A0809D0104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A0B09D0104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A0B09D0104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://twanglement.com/&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://twanglement.com&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+_app-154fcbfad91352fd.js:34 Failed when connecting: Connection closed (code: 1006)
+(anonymous) @ _app-154fcbfad91352fd.js:34
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A0109E0104370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A0C0270304370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://twanglement.com&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://twanglement.com/&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A0C0270304370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A050280304370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+_app-154fcbfad91352fd.js:34 Failed when connecting: Connection closed (code: 1006)
+(anonymous) @ _app-154fcbfad91352fd.js:34
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+/data/repls/db5b1db9-e3fb-40ff-95ce-1fabf614ba15/get_connection_metadata:1  Failed to load resource: net::ERR_CONNECTION_CLOSED
+_app-154fcbfad91352fd.js:1 Uncaught (in promise) TypeError: Network request failed
+    at s.onerror (_app-154fcbfad91352fd.js:1:127431)
+    at XMLHttpRequest.n (_app-154fcbfad91352fd.js:34:2959)
+/_next/data/JwOAIeyLJuUgcy7M31lFF/index.json:1  Failed to load resource: the server responded with a status of 404 ()
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A0F0270304370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar240%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+db5b1db9-e3fb-40ff-95ce-1fabf614ba15-00-2gqs9hislgv9r.worf.replit.dev/api/auth/me:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
+stallwart.build.js:1 stallwart: failed ping 1
+stallwart.build.js:1 stallwart: failed ping 2
+stallwart.build.js:1 stallwart: failed ping 3
+Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type ‘allow pasting’ below and press Enter to allow pasting.
+Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type ‘allow pasting’ below and press Enter to allow pasting.
+6631-996c64b96e161f20.js:1 WebSocket is already in CLOSING or CLOSED state.
+send @ 6631-996c64b96e161f20.js:1
+J @ 6631-996c64b96e161f20.js:1
+send @ 6631-996c64b96e161f20.js:1
+(anonymous) @ 6631-996c64b96e161f20.js:1
+H @ 6631-996c64b96e161f20.js:1
+n @ _app-154fcbfad91352fd.js:34
+(anonymous) @ 5699-bff204a4948698f5.js:1
+oM @ framework-2207b18187240fa0.js:1
+oD @ framework-2207b18187240fa0.js:1
+uB @ framework-2207b18187240fa0.js:1
+u_ @ framework-2207b18187240fa0.js:1
+r6 @ framework-2207b18187240fa0.js:1
+(anonymous) @ framework-2207b18187240fa0.js:1
+uO @ framework-2207b18187240fa0.js:1
+uS @ framework-2207b18187240fa0.js:1
+C @ framework-2207b18187240fa0.js:1
+z @ framework-2207b18187240fa0.js:1
+_app-154fcbfad91352fd.js:34  POST https://replit.com/data/repls/db5b1db9-e3fb-40ff-95ce-1fabf614ba15/get_connection_metadata net::ERR_CONNECTION_CLOSED
+(anonymous) @ _app-154fcbfad91352fd.js:34
+(anonymous) @ _app-154fcbfad91352fd.js:34
+(anonymous) @ _app-154fcbfad91352fd.js:1
+y @ _app-154fcbfad91352fd.js:1
+(anonymous) @ 3082-2e8df10347fcd452.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+n @ main-c4523c432c019d61.js:1
+u @ main-c4523c432c019d61.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+m @ 3082-2e8df10347fcd452.js:1
+(anonymous) @ 3082-2e8df10347fcd452.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+n @ main-c4523c432c019d61.js:1
+u @ main-c4523c432c019d61.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+e @ 3082-2e8df10347fcd452.js:1
+(anonymous) @ 5699-bff204a4948698f5.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+n @ main-c4523c432c019d61.js:1
+u @ main-c4523c432c019d61.js:1
+Promise.then
+n @ main-c4523c432c019d61.js:1
+u @ main-c4523c432c019d61.js:1
+Promise.then
+n @ main-c4523c432c019d61.js:1
+u @ main-c4523c432c019d61.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+(anonymous) @ 5699-bff204a4948698f5.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+n @ main-c4523c432c019d61.js:1
+u @ main-c4523c432c019d61.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+(anonymous) @ 5699-bff204a4948698f5.js:1
+(anonymous) @ 5699-bff204a4948698f5.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+n @ main-c4523c432c019d61.js:1
+u @ main-c4523c432c019d61.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+(anonymous) @ main-c4523c432c019d61.js:1
+(anonymous) @ 5699-bff204a4948698f5.js:1
+createNewOutgoingConnection @ 6631-996c64b96e161f20.js:1
+(anonymous) @ 6631-996c64b96e161f20.js:1
+t.with @ 1630-313664445dda02ca.js:1
+t.with @ 1630-313664445dda02ca.js:1
+t.startActiveSpan @ 1630-313664445dda02ca.js:1
+t.startActiveSpan @ 1630-313664445dda02ca.js:1
+onBackoffFinished @ 6631-996c64b96e161f20.js:1
+onBackoffFinished @ 6631-996c64b96e161f20.js:1
+(anonymous) @ 6631-996c64b96e161f20.js:1
+n @ _app-154fcbfad91352fd.js:34
+setTimeout
+(anonymous) @ _app-154fcbfad91352fd.js:34
+es @ 6631-996c64b96e161f20.js:1
+NoConnectionToBackingOff @ 6631-996c64b96e161f20.js:1
+connect @ 6631-996c64b96e161f20.js:1
+tryReconnecting @ 6631-996c64b96e161f20.js:1
+onConnClosed @ 6631-996c64b96e161f20.js:1
+onConnectionClosed @ 6631-996c64b96e161f20.js:1
+onClose @ 6631-996c64b96e161f20.js:1
+ws.onclose @ 6631-996c64b96e161f20.js:1
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A050280304370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+TwangleGenie:1 [GroupMarkerNotSet(crbug.com/242999)!:A0F0270304370000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar25b%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+injected.js:278  GET https://db5b1db9-e3fb-40ff-95ce-1fabf614ba15-00-2gqs9hislgv9r.worf.replit.dev/api/auth/me 401 (Unauthorized)
+window.fetch @ Network.js:219
+apply @ injected.js:278
+(anonymous) @ queryClient.ts:32
+fetchFn @ @tanstack_react-query.js?v=3a21618c:840
+run @ @tanstack_react-query.js?v=3a21618c:494
+start @ @tanstack_react-query.js?v=3a21618c:536
+fetch @ @tanstack_react-query.js?v=3a21618c:926
+executeFetch_fn @ @tanstack_react-query.js?v=3a21618c:2211
+onSubscribe @ @tanstack_react-query.js?v=3a21618c:1898
+subscribe @ @tanstack_react-query.js?v=3a21618c:24
+(anonymous) @ @tanstack_react-query.js?v=3a21618c:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=3a21618c:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=3a21618c:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=3a21618c:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=3a21618c:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=3a21618c:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=3a21618c:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=3a21618c:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=3a21618c:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=3a21618c:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=3a21618c:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=3a21618c:19432
+commitRoot @ chunk-RPCDYKBN.js?v=3a21618c:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=3a21618c:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=3a21618c:18718
+workLoop @ chunk-RPCDYKBN.js?v=3a21618c:197
+flushWork @ chunk-RPCDYKBN.js?v=3a21618c:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=3a21618c:384
+TwangleGenie:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+fetch('/api/auth/me').then(r => r.json()).then(console.log)
+Promise {<pending>}
+_app-154fcbfad91352fd.js:34  GET https://replit.com/api/auth/me 404 (Not Found)
+(anonymous) @ _app-154fcbfad91352fd.js:34
+(anonymous) @ VM1328:1
+VM1329:1 Uncaught (in promise) SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
