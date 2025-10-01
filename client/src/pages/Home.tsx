@@ -167,8 +167,14 @@ export default function Home() {
         {currentView === 'retreat' && (
           <RetreatBuilder
             onSaveRetreat={(retreat) => {
-              console.log('Retreat saved:', retreat);
-              alert('Retreat plan saved! In the full app, this would be exported as PDF.');
+              console.log('Retreat saved:', {
+                duration: retreat.duration,
+                location: retreat.location,
+                budget: retreat.budget,
+                focuses: retreat.focuses,
+                totalActivities: retreat.activities.length,
+              });
+              alert(`${retreat.duration}-day retreat plan saved! In the full app, this would be exported as PDF.`);
             }}
           />
         )}
