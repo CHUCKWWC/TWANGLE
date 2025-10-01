@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import OpenAI from "openai";
@@ -13,8 +13,29 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-09-30.clover",
+  apiVersion: "2024-11-20.acacia",
 });
+
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (!req.session?.userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+  next();
+}
+
+async function requireSubscription(req: Request, res: Response, next: NextFunction) {
+  if (!req.session?.userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  const subscription = await storage.getSubscriptionByUserId(req.session.userId);
+  
+  if (!subscription || (subscription.status !== 'active' && subscription.status !== 'trialing')) {
+    return res.status(403).json({ error: "Active subscription required" });
+  }
+
+  next();
+}
 
 const SYSTEM_PROMPT = `You are Coach Charles, an expert relationship coach trained in research-backed methods including:
 - The Gottman Method (Dr. John Gottman's research on relationship stability)
@@ -48,7 +69,7 @@ Format your responses for mobile readability:
 - End with a reflection question or next step`;
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  app.post("/api/chat", async (req, res) => {
+  app.post("/api/chat", requireSubscription, async (req, res) => {
     try {
       const { messages } = req.body;
 
@@ -86,8 +107,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/summaries/generate", async (req, res) => {
+  app.post("/api/summaries/generate", requireSubscription, async (req, res) => {
     try {
+      const userId = (req.session as any).userId;
       const { messages, sessionId } = req.body;
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -97,11 +119,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let currentSessionId = sessionId;
       if (!currentSessionId) {
         const session = await storage.createChatSession({
-          userId: null,
+          userId,
           messageCount: messages.length,
         });
         currentSessionId = session.id;
       } else {
+        const existingSession = await storage.getChatSession(currentSessionId);
+        if (!existingSession || existingSession.userId !== userId) {
+          return res.status(403).json({ error: "Access denied to this session" });
+        }
+        
         await storage.updateChatSession(currentSessionId, {
           lastMessageAt: new Date(),
           messageCount: messages.length,
@@ -152,7 +179,7 @@ ${conversationText}`;
 
       const weeklySummary = await storage.createWeeklySummary({
         sessionId: currentSessionId,
-        userId: null,
+        userId,
         summary: parsedResponse.summary || "",
         actionItems: parsedResponse.actionItems || [],
       });
@@ -169,9 +196,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/summaries", async (req, res) => {
+  app.get("/api/summaries", requireSubscription, async (req, res) => {
     try {
-      const userId = req.query.userId as string | undefined;
+      const userId = (req.session as any).userId;
       const summaries = await storage.getWeeklySummaries(userId);
       res.json({ summaries });
     } catch (error: any) {
@@ -183,17 +210,25 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/session", async (req, res) => {
+  app.post("/api/feedback/session", requireSubscription, async (req, res) => {
     try {
-      const { sessionId, userId, rating, feedbackText } = req.body;
+      const userId = (req.session as any).userId;
+      const { sessionId, rating, feedbackText } = req.body;
 
       if (!rating || rating < 1 || rating > 5) {
         return res.status(400).json({ error: "Rating must be between 1 and 5" });
       }
 
+      if (sessionId) {
+        const session = await storage.getChatSession(sessionId);
+        if (!session || session.userId !== userId) {
+          return res.status(403).json({ error: "Access denied to this session" });
+        }
+      }
+
       const feedback = await storage.createSessionFeedback({
         sessionId: sessionId || null,
-        userId: userId || null,
+        userId,
         rating,
         feedbackText: feedbackText || null,
       });
@@ -208,9 +243,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/session", async (req, res) => {
+  app.get("/api/feedback/session", requireSubscription, async (req, res) => {
     try {
-      const userId = req.query.userId as string | undefined;
+      const userId = (req.session as any).userId;
       const feedback = await storage.getSessionFeedback(userId);
       res.json({ feedback });
     } catch (error: any) {
@@ -222,9 +257,10 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/progress", async (req, res) => {
+  app.post("/api/feedback/progress", requireSubscription, async (req, res) => {
     try {
-      const { userId, weekStartDate, relationshipScore, improvementNotes } = req.body;
+      const userId = (req.session as any).userId;
+      const { weekStartDate, relationshipScore, improvementNotes } = req.body;
 
       if (!weekStartDate) {
         return res.status(400).json({ error: "Week start date is required" });
@@ -235,7 +271,7 @@ ${conversationText}`;
       }
 
       const progress = await storage.createRelationshipProgress({
-        userId: userId || null,
+        userId,
         weekStartDate: new Date(weekStartDate),
         relationshipScore,
         improvementNotes: improvementNotes || null,
@@ -251,9 +287,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/progress", async (req, res) => {
+  app.get("/api/feedback/progress", requireSubscription, async (req, res) => {
     try {
-      const userId = req.query.userId as string | undefined;
+      const userId = (req.session as any).userId;
       const progress = await storage.getRelationshipProgress(userId);
       res.json({ progress });
     } catch (error: any) {
@@ -265,16 +301,17 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/general", async (req, res) => {
+  app.post("/api/feedback/general", requireSubscription, async (req, res) => {
     try {
-      const { userId, feedbackType, category, description, rating } = req.body;
+      const userId = (req.session as any).userId;
+      const { feedbackType, category, description, rating } = req.body;
 
       if (!feedbackType || !category || !description) {
         return res.status(400).json({ error: "Feedback type, category, and description are required" });
       }
 
       const feedback = await storage.createGeneralFeedback({
-        userId: userId || null,
+        userId,
         feedbackType,
         category,
         description,
@@ -291,9 +328,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/general", async (req, res) => {
+  app.get("/api/feedback/general", requireSubscription, async (req, res) => {
     try {
-      const userId = req.query.userId as string | undefined;
+      const userId = (req.session as any).userId;
       const feedbackType = req.query.feedbackType as string | undefined;
       const feedback = await storage.getGeneralFeedback(userId, feedbackType);
       res.json({ feedback });
@@ -441,13 +478,9 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/billing/checkout", async (req, res) => {
+  app.post("/api/billing/checkout", requireAuth, async (req, res) => {
     try {
       const userId = (req.session as any).userId;
-      if (!userId) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
@@ -489,13 +522,9 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/billing/portal", async (req, res) => {
+  app.post("/api/billing/portal", requireAuth, async (req, res) => {
     try {
       const userId = (req.session as any).userId;
-      if (!userId) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
       const user = await storage.getUser(userId);
       if (!user || !user.stripeCustomerId) {
         return res.status(404).json({ error: "No billing account found" });
@@ -516,13 +545,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/billing/status", async (req, res) => {
+  app.get("/api/billing/status", requireAuth, async (req, res) => {
     try {
       const userId = (req.session as any).userId;
-      if (!userId) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
       const subscription = await storage.getSubscriptionByUserId(userId);
 
       if (!subscription) {

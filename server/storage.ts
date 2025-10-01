@@ -12,9 +12,19 @@ import {
   type GeneralFeedback,
   type InsertGeneralFeedback,
   type Subscription,
-  type InsertSubscription
+  type InsertSubscription,
+  users,
+  subscriptions,
+  chatSessions,
+  weeklySummaries,
+  sessionFeedback,
+  relationshipProgress,
+  generalFeedback
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { drizzle } from "drizzle-orm/neon-serverless";
+import { Pool } from "@neondatabase/serverless";
+import { eq, and, or, desc } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -23,6 +33,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByFacebookId(facebookId: string): Promise<User | undefined>;
+  getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
   
@@ -81,6 +92,12 @@ export class MemStorage implements IStorage {
   async getUserByFacebookId(facebookId: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
       (user) => user.facebookId === facebookId,
+    );
+  }
+
+  async getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.stripeCustomerId === stripeCustomerId,
     );
   }
 
@@ -293,4 +310,167 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DbStorage implements IStorage {
+  private db;
+
+  constructor() {
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    this.db = drizzle(pool);
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.username, username)).limit(1);
+    return result[0];
+  }
+
+  async getUserByFacebookId(facebookId: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.facebookId, facebookId)).limit(1);
+    return result[0];
+  }
+
+  async getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.stripeCustomerId, stripeCustomerId)).limit(1);
+    return result[0];
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const result = await this.db.insert(users).values(insertUser).returning();
+    return result[0];
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+    const result = await this.db.update(users).set(updates).where(eq(users.id, id)).returning();
+    return result[0];
+  }
+
+  async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
+    const result = await this.db.insert(chatSessions).values(insertSession).returning();
+    return result[0];
+  }
+
+  async getChatSession(id: string): Promise<ChatSession | undefined> {
+    const result = await this.db.select().from(chatSessions).where(eq(chatSessions.id, id)).limit(1);
+    return result[0];
+  }
+
+  async updateChatSession(id: string, updates: Partial<ChatSession>): Promise<ChatSession | undefined> {
+    const result = await this.db.update(chatSessions).set(updates).where(eq(chatSessions.id, id)).returning();
+    return result[0];
+  }
+
+  async createWeeklySummary(insertSummary: InsertWeeklySummary): Promise<WeeklySummary> {
+    const result = await this.db.insert(weeklySummaries).values(insertSummary).returning();
+    return result[0];
+  }
+
+  async getWeeklySummaries(userId?: string): Promise<WeeklySummary[]> {
+    if (userId) {
+      return await this.db.select().from(weeklySummaries).where(eq(weeklySummaries.userId, userId)).orderBy(desc(weeklySummaries.createdAt));
+    }
+    return await this.db.select().from(weeklySummaries).orderBy(desc(weeklySummaries.createdAt));
+  }
+
+  async getWeeklySummaryBySession(sessionId: string): Promise<WeeklySummary | undefined> {
+    const result = await this.db.select().from(weeklySummaries).where(eq(weeklySummaries.sessionId, sessionId)).limit(1);
+    return result[0];
+  }
+
+  async createSessionFeedback(insertFeedback: InsertSessionFeedback): Promise<SessionFeedback> {
+    const result = await this.db.insert(sessionFeedback).values(insertFeedback).returning();
+    return result[0];
+  }
+
+  async getSessionFeedback(userId?: string): Promise<SessionFeedback[]> {
+    if (userId) {
+      return await this.db.select().from(sessionFeedback).where(eq(sessionFeedback.userId, userId)).orderBy(desc(sessionFeedback.createdAt));
+    }
+    return await this.db.select().from(sessionFeedback).orderBy(desc(sessionFeedback.createdAt));
+  }
+
+  async createRelationshipProgress(insertProgress: InsertRelationshipProgress): Promise<RelationshipProgress> {
+    const result = await this.db.insert(relationshipProgress).values(insertProgress).returning();
+    return result[0];
+  }
+
+  async getRelationshipProgress(userId?: string): Promise<RelationshipProgress[]> {
+    if (userId) {
+      return await this.db.select().from(relationshipProgress).where(eq(relationshipProgress.userId, userId)).orderBy(desc(relationshipProgress.weekStartDate));
+    }
+    return await this.db.select().from(relationshipProgress).orderBy(desc(relationshipProgress.weekStartDate));
+  }
+
+  async createGeneralFeedback(insertFeedback: InsertGeneralFeedback): Promise<GeneralFeedback> {
+    const result = await this.db.insert(generalFeedback).values(insertFeedback).returning();
+    return result[0];
+  }
+
+  async getGeneralFeedback(userId?: string, feedbackType?: string): Promise<GeneralFeedback[]> {
+    let query = this.db.select().from(generalFeedback);
+    
+    const conditions = [];
+    if (userId) conditions.push(eq(generalFeedback.userId, userId));
+    if (feedbackType) conditions.push(eq(generalFeedback.feedbackType, feedbackType));
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    
+    return await query.orderBy(desc(generalFeedback.createdAt));
+  }
+
+  async getSubscriptionByUserId(userId: string): Promise<Subscription | undefined> {
+    const result = await this.db.select().from(subscriptions)
+      .where(and(
+        eq(subscriptions.userId, userId),
+        or(eq(subscriptions.status, 'active'), eq(subscriptions.status, 'trialing'))
+      ))
+      .limit(1);
+    return result[0];
+  }
+
+  async getSubscriptionByStripeId(stripeSubscriptionId: string): Promise<Subscription | undefined> {
+    const result = await this.db.select().from(subscriptions)
+      .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId))
+      .limit(1);
+    return result[0];
+  }
+
+  async upsertSubscription(insertSubscription: InsertSubscription): Promise<Subscription> {
+    const existing = await this.getSubscriptionByStripeId(insertSubscription.stripeSubscriptionId);
+    
+    if (existing) {
+      const result = await this.db.update(subscriptions)
+        .set({ ...insertSubscription, updatedAt: new Date() })
+        .where(eq(subscriptions.id, existing.id))
+        .returning();
+      return result[0];
+    }
+
+    const result = await this.db.insert(subscriptions).values(insertSubscription).returning();
+    return result[0];
+  }
+
+  async updateSubscriptionStatus(
+    stripeSubscriptionId: string,
+    status: string,
+    currentPeriodEnd?: Date
+  ): Promise<Subscription | undefined> {
+    const updates: any = { status, updatedAt: new Date() };
+    if (currentPeriodEnd) {
+      updates.currentPeriodEnd = currentPeriodEnd;
+    }
+    
+    const result = await this.db.update(subscriptions)
+      .set(updates)
+      .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId))
+      .returning();
+    return result[0];
+  }
+}
+
+export const storage = new DbStorage();
