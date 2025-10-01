@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, AlertTriangle, MessageCircle, Calendar } from "lucide-react";
+import { Heart, AlertTriangle, MessageCircle, Calendar, BookOpen } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 export interface AttachmentScore {
@@ -16,6 +16,7 @@ export interface AttachmentResultsProps {
   hasRedFlags: boolean;
   onTalkToCoach: () => void;
   onPlanRetreat: () => void;
+  onViewExercises: () => void;
 }
 
 const COLORS = {
@@ -37,6 +38,7 @@ export default function AttachmentResults({
   hasRedFlags,
   onTalkToCoach,
   onPlanRetreat,
+  onViewExercises,
 }: AttachmentResultsProps) {
   const data = [
     { name: 'Secure', value: scores.secure, color: COLORS.secure },
@@ -139,7 +141,7 @@ export default function AttachmentResults({
           </Card>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-3 gap-4">
           <Button
             size="lg"
             className="w-full text-lg py-6"
@@ -147,7 +149,17 @@ export default function AttachmentResults({
             data-testid="button-talk-coach"
           >
             <MessageCircle className="w-5 h-5 mr-2" />
-            Talk to AI Coach
+            AI Coach
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="w-full text-lg py-6"
+            onClick={onViewExercises}
+            data-testid="button-view-exercises"
+          >
+            <BookOpen className="w-5 h-5 mr-2" />
+            Exercises
           </Button>
           <Button
             size="lg"
@@ -157,7 +169,7 @@ export default function AttachmentResults({
             data-testid="button-plan-retreat"
           >
             <Calendar className="w-5 h-5 mr-2" />
-            Plan a Retreat
+            Retreat
           </Button>
         </div>
       </div>
