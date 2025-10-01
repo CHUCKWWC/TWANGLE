@@ -26,7 +26,7 @@ export default function Login() {
           <ul className="text-sm text-muted-foreground space-y-2 max-w-xs mx-auto">
             <li>✓ Personalized AI relationship coaching</li>
             <li>✓ Science-based exercises and activities</li>
-            <li>✓ Custom retreat planning</li>
+            <li>✓ DIY Couples retreat planning</li>
             <li>✓ Weekly progress summaries</li>
           </ul>
         </div>

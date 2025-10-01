@@ -39,7 +39,7 @@ export default function TermsOfService() {
               <li>AI relationship coaching ("Coach Charles")</li>
               <li>Attachment style assessments</li>
               <li>Science-based relationship exercises</li>
-              <li>DIY retreat planning tools</li>
+              <li>DIY Couples retreat planning tools</li>
               <li>Weekly relationship summaries</li>
             </ul>
           </section>
