@@ -174,6 +174,129 @@ ${conversationText}`;
     }
   });
 
+  app.post("/api/feedback/session", async (req, res) => {
+    try {
+      const { sessionId, userId, rating, feedbackText } = req.body;
+
+      if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({ error: "Rating must be between 1 and 5" });
+      }
+
+      const feedback = await storage.createSessionFeedback({
+        sessionId: sessionId || null,
+        userId: userId || null,
+        rating,
+        feedbackText: feedbackText || null,
+      });
+
+      res.json({ feedback });
+    } catch (error: any) {
+      console.error("Session feedback error:", error);
+      res.status(500).json({
+        error: "Failed to save session feedback",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/feedback/session", async (req, res) => {
+    try {
+      const userId = req.query.userId as string | undefined;
+      const feedback = await storage.getSessionFeedback(userId);
+      res.json({ feedback });
+    } catch (error: any) {
+      console.error("Get session feedback error:", error);
+      res.status(500).json({
+        error: "Failed to get session feedback",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/feedback/progress", async (req, res) => {
+    try {
+      const { userId, weekStartDate, relationshipScore, improvementNotes } = req.body;
+
+      if (!weekStartDate) {
+        return res.status(400).json({ error: "Week start date is required" });
+      }
+
+      if (!relationshipScore || relationshipScore < 1 || relationshipScore > 5) {
+        return res.status(400).json({ error: "Relationship score must be between 1 and 5" });
+      }
+
+      const progress = await storage.createRelationshipProgress({
+        userId: userId || null,
+        weekStartDate: new Date(weekStartDate),
+        relationshipScore,
+        improvementNotes: improvementNotes || null,
+      });
+
+      res.json({ progress });
+    } catch (error: any) {
+      console.error("Relationship progress error:", error);
+      res.status(500).json({
+        error: "Failed to save relationship progress",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/feedback/progress", async (req, res) => {
+    try {
+      const userId = req.query.userId as string | undefined;
+      const progress = await storage.getRelationshipProgress(userId);
+      res.json({ progress });
+    } catch (error: any) {
+      console.error("Get relationship progress error:", error);
+      res.status(500).json({
+        error: "Failed to get relationship progress",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/feedback/general", async (req, res) => {
+    try {
+      const { userId, feedbackType, category, description, rating } = req.body;
+
+      if (!feedbackType || !category || !description) {
+        return res.status(400).json({ error: "Feedback type, category, and description are required" });
+      }
+
+      const feedback = await storage.createGeneralFeedback({
+        userId: userId || null,
+        feedbackType,
+        category,
+        description,
+        rating: rating || null,
+      });
+
+      res.json({ feedback });
+    } catch (error: any) {
+      console.error("General feedback error:", error);
+      res.status(500).json({
+        error: "Failed to save general feedback",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/feedback/general", async (req, res) => {
+    try {
+      const userId = req.query.userId as string | undefined;
+      const feedbackType = req.query.feedbackType as string | undefined;
+      const feedback = await storage.getGeneralFeedback(userId, feedbackType);
+      res.json({ feedback });
+    } catch (error: any) {
+      console.error("Get general feedback error:", error);
+      res.status(500).json({
+        error: "Failed to get general feedback",
+        details: error.message,
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
