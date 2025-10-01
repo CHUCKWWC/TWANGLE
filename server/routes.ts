@@ -1,6 +1,8 @@
+// Reference: blueprint:javascript_log_in_with_replit
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
 import Stripe from "stripe";
 
@@ -14,42 +16,6 @@ const stripe = process.env.STRIPE_SECRET_KEY
       apiVersion: "2024-11-20.acacia",
     })
   : null;
-
-// Default test user for development (no auth required)
-let defaultUserId: string | null = null;
-
-async function getDefaultUser() {
-  if (defaultUserId) {
-    return defaultUserId;
-  }
-
-  // Get or create default test user
-  let user = await storage.getUserByFacebookId("default-test-user");
-  
-  if (!user) {
-    user = await storage.createUser({
-      facebookId: "default-test-user",
-      name: "Test User",
-      email: "test@twangle.dev",
-      profilePicture: null,
-      username: null,
-      password: null,
-    });
-
-    // Create active subscription for test user
-    await storage.createSubscription({
-      userId: user.id,
-      stripeSubscriptionId: "test-subscription",
-      stripePriceId: process.env.STRIPE_PRICE_ID || "price_test",
-      status: "active",
-      currentPeriodStart: new Date(),
-      currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-    });
-  }
-
-  defaultUserId = user.id;
-  return defaultUserId;
-}
 
 const SYSTEM_PROMPT = `You are Coach Charles, an expert relationship coach trained in research-backed methods including:
 - The Gottman Method (Dr. John Gottman's research on relationship stability)
@@ -83,7 +49,23 @@ Format your responses for mobile readability:
 - End with a reflection question or next step`;
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  app.post("/api/chat", async (req, res) => {
+  // Setup Replit Auth (Reference: blueprint:javascript_log_in_with_replit)
+  await setupAuth(app);
+
+  // Auth routes (Reference: blueprint:javascript_log_in_with_replit)
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Chat endpoint (protected)
+  app.post("/api/chat", isAuthenticated, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI chat not configured", 
@@ -128,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/summaries/generate", async (req, res) => {
+  app.post("/api/summaries/generate", isAuthenticated, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI summaries not configured", 
@@ -137,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const { messages, sessionId } = req.body;
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -224,9 +206,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/summaries", async (req, res) => {
+  app.get("/api/summaries", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const summaries = await storage.getWeeklySummaries(userId);
       res.json({ summaries });
     } catch (error: any) {
@@ -238,9 +220,9 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/session", async (req, res) => {
+  app.post("/api/feedback/session", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const { sessionId, rating, feedbackText } = req.body;
 
       if (!rating || rating < 1 || rating > 5) {
@@ -271,9 +253,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/session", async (req, res) => {
+  app.get("/api/feedback/session", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const feedback = await storage.getSessionFeedback(userId);
       res.json({ feedback });
     } catch (error: any) {
@@ -285,9 +267,9 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/progress", async (req, res) => {
+  app.post("/api/feedback/progress", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const { weekStartDate, relationshipScore, improvementNotes } = req.body;
 
       if (!weekStartDate) {
@@ -315,9 +297,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/progress", async (req, res) => {
+  app.get("/api/feedback/progress", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const progress = await storage.getRelationshipProgress(userId);
       res.json({ progress });
     } catch (error: any) {
@@ -329,9 +311,9 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/general", async (req, res) => {
+  app.post("/api/feedback/general", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const { feedbackType, category, description, rating } = req.body;
 
       if (!feedbackType || !category || !description) {
@@ -356,9 +338,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/general", async (req, res) => {
+  app.get("/api/feedback/general", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const feedbackType = req.query.feedbackType as string | undefined;
       const feedback = await storage.getGeneralFeedback(userId, feedbackType);
       res.json({ feedback });
@@ -371,7 +353,7 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/billing/checkout", async (req, res) => {
+  app.post("/api/billing/checkout", isAuthenticated, async (req: any, res) => {
     if (!stripe) {
       return res.status(501).json({ 
         error: "Billing not configured", 
@@ -380,7 +362,7 @@ ${conversationText}`;
     }
 
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
@@ -389,9 +371,10 @@ ${conversationText}`;
       let stripeCustomerId = user.stripeCustomerId;
 
       if (!stripeCustomerId) {
+        const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || undefined;
         const customer = await stripe.customers.create({
           email: user.email ?? undefined,
-          name: user.name ?? undefined,
+          name,
           metadata: { userId: user.id },
         });
         stripeCustomerId = customer.id;
@@ -422,7 +405,7 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/billing/portal", async (req, res) => {
+  app.post("/api/billing/portal", isAuthenticated, async (req: any, res) => {
     if (!stripe) {
       return res.status(501).json({ 
         error: "Billing not configured", 
@@ -431,7 +414,7 @@ ${conversationText}`;
     }
 
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       if (!user || !user.stripeCustomerId) {
         return res.status(404).json({ error: "No billing account found" });
@@ -452,9 +435,9 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/billing/status", async (req, res) => {
+  app.get("/api/billing/status", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = await getDefaultUser();
+      const userId = req.user.claims.sub;
       const subscription = await storage.getSubscriptionByUserId(userId);
 
       if (!subscription) {
