@@ -5,9 +5,10 @@ import heroImage from "@assets/generated_images/Couple_holding_hands_intimately_
 interface WelcomeHeroProps {
   onStartAssessment: () => void;
   onJumpToCoach: () => void;
+  onPlanRetreat?: () => void;
 }
 
-export default function WelcomeHero({ onStartAssessment, onJumpToCoach }: WelcomeHeroProps) {
+export default function WelcomeHero({ onStartAssessment, onJumpToCoach, onPlanRetreat }: WelcomeHeroProps) {
   return (
     <div className="relative w-full h-screen flex items-center justify-center overflow-hidden">
       <div 
@@ -42,6 +43,18 @@ export default function WelcomeHero({ onStartAssessment, onJumpToCoach }: Welcom
             Start Assessment
           </Button>
           
+          {onPlanRetreat && (
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg px-8 py-6 bg-background/20 backdrop-blur-md text-primary-foreground border-2 border-primary-foreground/30"
+              onClick={onPlanRetreat}
+              data-testid="button-plan-retreat"
+            >
+              Plan a Retreat
+            </Button>
+          )}
+          
           <Button 
             size="lg" 
             variant="outline" 
@@ -49,7 +62,7 @@ export default function WelcomeHero({ onStartAssessment, onJumpToCoach }: Welcom
             onClick={onJumpToCoach}
             data-testid="button-jump-coach"
           >
-            Already have results? Jump to Coach
+            Talk to Coach
           </Button>
         </div>
         
