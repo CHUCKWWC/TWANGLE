@@ -43,7 +43,8 @@ Preferred communication style: Simple, everyday language.
 - AssessmentQuestion: Multi-step questionnaire interface with progress tracking
 - AttachmentResults: Visualization of attachment scores using Recharts pie charts
 - AICoachChat: Real-time chat interface with message history and suggested prompts
-- RetreatBuilder: Multi-step retreat planning wizard with timeline generation
+- RetreatBuilder: Multi-step retreat planning wizard with location/date collection and AI itinerary generation
+- RetreatItinerary: Dedicated page displaying personalized AI-generated retreat plans with local recommendations
 - ExercisesLibrary: Accordion-based exercise browser with categorization
 - WeeklySummaries: Session summary viewer with action items
 - FeedbackForm: User feedback collection with lifetime access incentive banner
@@ -58,15 +59,19 @@ Preferred communication style: Simple, everyday language.
 **API Design:**
 - RESTful endpoints under `/api` prefix
 - POST `/api/chat` - OpenAI streaming chat completions
+- POST `/api/retreat/generate-itinerary` - Generate AI-powered personalized retreat itinerary
+- GET `/api/retreat/itineraries` - Retrieve user's saved retreat itineraries
+- GET `/api/retreat/itinerary/:id` - Retrieve specific retreat itinerary with access control
 - GET `/api/user/eligibility` - Check user eligibility for lifetime access
 - POST `/api/feedback/general` - Submit user feedback (with Zod validation)
 - Session management for chat continuity
 - JSON request/response format with proper validation and error handling
 
 **AI Integration:**
-- OpenAI GPT integration for relationship coaching
-- Custom system prompt defining Coach Charles persona with:
-  - Research-backed methodologies (Gottman, EFT, Attachment Theory)
+- OpenAI GPT integration for relationship coaching and retreat planning
+- Custom system prompts for different use cases:
+  - Coach Charles persona for conversational coaching with research-backed methodologies
+  - Retreat itinerary generation with personalized recommendations based on preferences
   - Christian-informed values without explicit religious messaging
   - Mobile-optimized response formatting
 - Streaming responses for real-time chat experience
@@ -85,6 +90,7 @@ Preferred communication style: Simple, everyday language.
 - GeneralFeedback: User feedback submissions with type, category, description, and rating
 - SessionFeedback: Session-specific feedback ratings
 - RelationshipProgress: Weekly relationship score tracking
+- RetreatItineraries: Stored retreat configurations and AI-generated itineraries with location/date details
 
 **Storage Pattern:**
 - Interface-based storage abstraction (IStorage)

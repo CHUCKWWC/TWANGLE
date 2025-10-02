@@ -436,8 +436,8 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
       focuses,
       currentCity: currentCity || "",
       retreatDestination,
-      startDate,
-    });
+      startDate: startDate ? startDate.toISOString() : undefined,
+    } as any);
   };
 
   return (
