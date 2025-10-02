@@ -243,25 +243,7 @@ export default function Home() {
           />
         )}
 
-        {currentView === 'retreat' && (
-          <RetreatBuilder
-            onSaveRetreat={(retreat) => {
-              console.log('Retreat saved:', {
-                vibe: retreat.vibe,
-                goal: retreat.goal,
-                startTime: retreat.startTime,
-                duration: retreat.duration,
-                location: retreat.location,
-                budget: retreat.budget,
-                focuses: retreat.focuses,
-                totalActivities: retreat.activities.length,
-              });
-              const vibeLabel = retreat.vibe === 'cozy' ? 'Cozy & Intimate' : retreat.vibe === 'adventurous' ? 'Adventurous' : 'Deep & Reflective';
-              const goalLabel = retreat.goal === 'reconnect' ? 'Reconnect' : retreat.goal === 'communicate' ? 'Communicate Better' : retreat.goal === 'heal' ? 'Heal & Repair' : 'Celebrate Us';
-              alert(`${retreat.duration}-day ${vibeLabel} retreat saved starting at ${retreat.startTime} AM! Goal: ${goalLabel}. In the full app, this would be exported as PDF.`);
-            }}
-          />
-        )}
+        {currentView === 'retreat' && <RetreatBuilder />}
 
         {currentView === 'exercises' && <ExercisesLibrary />}
 

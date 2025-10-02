@@ -9,6 +9,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Heart, Sparkles, BookOpen, Save, DollarSign, Calendar as CalendarIcon, Target, Smile, Lightbulb, Clock, Coffee, Utensils, MapPin } from "lucide-react";
 import { format, startOfDay } from "date-fns";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 export interface RetreatActivity {
   id: string;
@@ -23,21 +27,7 @@ export interface RetreatActivity {
   examples: string[];
 }
 
-interface RetreatBuilderProps {
-  onSaveRetreat: (retreat: {
-    vibe: string;
-    goal: string;
-    startTime: string;
-    duration: number;
-    location: string;
-    budget: string;
-    focuses: string[];
-    activities: RetreatActivity[];
-    currentCity?: string;
-    retreatDestination?: string;
-    startDate?: Date;
-  }) => void;
-}
+interface RetreatBuilderProps {}
 
 const DURATION_OPTIONS = [
   { value: 1, label: '1 Day', description: 'Quick reset' },
@@ -366,7 +356,7 @@ function generateTimeline(startTime: string, activities: RetreatActivity[]): Rec
   return timeline;
 }
 
-export default function RetreatBuilder({ onSaveRetreat }: RetreatBuilderProps) {
+export default function RetreatBuilder({}: RetreatBuilderProps) {
   const [duration, setDuration] = useState(2);
   const [location, setLocation] = useState('home');
   const [budget, setBudget] = useState('medium');
@@ -377,6 +367,40 @@ export default function RetreatBuilder({ onSaveRetreat }: RetreatBuilderProps) {
   const [currentCity, setCurrentCity] = useState('');
   const [retreatDestination, setRetreatDestination] = useState('');
   const [startDate, setStartDate] = useState<Date>();
+  
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
+
+  const generateItineraryMutation = useMutation({
+    mutationFn: async (data: {
+      vibe: string;
+      goal: string;
+      startTime: string;
+      duration: number;
+      location: string;
+      budget: string;
+      focuses: string[];
+      currentCity: string;
+      retreatDestination: string;
+      startDate?: Date;
+    }) => {
+      return await apiRequest("POST", "/api/retreat/generate-itinerary", data);
+    },
+    onSuccess: (response: any) => {
+      toast({
+        title: "Itinerary Generated!",
+        description: "Your personalized retreat itinerary is ready to view.",
+      });
+      navigate(`/retreat/${response.itinerary.id}`);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate retreat itinerary. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const toggleFocus = (value: string) => {
     setFocuses(prev => {
@@ -393,7 +417,16 @@ export default function RetreatBuilder({ onSaveRetreat }: RetreatBuilderProps) {
   const timeline = generateTimeline(startTime, filteredActivities);
 
   const handleSave = () => {
-    onSaveRetreat({
+    if (!retreatDestination) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter your retreat destination to generate the itinerary.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    generateItineraryMutation.mutate({
       vibe,
       goal,
       startTime,
@@ -401,8 +434,7 @@ export default function RetreatBuilder({ onSaveRetreat }: RetreatBuilderProps) {
       location,
       budget,
       focuses,
-      activities: filteredActivities,
-      currentCity,
+      currentCity: currentCity || "",
       retreatDestination,
       startDate,
     });
@@ -764,11 +796,11 @@ export default function RetreatBuilder({ onSaveRetreat }: RetreatBuilderProps) {
             size="lg"
             className="flex-1 text-lg py-6"
             onClick={handleSave}
-            disabled={focuses.length === 0}
-            data-testid="button-save-retreat"
+            disabled={focuses.length === 0 || generateItineraryMutation.isPending}
+            data-testid="button-generate-retreat"
           >
-            <Save className="w-5 h-5 mr-2" />
-            Save Retreat Plan
+            <Sparkles className="w-5 h-5 mr-2" />
+            {generateItineraryMutation.isPending ? "Generating Your Itinerary..." : "Generate Personalized Itinerary"}
           </Button>
         </div>
       </div>
