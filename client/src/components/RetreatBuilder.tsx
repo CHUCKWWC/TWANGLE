@@ -3,8 +3,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Heart, Sparkles, BookOpen, Save, DollarSign, Calendar as CalendarIcon, Target, Smile, Lightbulb, Clock, Coffee, Utensils } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Heart, Sparkles, BookOpen, Save, DollarSign, Calendar as CalendarIcon, Target, Smile, Lightbulb, Clock, Coffee, Utensils, MapPin } from "lucide-react";
+import { format, startOfDay } from "date-fns";
 
 export interface RetreatActivity {
   id: string;
@@ -29,6 +33,9 @@ interface RetreatBuilderProps {
     budget: string;
     focuses: string[];
     activities: RetreatActivity[];
+    currentCity?: string;
+    retreatDestination?: string;
+    startDate?: Date;
   }) => void;
 }
 
@@ -367,6 +374,9 @@ export default function RetreatBuilder({ onSaveRetreat }: RetreatBuilderProps) {
   const [goal, setGoal] = useState('reconnect');
   const [startTime, setStartTime] = useState('9:00');
   const [focuses, setFocuses] = useState<string[]>(['growth']);
+  const [currentCity, setCurrentCity] = useState('');
+  const [retreatDestination, setRetreatDestination] = useState('');
+  const [startDate, setStartDate] = useState<Date>();
 
   const toggleFocus = (value: string) => {
     setFocuses(prev => {
@@ -392,6 +402,9 @@ export default function RetreatBuilder({ onSaveRetreat }: RetreatBuilderProps) {
       budget,
       focuses,
       activities: filteredActivities,
+      currentCity,
+      retreatDestination,
+      startDate,
     });
   };
 
@@ -529,6 +542,69 @@ export default function RetreatBuilder({ onSaveRetreat }: RetreatBuilderProps) {
               ))}
             </div>
           </RadioGroup>
+        </Card>
+
+        <Card className="p-8 mb-6">
+          <div className="flex items-center gap-2 mb-4">
+            <MapPin className="w-5 h-5 text-primary" />
+            <h2 className="font-display text-xl font-semibold">Retreat Details</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-6">
+            Tell us where you'll be so we can find local restaurants, events, and attractions for your itinerary
+          </p>
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <Label htmlFor="current-city" className="mb-2 block">
+                Current City
+              </Label>
+              <Input
+                id="current-city"
+                value={currentCity}
+                onChange={(e) => setCurrentCity(e.target.value)}
+                placeholder="e.g., San Antonio, TX"
+                data-testid="input-current-city"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Where you're coming from</p>
+            </div>
+            <div>
+              <Label htmlFor="retreat-destination" className="mb-2 block">
+                Retreat Destination
+              </Label>
+              <Input
+                id="retreat-destination"
+                value={retreatDestination}
+                onChange={(e) => setRetreatDestination(e.target.value)}
+                placeholder="e.g., Surfside Beach, TX"
+                data-testid="input-retreat-destination"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Where your retreat will be</p>
+            </div>
+          </div>
+          <div>
+            <Label className="mb-2 block">Retreat Start Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full md:w-auto justify-start text-left font-normal"
+                  data-testid="button-select-date"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, "PPP") : "Pick a date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  initialFocus
+                  disabled={(date) => date < startOfDay(new Date())}
+                />
+              </PopoverContent>
+            </Popover>
+            <p className="text-xs text-muted-foreground mt-1">When does your retreat begin?</p>
+          </div>
         </Card>
 
         <Card className="p-8 mb-6">
