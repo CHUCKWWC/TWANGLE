@@ -51,7 +51,7 @@ export default function WelcomeHero({ onStartAssessment, onJumpToCoach, onPlanRe
               onClick={onPlanRetreat}
               data-testid="button-plan-retreat"
             >
-              Plan a Retreat
+              DIY Couples Retreat
             </Button>
           )}
           
