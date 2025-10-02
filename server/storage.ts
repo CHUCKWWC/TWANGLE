@@ -25,7 +25,7 @@ import {
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool, neonConfig } from "@neondatabase/serverless";
-import { eq, and, or, desc } from "drizzle-orm";
+import { eq, and, or, desc, sql } from "drizzle-orm";
 import ws from "ws";
 
 // Configure Neon to use WebSocket for Node.js environment
@@ -41,6 +41,8 @@ export interface IStorage {
   getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
+  getTotalUserCount(): Promise<number>;
+  getLifetimeAccessCount(): Promise<number>;
   
   createChatSession(session: InsertChatSession): Promise<ChatSession>;
   getChatSession(id: string): Promise<ChatSession | undefined>;
@@ -110,6 +112,8 @@ export class MemStorage implements IStorage {
       lastName: userData.lastName ?? null,
       profileImageUrl: userData.profileImageUrl ?? null,
       stripeCustomerId: userData.stripeCustomerId ?? null,
+      hasLifetimeAccess: userData.hasLifetimeAccess ?? 0,
+      userNumber: userData.userNumber ?? null,
       createdAt: now,
       updatedAt: now,
     };
@@ -133,6 +137,8 @@ export class MemStorage implements IStorage {
       lastName: insertUser.lastName ?? null,
       profileImageUrl: insertUser.profileImageUrl ?? null,
       stripeCustomerId: insertUser.stripeCustomerId ?? null,
+      hasLifetimeAccess: insertUser.hasLifetimeAccess ?? 0,
+      userNumber: insertUser.userNumber ?? null,
       createdAt: now,
       updatedAt: now,
     };
@@ -274,6 +280,14 @@ export class MemStorage implements IStorage {
     return updatedUser;
   }
 
+  async getTotalUserCount(): Promise<number> {
+    return this.users.size;
+  }
+
+  async getLifetimeAccessCount(): Promise<number> {
+    return Array.from(this.users.values()).filter(u => u.hasLifetimeAccess === 1).length;
+  }
+
   async getSubscriptionByUserId(userId: string): Promise<Subscription | undefined> {
     return Array.from(this.subscriptions.values()).find(
       (sub) => sub.userId === userId && (sub.status === 'active' || sub.status === 'trialing')
@@ -375,6 +389,19 @@ export class DbStorage implements IStorage {
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
     const result = await this.db.update(users).set(updates).where(eq(users.id, id)).returning();
     return result[0];
+  }
+
+  async getTotalUserCount(): Promise<number> {
+    const result = await this.db.select({ count: sql<number>`count(*)` }).from(users);
+    return Number(result[0]?.count || 0);
+  }
+
+  async getLifetimeAccessCount(): Promise<number> {
+    const result = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(eq(users.hasLifetimeAccess, 1));
+    return Number(result[0]?.count || 0);
   }
 
   async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
