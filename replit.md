@@ -8,8 +8,9 @@ The application provides:
 - Interactive attachment style assessments
 - AI relationship coach (Coach Charles) powered by OpenAI
 - Research-based relationship exercises library
-- DIY couples retreat builder
+- DIY couples retreat builder with timeline scheduling
 - Weekly coaching session summaries
+- User feedback system with lifetime access incentive (first 100 users)
 
 ## User Preferences
 
@@ -42,9 +43,10 @@ Preferred communication style: Simple, everyday language.
 - AssessmentQuestion: Multi-step questionnaire interface with progress tracking
 - AttachmentResults: Visualization of attachment scores using Recharts pie charts
 - AICoachChat: Real-time chat interface with message history and suggested prompts
-- RetreatBuilder: Multi-step retreat planning wizard
+- RetreatBuilder: Multi-step retreat planning wizard with timeline generation
 - ExercisesLibrary: Accordion-based exercise browser with categorization
 - WeeklySummaries: Session summary viewer with action items
+- FeedbackForm: User feedback collection with lifetime access incentive banner
 
 ### Backend Architecture
 
@@ -56,8 +58,10 @@ Preferred communication style: Simple, everyday language.
 **API Design:**
 - RESTful endpoints under `/api` prefix
 - POST `/api/chat` - OpenAI streaming chat completions
+- GET `/api/user/eligibility` - Check user eligibility for lifetime access
+- POST `/api/feedback/general` - Submit user feedback (with Zod validation)
 - Session management for chat continuity
-- JSON request/response format
+- JSON request/response format with proper validation and error handling
 
 **AI Integration:**
 - OpenAI GPT integration for relationship coaching
@@ -75,9 +79,12 @@ Preferred communication style: Simple, everyday language.
 - Schema-first design with Zod validation
 
 **Data Models:**
-- Users: Basic authentication (username/password)
+- Users: Authentication with Replit Auth, includes hasLifetimeAccess and userNumber fields
 - ChatSessions: Tracking conversation threads with message counts and timestamps
 - WeeklySummaries: AI-generated session summaries with action items array
+- GeneralFeedback: User feedback submissions with type, category, description, and rating
+- SessionFeedback: Session-specific feedback ratings
+- RelationshipProgress: Weekly relationship score tracking
 
 **Storage Pattern:**
 - Interface-based storage abstraction (IStorage)
@@ -88,9 +95,10 @@ Preferred communication style: Simple, everyday language.
 ### Authentication & Authorization
 
 **Current Implementation:**
-- Session-based authentication architecture defined
-- User schema with username/password fields
-- No active authentication enforcement (MVP stage)
+- Replit Auth (OIDC-based authentication)
+- Session-based authentication with isAuthenticated middleware
+- User tracking with lifetime access feature for first 100 feedback submitters
+- All API endpoints protected with authentication
 
 **Security Considerations:**
 - HTTPS-only cookies planned
