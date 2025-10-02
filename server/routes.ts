@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
 import Stripe from "stripe";
-import { insertGeneralFeedbackSchema } from "@shared/schema";
+import { insertGeneralFeedbackSchema, insertRetreatItinerarySchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
 const openai = new OpenAI({
@@ -505,6 +505,133 @@ ${conversationText}`;
       console.error("Get billing status error:", error);
       res.status(500).json({
         error: "Failed to get billing status",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/retreat/generate-itinerary", isAuthenticated, async (req: any, res) => {
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(501).json({ 
+        error: "AI itinerary generation not configured", 
+        message: "OpenAI API key is not available" 
+      });
+    }
+
+    try {
+      const userId = req.user.claims.sub;
+      
+      const validationResult = insertRetreatItinerarySchema.safeParse({
+        userId,
+        ...req.body,
+        generatedItinerary: "",
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: fromZodError(validationResult.error).message 
+        });
+      }
+
+      const { retreatDestination, startDate, vibe, goal, duration, budget, focuses } = validationResult.data;
+
+      const formattedDate = startDate ? new Date(startDate).toLocaleDateString('en-US', { 
+        month: 'long', 
+        day: 'numeric', 
+        year: 'numeric' 
+      }) : "your selected dates";
+
+      const itineraryPrompt = `Create a personalized couples retreat itinerary for ${retreatDestination} starting ${formattedDate}.
+
+Retreat Details:
+- Vibe: ${vibe}
+- Goal: ${goal}
+- Duration: ${duration}
+- Budget: ${budget}
+- Focus areas: ${focuses.join(', ')}
+
+Format the itinerary as a beautiful, actionable plan with:
+1. A warm introduction welcoming them to their retreat
+2. Day-by-day schedule with specific timing suggestions
+3. Recommended activities that match their vibe and goals
+4. Meal suggestions (breakfast, lunch, dinner) with restaurant types
+5. Relationship exercises integrated into each day
+6. Evening reflection prompts for deeper connection
+7. Local attraction recommendations
+8. A closing message with encouragement
+
+Make it feel personal, romantic, and research-backed. Include practical tips like what to bring, how to prepare, and conversation starters.
+
+Use clear formatting with headers, bullet points, and emojis where appropriate to make it engaging and easy to follow.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are Coach Charles, an expert relationship coach who creates personalized retreat itineraries. Your itineraries blend research-backed relationship exercises with practical travel planning.",
+          },
+          {
+            role: "user",
+            content: itineraryPrompt,
+          },
+        ],
+        temperature: 0.8,
+        max_tokens: 2500,
+      });
+
+      const generatedItinerary = completion.choices[0].message.content || "Unable to generate itinerary";
+
+      const savedItinerary = await storage.createRetreatItinerary({
+        ...validationResult.data,
+        generatedItinerary,
+      });
+
+      res.json({ 
+        itinerary: savedItinerary
+      });
+    } catch (error: any) {
+      console.error("Retreat itinerary generation error:", error);
+      res.status(500).json({
+        error: "Failed to generate retreat itinerary",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/retreat/itineraries", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const itineraries = await storage.getRetreatItineraries(userId);
+      res.json({ itineraries });
+    } catch (error: any) {
+      console.error("Get retreat itineraries error:", error);
+      res.status(500).json({
+        error: "Failed to get retreat itineraries",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/retreat/itinerary/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const itinerary = await storage.getRetreatItinerary(req.params.id);
+      
+      if (!itinerary) {
+        return res.status(404).json({ error: "Itinerary not found" });
+      }
+
+      if (itinerary.userId !== userId) {
+        return res.status(403).json({ error: "Access denied to this itinerary" });
+      }
+
+      res.json({ itinerary });
+    } catch (error: any) {
+      console.error("Get retreat itinerary error:", error);
+      res.status(500).json({
+        error: "Failed to get retreat itinerary",
         details: error.message,
       });
     }
