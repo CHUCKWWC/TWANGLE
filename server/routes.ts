@@ -5,6 +5,8 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
 import Stripe from "stripe";
+import { insertGeneralFeedbackSchema } from "@shared/schema";
+import { fromZodError } from "zod-validation-error";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -311,24 +313,68 @@ ${conversationText}`;
     }
   });
 
+  app.get("/api/user/eligibility", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const lifetimeAccessCount = await storage.getLifetimeAccessCount();
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const isEligibleForLifetime = lifetimeAccessCount < 100 && !user.hasLifetimeAccess;
+      const usersRemaining = Math.max(0, 100 - lifetimeAccessCount);
+      
+      res.json({ 
+        hasLifetimeAccess: user.hasLifetimeAccess === 1,
+        isEligibleForLifetime,
+        usersRemaining,
+        userNumber: user.userNumber
+      });
+    } catch (error: any) {
+      console.error("User eligibility error:", error);
+      res.status(500).json({
+        error: "Failed to get user eligibility",
+        details: error.message,
+      });
+    }
+  });
+
   app.post("/api/feedback/general", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { feedbackType, category, description, rating } = req.body;
-
-      if (!feedbackType || !category || !description) {
-        return res.status(400).json({ error: "Feedback type, category, and description are required" });
-      }
-
-      const feedback = await storage.createGeneralFeedback({
+      
+      const validationResult = insertGeneralFeedbackSchema.safeParse({
         userId,
-        feedbackType,
-        category,
-        description,
-        rating: rating || null,
+        ...req.body,
       });
 
-      res.json({ feedback });
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: fromZodError(validationResult.error).message 
+        });
+      }
+
+      const feedback = await storage.createGeneralFeedback(validationResult.data);
+
+      const user = await storage.getUser(userId);
+      const lifetimeAccessCount = await storage.getLifetimeAccessCount();
+      
+      let lifetimeAccessGranted = false;
+      if (user && lifetimeAccessCount < 100 && !user.hasLifetimeAccess) {
+        await storage.updateUser(userId, { 
+          hasLifetimeAccess: 1,
+          userNumber: lifetimeAccessCount + 1
+        });
+        lifetimeAccessGranted = true;
+      }
+
+      res.json({ 
+        feedback,
+        lifetimeAccessGranted
+      });
     } catch (error: any) {
       console.error("General feedback error:", error);
       res.status(500).json({

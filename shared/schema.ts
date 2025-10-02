@@ -24,6 +24,8 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   stripeCustomerId: text("stripe_customer_id"),
+  hasLifetimeAccess: integer("has_lifetime_access").default(0),
+  userNumber: integer("user_number"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -135,10 +137,15 @@ export const generalFeedback = pgTable("general_feedback", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertGeneralFeedbackSchema = createInsertSchema(generalFeedback).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertGeneralFeedbackSchema = createInsertSchema(generalFeedback)
+  .omit({
+    id: true,
+    createdAt: true,
+  })
+  .extend({
+    description: z.string().min(1, "Description is required").trim(),
+    rating: z.number().int().min(1).max(5).optional(),
+  });
 
 export type InsertGeneralFeedback = z.infer<typeof insertGeneralFeedbackSchema>;
 export type GeneralFeedback = typeof generalFeedback.$inferSelect;
