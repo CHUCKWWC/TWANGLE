@@ -149,3 +149,28 @@ export const insertGeneralFeedbackSchema = createInsertSchema(generalFeedback)
 
 export type InsertGeneralFeedback = z.infer<typeof insertGeneralFeedbackSchema>;
 export type GeneralFeedback = typeof generalFeedback.$inferSelect;
+
+export const retreatItineraries = pgTable("retreat_itineraries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  vibe: text("vibe").notNull(),
+  goal: text("goal").notNull(),
+  startTime: text("start_time").notNull(),
+  duration: integer("duration").notNull(),
+  location: text("location").notNull(),
+  budget: text("budget").notNull(),
+  focuses: text("focuses").array().notNull(),
+  currentCity: text("current_city"),
+  retreatDestination: text("retreat_destination"),
+  startDate: timestamp("start_date"),
+  generatedItinerary: text("generated_itinerary").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertRetreatItinerarySchema = createInsertSchema(retreatItineraries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertRetreatItinerary = z.infer<typeof insertRetreatItinerarySchema>;
+export type RetreatItinerary = typeof retreatItineraries.$inferSelect;
