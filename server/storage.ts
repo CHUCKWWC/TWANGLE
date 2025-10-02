@@ -14,13 +14,16 @@ import {
   type InsertGeneralFeedback,
   type Subscription,
   type InsertSubscription,
+  type RetreatItinerary,
+  type InsertRetreatItinerary,
   users,
   subscriptions,
   chatSessions,
   weeklySummaries,
   sessionFeedback,
   relationshipProgress,
-  generalFeedback
+  generalFeedback,
+  retreatItineraries
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -65,6 +68,10 @@ export interface IStorage {
   getSubscriptionByStripeId(stripeSubscriptionId: string): Promise<Subscription | undefined>;
   upsertSubscription(subscription: InsertSubscription): Promise<Subscription>;
   updateSubscriptionStatus(stripeSubscriptionId: string, status: string, currentPeriodEnd?: Date): Promise<Subscription | undefined>;
+  
+  createRetreatItinerary(itinerary: InsertRetreatItinerary): Promise<RetreatItinerary>;
+  getRetreatItinerary(id: string): Promise<RetreatItinerary | undefined>;
+  getRetreatItineraries(userId?: string): Promise<RetreatItinerary[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -75,6 +82,7 @@ export class MemStorage implements IStorage {
   private relationshipProgress: Map<string, RelationshipProgress>;
   private generalFeedback: Map<string, GeneralFeedback>;
   private subscriptions: Map<string, Subscription>;
+  private retreatItineraries: Map<string, RetreatItinerary>;
 
   constructor() {
     this.users = new Map();
@@ -84,6 +92,7 @@ export class MemStorage implements IStorage {
     this.relationshipProgress = new Map();
     this.generalFeedback = new Map();
     this.subscriptions = new Map();
+    this.retreatItineraries = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -345,6 +354,40 @@ export class MemStorage implements IStorage {
     this.subscriptions.set(subscription.id, updated);
     return updated;
   }
+
+  async createRetreatItinerary(insertItinerary: InsertRetreatItinerary): Promise<RetreatItinerary> {
+    const id = randomUUID();
+    const itinerary: RetreatItinerary = {
+      id,
+      userId: insertItinerary.userId,
+      vibe: insertItinerary.vibe,
+      goal: insertItinerary.goal,
+      startTime: insertItinerary.startTime,
+      duration: insertItinerary.duration,
+      location: insertItinerary.location,
+      budget: insertItinerary.budget,
+      focuses: insertItinerary.focuses,
+      currentCity: insertItinerary.currentCity ?? null,
+      retreatDestination: insertItinerary.retreatDestination ?? null,
+      startDate: insertItinerary.startDate ?? null,
+      generatedItinerary: insertItinerary.generatedItinerary,
+      createdAt: new Date(),
+    };
+    this.retreatItineraries.set(id, itinerary);
+    return itinerary;
+  }
+
+  async getRetreatItinerary(id: string): Promise<RetreatItinerary | undefined> {
+    return this.retreatItineraries.get(id);
+  }
+
+  async getRetreatItineraries(userId?: string): Promise<RetreatItinerary[]> {
+    const itineraries = Array.from(this.retreatItineraries.values());
+    if (userId) {
+      return itineraries.filter(i => i.userId === userId).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
+    return itineraries.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -526,6 +569,23 @@ export class DbStorage implements IStorage {
       .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId))
       .returning();
     return result[0];
+  }
+
+  async createRetreatItinerary(insertItinerary: InsertRetreatItinerary): Promise<RetreatItinerary> {
+    const result = await this.db.insert(retreatItineraries).values(insertItinerary).returning();
+    return result[0];
+  }
+
+  async getRetreatItinerary(id: string): Promise<RetreatItinerary | undefined> {
+    const result = await this.db.select().from(retreatItineraries).where(eq(retreatItineraries.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getRetreatItineraries(userId?: string): Promise<RetreatItinerary[]> {
+    if (userId) {
+      return await this.db.select().from(retreatItineraries).where(eq(retreatItineraries.userId, userId)).orderBy(desc(retreatItineraries.createdAt));
+    }
+    return await this.db.select().from(retreatItineraries).orderBy(desc(retreatItineraries.createdAt));
   }
 }
 
