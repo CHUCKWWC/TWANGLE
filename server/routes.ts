@@ -521,11 +521,17 @@ ${conversationText}`;
     try {
       const userId = req.user.claims.sub;
       
-      const validationResult = insertRetreatItinerarySchema.safeParse({
+      const requestData = {
         userId,
         ...req.body,
         generatedItinerary: "",
-      });
+      };
+
+      if (requestData.startDate && typeof requestData.startDate === 'string') {
+        requestData.startDate = new Date(requestData.startDate);
+      }
+      
+      const validationResult = insertRetreatItinerarySchema.safeParse(requestData);
 
       if (!validationResult.success) {
         return res.status(400).json({ 
