@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import heroImage from "@assets/generated_images/Couple_holding_hands_intimately_6528230c.png";
+import { Link } from "wouter";
 
 interface WelcomeHeroProps {
   onStartAssessment: () => void;
@@ -42,6 +43,17 @@ export default function WelcomeHero({ onStartAssessment, onJumpToCoach, onPlanRe
           >
             Start Assessment
           </Button>
+          
+          <Link href="/connection">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg px-8 py-6 bg-background/20 backdrop-blur-md text-primary-foreground border-2 border-primary-foreground/30"
+              data-testid="button-strengthen-connection"
+            >
+              Strengthen Connection
+            </Button>
+          </Link>
           
           {onPlanRetreat && (
             <Button 
