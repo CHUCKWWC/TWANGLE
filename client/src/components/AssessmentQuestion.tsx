@@ -6,7 +6,7 @@ import { ChevronLeft } from "lucide-react";
 export interface QuestionOption {
   id: string;
   text: string;
-  value: number;
+  value: string;
 }
 
 export interface Question {
