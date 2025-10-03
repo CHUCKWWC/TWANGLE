@@ -86,7 +86,10 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
   const [focuses, setFocuses] = useState<string[]>(['growth']);
   const [currentCity, setCurrentCity] = useState('');
   const [retreatDestination, setRetreatDestination] = useState('');
+  const [streetAddress, setStreetAddress] = useState('');
+  const [travelDistance, setTravelDistance] = useState('');
   const [startDate, setStartDate] = useState<Date>();
+  const [calendarOpen, setCalendarOpen] = useState(false);
   
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -102,6 +105,8 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
       focuses: string[];
       currentCity: string;
       retreatDestination: string;
+      streetAddress: string;
+      travelDistance: string;
       startDate?: Date;
     }) => {
       const response = await apiRequest("POST", "/api/retreat/generate-itinerary", data);
@@ -164,6 +169,8 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
       focuses,
       currentCity: currentCity || "",
       retreatDestination,
+      streetAddress: streetAddress || "",
+      travelDistance: travelDistance || "",
       startDate: startDate ? startDate.toISOString() : undefined,
     } as any);
   };
@@ -332,37 +339,67 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
           <p className="text-sm text-muted-foreground mb-6">
             Tell us where you'll be so we can find local restaurants, events, and attractions for your itinerary
           </p>
-          <div className="grid md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <Label htmlFor="current-city" className="mb-2 block">
-                Current City
-              </Label>
-              <Input
-                id="current-city"
-                value={currentCity}
-                onChange={(e) => setCurrentCity(e.target.value)}
-                placeholder="e.g., San Antonio, TX"
-                data-testid="input-current-city"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Where you're coming from</p>
+          <div className="space-y-6 mb-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="current-city" className="mb-2 block">
+                  Current City
+                </Label>
+                <Input
+                  id="current-city"
+                  value={currentCity}
+                  onChange={(e) => setCurrentCity(e.target.value)}
+                  placeholder="e.g., San Antonio, TX"
+                  data-testid="input-current-city"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Where you're coming from</p>
+              </div>
+              <div>
+                <Label htmlFor="retreat-destination" className="mb-2 block">
+                  Retreat Destination
+                </Label>
+                <Input
+                  id="retreat-destination"
+                  value={retreatDestination}
+                  onChange={(e) => setRetreatDestination(e.target.value)}
+                  placeholder="e.g., Surfside Beach, TX"
+                  data-testid="input-retreat-destination"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Where your retreat will be</p>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="retreat-destination" className="mb-2 block">
-                Retreat Destination
-              </Label>
-              <Input
-                id="retreat-destination"
-                value={retreatDestination}
-                onChange={(e) => setRetreatDestination(e.target.value)}
-                placeholder="e.g., Surfside Beach, TX"
-                data-testid="input-retreat-destination"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Where your retreat will be</p>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="street-address" className="mb-2 block">
+                  Street Address
+                </Label>
+                <Input
+                  id="street-address"
+                  value={streetAddress}
+                  onChange={(e) => setStreetAddress(e.target.value)}
+                  placeholder="e.g., 123 Beach Drive"
+                  data-testid="input-street-address"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Address of your retreat location</p>
+              </div>
+              <div>
+                <Label htmlFor="travel-distance" className="mb-2 block">
+                  Travel Distance for Dining/Excursions
+                </Label>
+                <Input
+                  id="travel-distance"
+                  value={travelDistance}
+                  onChange={(e) => setTravelDistance(e.target.value)}
+                  placeholder="e.g., 15 miles or 30 minutes"
+                  data-testid="input-travel-distance"
+                />
+                <p className="text-xs text-muted-foreground mt-1">How far are you willing to travel?</p>
+              </div>
             </div>
           </div>
           <div>
             <Label className="mb-2 block">Retreat Start Date</Label>
-            <Popover>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -377,7 +414,10 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
                 <Calendar
                   mode="single"
                   selected={startDate}
-                  onSelect={setStartDate}
+                  onSelect={(date) => {
+                    setStartDate(date);
+                    setCalendarOpen(false);
+                  }}
                   initialFocus
                   disabled={(date) => date < startOfDay(new Date())}
                 />

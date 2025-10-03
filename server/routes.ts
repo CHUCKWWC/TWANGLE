@@ -546,13 +546,16 @@ ${conversationText}`;
         });
       }
 
-      const { retreatDestination, startDate, vibe, goal, duration, budget, focuses } = validationResult.data;
+      const { retreatDestination, startDate, vibe, goal, duration, budget, focuses, streetAddress, travelDistance } = validationResult.data;
 
       const formattedDate = startDate ? new Date(startDate).toLocaleDateString('en-US', { 
         month: 'long', 
         day: 'numeric', 
         year: 'numeric' 
       }) : "your selected dates";
+
+      const locationDetails = streetAddress ? `\n- Retreat Address: ${streetAddress}` : '';
+      const travelPreferences = travelDistance ? `\n- Travel Distance Preference: They're willing to travel ${travelDistance} for dining and excursions` : '';
 
       const itineraryPrompt = `Create a personalized couples retreat itinerary for ${retreatDestination} starting ${formattedDate}.
 
@@ -561,19 +564,19 @@ Retreat Details:
 - Goal: ${goal}
 - Duration: ${duration}
 - Budget: ${budget}
-- Focus areas: ${focuses.join(', ')}
+- Focus areas: ${focuses.join(', ')}${locationDetails}${travelPreferences}
 
 Format the itinerary as a beautiful, actionable plan with:
 1. A warm introduction welcoming them to their retreat
 2. Day-by-day schedule with specific timing suggestions
 3. Recommended activities that match their vibe and goals
-4. Meal suggestions (breakfast, lunch, dinner) with restaurant types
+4. Meal suggestions (breakfast, lunch, dinner) with restaurant recommendations within their travel distance preference
 5. Relationship exercises integrated into each day
 6. Evening reflection prompts for deeper connection
-7. Local attraction recommendations
+7. Local attraction recommendations within their preferred travel distance
 8. A closing message with encouragement
 
-Make it feel personal, romantic, and research-backed. Include practical tips like what to bring, how to prepare, and conversation starters.
+Make it feel personal, romantic, and research-backed. Include practical tips like what to bring, how to prepare, and conversation starters.${travelDistance ? `\n\nIMPORTANT: When recommending restaurants and attractions, keep them within ${travelDistance} of their retreat location.` : ''}
 
 Use clear formatting with headers, bullet points, and emojis where appropriate to make it engaging and easy to follow.`;
 
