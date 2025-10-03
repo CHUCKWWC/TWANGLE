@@ -437,7 +437,7 @@ export class MemStorage implements IStorage {
     const assessment = this.assessments.get(id);
     if (!assessment) return undefined;
     
-    const shareToken = randomUUID().replace(/-/g, '').substring(0, 16);
+    const shareToken = randomUUID();
     const updated: Assessment = {
       ...assessment,
       shareToken,
@@ -671,7 +671,7 @@ export class DbStorage implements IStorage {
   }
 
   async enableSharing(id: string): Promise<Assessment | undefined> {
-    const shareToken = randomUUID().replace(/-/g, '').substring(0, 16);
+    const shareToken = randomUUID();
     const updated = await this.db.update(assessments)
       .set({ shareToken, isShared: 1 })
       .where(eq(assessments.id, id))
