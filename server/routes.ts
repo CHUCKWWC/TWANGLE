@@ -799,6 +799,16 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Connection Questions - "Strengthen Your Connection" feature
   app.post("/api/connection/seed", isAuthenticated, async (req: any, res) => {
     try {
+      // Check if data already exists
+      const existingTopics = await storage.getConnectionTopics();
+      if (existingTopics.length > 0) {
+        return res.json({ 
+          message: "Connection questions already seeded",
+          topicsCount: existingTopics.length,
+          skipped: true,
+        });
+      }
+
       const { connectionTopicsData, connectionQuestionsData } = await import('./connectionQuestionsData');
       
       // Create topics
@@ -827,6 +837,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         message: "Connection questions seeded successfully",
         topicsCreated: topicMap.size,
         questionsCreated: questionCount,
+        skipped: false,
       });
     } catch (error: any) {
       console.error("Seed connection questions error:", error);
