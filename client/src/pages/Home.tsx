@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
 import WelcomeHero from "@/components/WelcomeHero";
-import AssessmentQuestion, { type Question } from "@/components/AssessmentQuestion";
+import AssessmentQuestion from "@/components/AssessmentQuestion";
 import AttachmentResults, { type AttachmentScore } from "@/components/AttachmentResults";
 import AICoachChat, { type Message } from "@/components/AICoachChat";
 import RetreatBuilder from "@/components/RetreatBuilder";
@@ -10,42 +11,13 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { RelationshipProgressDialog } from "@/components/RelationshipProgressDialog";
 import { UserMenu } from "@/components/UserMenu";
-import { BookOpen, FileText } from "lucide-react";
+import { BookOpen, FileText, Loader2 } from "lucide-react";
+import { ASSESSMENT_QUESTIONS } from "@/lib/questions";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { AttachmentStyleResult } from "@shared/schema";
 
 type View = 'welcome' | 'assessment' | 'results' | 'coach' | 'retreat' | 'exercises' | 'summaries';
-
-const SAMPLE_QUESTIONS: Question[] = [
-  {
-    id: '1',
-    text: 'When my partner seems distant, I tend to...',
-    options: [
-      { id: 'a', text: 'Give them space and wait for them to come to me', value: 1 },
-      { id: 'b', text: 'Reach out and try to connect with them', value: 2 },
-      { id: 'c', text: 'Feel anxious and worry about what I did wrong', value: 3 },
-      { id: 'd', text: 'Withdraw and protect myself emotionally', value: 4 },
-    ],
-  },
-  {
-    id: '2',
-    text: 'In relationships, I generally feel...',
-    options: [
-      { id: 'a', text: 'Comfortable with both closeness and independence', value: 1 },
-      { id: 'b', text: 'A strong need for reassurance and validation', value: 2 },
-      { id: 'c', text: 'More comfortable maintaining some distance', value: 3 },
-      { id: 'd', text: 'Conflicted between wanting closeness and fearing it', value: 4 },
-    ],
-  },
-  {
-    id: '3',
-    text: 'When conflicts arise, I typically...',
-    options: [
-      { id: 'a', text: 'Address them directly but calmly', value: 1 },
-      { id: 'b', text: 'Get emotional and need to talk it through immediately', value: 2 },
-      { id: 'c', text: 'Prefer to take time alone to process', value: 3 },
-      { id: 'd', text: 'Avoid confrontation altogether', value: 4 },
-    ],
-  },
-];
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<View>('welcome');
@@ -55,6 +27,9 @@ export default function Home() {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [showProgressDialog, setShowProgressDialog] = useState(false);
+  const [assessmentResult, setAssessmentResult] = useState<AttachmentStyleResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const lastProgressCheck = localStorage.getItem('lastProgressCheck');
@@ -81,15 +56,47 @@ export default function Home() {
     setSelectedOption(null);
   };
 
-  const handleNextQuestion = () => {
-    if (selectedOption) {
-      setAnswers({ ...answers, [SAMPLE_QUESTIONS[currentQuestionIndex].id]: selectedOption });
+  const handleNextQuestion = async () => {
+    if (!selectedOption) return;
+    
+    const currentQuestion = ASSESSMENT_QUESTIONS[currentQuestionIndex];
+    const selectedAnswer = currentQuestion.options.find(opt => opt.id === selectedOption);
+    
+    if (!selectedAnswer) return;
+    
+    const newAnswers = {
+      ...answers,
+      [currentQuestion.text]: selectedAnswer.text
+    };
+    
+    setAnswers(newAnswers);
+    
+    if (currentQuestionIndex < ASSESSMENT_QUESTIONS.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedOption(null);
+    } else {
+      setIsAnalyzing(true);
       
-      if (currentQuestionIndex < SAMPLE_QUESTIONS.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-        setSelectedOption(null);
-      } else {
+      try {
+        const createResponse = await apiRequest("POST", "/api/assessments", {
+          responses: newAnswers
+        });
+        const { assessmentId } = await createResponse.json();
+        
+        const analyzeResponse = await apiRequest("POST", `/api/assessments/${assessmentId}/analyze`, {});
+        const { result } = await analyzeResponse.json();
+        
+        setAssessmentResult(result);
         setCurrentView('results');
+      } catch (error: any) {
+        console.error("Assessment error:", error);
+        toast({
+          title: "Analysis Failed",
+          description: "We couldn't analyze your assessment. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsAnalyzing(false);
       }
     }
   };
@@ -97,7 +104,14 @@ export default function Home() {
   const handleBackQuestion = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
-      setSelectedOption(answers[SAMPLE_QUESTIONS[currentQuestionIndex - 1].id] || null);
+      const prevQuestion = ASSESSMENT_QUESTIONS[currentQuestionIndex - 1];
+      const prevAnswer = Object.entries(answers).find(([q, _]) => q === prevQuestion.text);
+      if (prevAnswer) {
+        const prevOption = prevQuestion.options.find(opt => opt.text === prevAnswer[1]);
+        setSelectedOption(prevOption?.id || null);
+      } else {
+        setSelectedOption(null);
+      }
     }
   };
 
@@ -155,11 +169,11 @@ export default function Home() {
     }
   };
 
-  const sampleScores: AttachmentScore = {
-    secure: 45,
-    anxious: 30,
-    avoidant: 15,
-    fearful: 10,
+  const getScoresFromResult = (result: AttachmentStyleResult | null): AttachmentScore => {
+    if (!result) {
+      return { secure: 0, anxious: 0, avoidant: 0, fearful: 0 };
+    }
+    return result.stylePercentages;
   };
 
   return (
@@ -211,11 +225,11 @@ export default function Home() {
           />
         )}
 
-        {currentView === 'assessment' && (
+        {currentView === 'assessment' && !isAnalyzing && (
           <AssessmentQuestion
-            question={SAMPLE_QUESTIONS[currentQuestionIndex]}
+            question={ASSESSMENT_QUESTIONS[currentQuestionIndex]}
             currentQuestion={currentQuestionIndex + 1}
-            totalQuestions={SAMPLE_QUESTIONS.length}
+            totalQuestions={ASSESSMENT_QUESTIONS.length}
             selectedOption={selectedOption}
             onSelectOption={setSelectedOption}
             onNext={handleNextQuestion}
@@ -224,10 +238,21 @@ export default function Home() {
           />
         )}
 
-        {currentView === 'results' && (
+        {isAnalyzing && (
+          <div className="min-h-screen bg-background flex items-center justify-center p-4">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-primary" />
+              <h2 className="font-display text-2xl mb-2">Analyzing Your Responses...</h2>
+              <p className="text-muted-foreground">Coach Charles is preparing your personalized attachment profile</p>
+            </div>
+          </div>
+        )}
+
+        {currentView === 'results' && assessmentResult && (
           <AttachmentResults
-            scores={sampleScores}
+            scores={getScoresFromResult(assessmentResult)}
             hasRedFlags={false}
+            result={assessmentResult}
             onTalkToCoach={() => setCurrentView('coach')}
             onPlanRetreat={() => setCurrentView('retreat')}
             onViewExercises={() => setCurrentView('exercises')}
