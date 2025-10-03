@@ -174,3 +174,36 @@ export const insertRetreatItinerarySchema = createInsertSchema(retreatItinerarie
 
 export type InsertRetreatItinerary = z.infer<typeof insertRetreatItinerarySchema>;
 export type RetreatItinerary = typeof retreatItineraries.$inferSelect;
+
+export const assessments = pgTable("assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"),
+  responses: jsonb("responses").notNull(),
+  result: jsonb("result"),
+  shareToken: varchar("share_token"),
+  isShared: integer("is_shared").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertAssessmentSchema = createInsertSchema(assessments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const attachmentStyleResultSchema = z.object({
+  primaryStyle: z.enum(["secure", "anxious", "avoidant", "fearful"]),
+  stylePercentages: z.object({
+    secure: z.number(),
+    anxious: z.number(),
+    avoidant: z.number(),
+    fearful: z.number(),
+  }),
+  description: z.string(),
+  strengths: z.array(z.string()),
+  growthAreas: z.array(z.string()),
+  analysis: z.string(),
+});
+
+export type Assessment = typeof assessments.$inferSelect;
+export type InsertAssessment = z.infer<typeof insertAssessmentSchema>;
+export type AttachmentStyleResult = z.infer<typeof attachmentStyleResultSchema>;
