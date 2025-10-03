@@ -5,7 +5,13 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import OpenAI from "openai";
 import Stripe from "stripe";
-import { insertGeneralFeedbackSchema, insertRetreatItinerarySchema } from "@shared/schema";
+import { 
+  insertGeneralFeedbackSchema, 
+  insertRetreatItinerarySchema,
+  insertAssessmentSchema,
+  attachmentStyleResultSchema,
+  type AttachmentStyleResult
+} from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
 const openai = new OpenAI({
@@ -638,6 +644,153 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
       console.error("Get retreat itinerary error:", error);
       res.status(500).json({
         error: "Failed to get retreat itinerary",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/assessments", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const validationResult = insertAssessmentSchema.safeParse({ 
+        userId,
+        responses: req.body.responses 
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: fromZodError(validationResult.error).message 
+        });
+      }
+
+      const assessment = await storage.createAssessment(validationResult.data);
+      res.json({ assessmentId: assessment.id });
+    } catch (error: any) {
+      console.error("Create assessment error:", error);
+      res.status(500).json({
+        error: "Failed to create assessment",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/assessments/:id/analyze", isAuthenticated, async (req: any, res) => {
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(501).json({ 
+        error: "AI analysis not configured", 
+        message: "OpenAI API key is not available" 
+      });
+    }
+
+    try {
+      const assessment = await storage.getAssessment(req.params.id);
+      if (!assessment) {
+        return res.status(404).json({ error: "Assessment not found" });
+      }
+      
+      if (assessment.result) {
+        return res.json({ result: assessment.result });
+      }
+
+      const responses = assessment.responses as Record<string, string>;
+      const prompt = `You are an expert in attachment theory psychology. Analyze these attachment style assessment responses and return a comprehensive analysis in JSON format.
+
+Responses:
+${Object.entries(responses).map(([q, a]) => `Question ${q}: ${a}`).join('\n')}
+
+Return this exact JSON structure with your analysis:
+{
+  "primaryStyle": "secure" | "anxious" | "avoidant" | "fearful",
+  "stylePercentages": {
+    "secure": <number 0-100>,
+    "anxious": <number 0-100>,
+    "avoidant": <number 0-100>,
+    "fearful": <number 0-100>
+  },
+  "description": "<comprehensive description of their primary attachment style>",
+  "strengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
+  "growthAreas": ["<growth area 1>", "<growth area 2>", "<growth area 3>"],
+  "analysis": "<detailed analysis of their attachment patterns, including how they show up in relationships and suggestions for growth>"
+}
+
+Make sure the percentages add up to 100. Base your analysis on established attachment theory research.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are a compassionate attachment theory expert with deep knowledge of relationship psychology." },
+          { role: "user", content: prompt }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.7,
+      });
+
+      const resultText = completion.choices[0].message.content || "{}";
+      const parsedResult = JSON.parse(resultText);
+      
+      const validationResult = attachmentStyleResultSchema.safeParse(parsedResult);
+      if (!validationResult.success) {
+        console.error("AI response validation error:", fromZodError(validationResult.error));
+        return res.status(500).json({ 
+          error: "Failed to validate AI analysis",
+          details: fromZodError(validationResult.error).message
+        });
+      }
+
+      await storage.updateAssessmentResult(req.params.id, validationResult.data);
+      res.json({ result: validationResult.data });
+    } catch (error: any) {
+      console.error("Assessment analysis error:", error);
+      res.status(500).json({
+        error: "Failed to analyze assessment",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/assessments/:id/share", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const assessment = await storage.getAssessment(req.params.id);
+      
+      if (!assessment) {
+        return res.status(404).json({ error: "Assessment not found" });
+      }
+
+      if (assessment.userId !== userId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      const updated = await storage.enableSharing(req.params.id);
+      const shareUrl = `${req.protocol}://${req.get('host')}/shared/${updated?.shareToken}`;
+      
+      res.json({ 
+        shareToken: updated?.shareToken,
+        shareUrl
+      });
+    } catch (error: any) {
+      console.error("Enable sharing error:", error);
+      res.status(500).json({
+        error: "Failed to enable sharing",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/shared/:shareToken", async (req: any, res) => {
+    try {
+      const assessment = await storage.getSharedAssessment(req.params.shareToken);
+      
+      if (!assessment || !assessment.isShared) {
+        return res.status(404).json({ error: "Shared assessment not found" });
+      }
+
+      res.json({ result: assessment.result });
+    } catch (error: any) {
+      console.error("Get shared assessment error:", error);
+      res.status(500).json({
+        error: "Failed to get shared assessment",
         details: error.message,
       });
     }
