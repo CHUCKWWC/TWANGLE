@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Heart, Sparkles, DollarSign, Calendar as CalendarIcon, Target, Smile, MapPin, BookOpen } from "lucide-react";
+import { Heart, Sparkles, DollarSign, Calendar as CalendarIcon, Target, Smile, MapPin, BookOpen, Loader2 } from "lucide-react";
 import { format, startOfDay } from "date-fns";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -104,14 +104,25 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
       retreatDestination: string;
       startDate?: Date;
     }) => {
-      return await apiRequest("POST", "/api/retreat/generate-itinerary", data);
+      const response = await apiRequest("POST", "/api/retreat/generate-itinerary", data);
+      return await response.json();
     },
     onSuccess: (response: any) => {
       toast({
         title: "Itinerary Generated!",
         description: "Your personalized retreat itinerary is ready to view.",
       });
-      navigate(`/retreat/${response.itinerary.id}`);
+      
+      const itineraryId = response?.itinerary?.id;
+      if (itineraryId) {
+        navigate(`/retreat/${itineraryId}`);
+      } else {
+        toast({
+          title: "Navigation Error",
+          description: "Itinerary created but could not navigate. Please check your itineraries list.",
+          variant: "destructive",
+        });
+      }
     },
     onError: (error: any) => {
       toast({
@@ -159,6 +170,26 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
 
   return (
     <div className="min-h-screen bg-background p-4 py-8">
+      {generateItineraryMutation.isPending && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center" data-testid="loading-overlay">
+          <Card className="p-12 max-w-md mx-4 text-center">
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                <Loader2 className="w-16 h-16 text-primary animate-spin" />
+                <Sparkles className="w-8 h-8 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+              </div>
+            </div>
+            <h3 className="font-display text-2xl font-semibold mb-3">Creating Your Retreat</h3>
+            <p className="text-muted-foreground mb-2">
+              Coach Charles is designing a personalized itinerary just for you...
+            </p>
+            <p className="text-sm text-muted-foreground">
+              This may take a few moments
+            </p>
+          </Card>
+        </div>
+      )}
+      
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="font-display text-3xl md:text-4xl text-foreground mb-2">
