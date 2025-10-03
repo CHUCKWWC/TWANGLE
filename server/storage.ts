@@ -19,6 +19,14 @@ import {
   type Assessment,
   type InsertAssessment,
   type AttachmentStyleResult,
+  type ConnectionTopic,
+  type InsertConnectionTopic,
+  type ConnectionQuestion,
+  type InsertConnectionQuestion,
+  type ConnectionResponse,
+  type InsertConnectionResponse,
+  type ConnectionSummary,
+  type InsertConnectionSummary,
   users,
   subscriptions,
   chatSessions,
@@ -27,7 +35,11 @@ import {
   relationshipProgress,
   generalFeedback,
   retreatItineraries,
-  assessments
+  assessments,
+  connectionTopics,
+  connectionQuestions,
+  connectionResponses,
+  connectionSummaries
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -82,6 +94,24 @@ export interface IStorage {
   updateAssessmentResult(id: string, result: AttachmentStyleResult): Promise<Assessment | undefined>;
   enableSharing(id: string): Promise<Assessment | undefined>;
   getSharedAssessment(shareToken: string): Promise<Assessment | undefined>;
+  
+  // Connection Questions operations
+  createConnectionTopic(topic: InsertConnectionTopic): Promise<ConnectionTopic>;
+  getConnectionTopics(): Promise<ConnectionTopic[]>;
+  getConnectionTopic(id: string): Promise<ConnectionTopic | undefined>;
+  
+  createConnectionQuestion(question: InsertConnectionQuestion): Promise<ConnectionQuestion>;
+  getConnectionQuestions(topicId?: string): Promise<ConnectionQuestion[]>;
+  getConnectionQuestion(id: string): Promise<ConnectionQuestion | undefined>;
+  
+  createConnectionResponse(response: InsertConnectionResponse): Promise<ConnectionResponse>;
+  updateConnectionResponse(id: string, updates: Partial<ConnectionResponse>): Promise<ConnectionResponse | undefined>;
+  getConnectionResponses(userId: string, questionId?: string): Promise<ConnectionResponse[]>;
+  getConnectionResponsesByTopic(userId: string, topicId: string): Promise<ConnectionResponse[]>;
+  
+  createConnectionSummary(summary: InsertConnectionSummary): Promise<ConnectionSummary>;
+  getConnectionSummaries(userId: string, topicId?: string): Promise<ConnectionSummary[]>;
+  getLatestConnectionSummary(userId: string, topicId: string): Promise<ConnectionSummary | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -94,6 +124,10 @@ export class MemStorage implements IStorage {
   private subscriptions: Map<string, Subscription>;
   private retreatItineraries: Map<string, RetreatItinerary>;
   private assessments: Map<string, Assessment>;
+  private connectionTopics: Map<string, ConnectionTopic>;
+  private connectionQuestions: Map<string, ConnectionQuestion>;
+  private connectionResponses: Map<string, ConnectionResponse>;
+  private connectionSummaries: Map<string, ConnectionSummary>;
 
   constructor() {
     this.users = new Map();
@@ -105,6 +139,10 @@ export class MemStorage implements IStorage {
     this.subscriptions = new Map();
     this.retreatItineraries = new Map();
     this.assessments = new Map();
+    this.connectionTopics = new Map();
+    this.connectionQuestions = new Map();
+    this.connectionResponses = new Map();
+    this.connectionSummaries = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -452,6 +490,116 @@ export class MemStorage implements IStorage {
       (assessment) => assessment.shareToken === shareToken && assessment.isShared === 1
     );
   }
+
+  // Connection Questions operations
+  async createConnectionTopic(insertTopic: InsertConnectionTopic): Promise<ConnectionTopic> {
+    const id = randomUUID();
+    const topic: ConnectionTopic = { id, ...insertTopic };
+    this.connectionTopics.set(id, topic);
+    return topic;
+  }
+
+  async getConnectionTopics(): Promise<ConnectionTopic[]> {
+    return Array.from(this.connectionTopics.values()).sort((a, b) => a.order - b.order);
+  }
+
+  async getConnectionTopic(id: string): Promise<ConnectionTopic | undefined> {
+    return this.connectionTopics.get(id);
+  }
+
+  async createConnectionQuestion(insertQuestion: InsertConnectionQuestion): Promise<ConnectionQuestion> {
+    const id = randomUUID();
+    const question: ConnectionQuestion = {
+      id,
+      ...insertQuestion,
+      description: insertQuestion.description ?? null,
+    };
+    this.connectionQuestions.set(id, question);
+    return question;
+  }
+
+  async getConnectionQuestions(topicId?: string): Promise<ConnectionQuestion[]> {
+    const questions = Array.from(this.connectionQuestions.values());
+    const filtered = topicId
+      ? questions.filter(q => q.topicId === topicId)
+      : questions;
+    return filtered.sort((a, b) => a.order - b.order);
+  }
+
+  async getConnectionQuestion(id: string): Promise<ConnectionQuestion | undefined> {
+    return this.connectionQuestions.get(id);
+  }
+
+  async createConnectionResponse(insertResponse: InsertConnectionResponse): Promise<ConnectionResponse> {
+    const id = randomUUID();
+    const now = new Date();
+    const response: ConnectionResponse = {
+      id,
+      ...insertResponse,
+      isShared: insertResponse.isShared ?? 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.connectionResponses.set(id, response);
+    return response;
+  }
+
+  async updateConnectionResponse(id: string, updates: Partial<ConnectionResponse>): Promise<ConnectionResponse | undefined> {
+    const response = this.connectionResponses.get(id);
+    if (!response) return undefined;
+    
+    const updated: ConnectionResponse = {
+      ...response,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.connectionResponses.set(id, updated);
+    return updated;
+  }
+
+  async getConnectionResponses(userId: string, questionId?: string): Promise<ConnectionResponse[]> {
+    const responses = Array.from(this.connectionResponses.values());
+    return responses.filter(r => {
+      if (r.userId !== userId) return false;
+      if (questionId && r.questionId !== questionId) return false;
+      return true;
+    });
+  }
+
+  async getConnectionResponsesByTopic(userId: string, topicId: string): Promise<ConnectionResponse[]> {
+    const questions = await this.getConnectionQuestions(topicId);
+    const questionIds = questions.map(q => q.id);
+    const responses = Array.from(this.connectionResponses.values());
+    return responses.filter(r => r.userId === userId && questionIds.includes(r.questionId));
+  }
+
+  async createConnectionSummary(insertSummary: InsertConnectionSummary): Promise<ConnectionSummary> {
+    const id = randomUUID();
+    const now = new Date();
+    const summary: ConnectionSummary = {
+      id,
+      ...insertSummary,
+      createdAt: now,
+    };
+    this.connectionSummaries.set(id, summary);
+    return summary;
+  }
+
+  async getConnectionSummaries(userId: string, topicId?: string): Promise<ConnectionSummary[]> {
+    const summaries = Array.from(this.connectionSummaries.values());
+    return summaries
+      .filter(s => {
+        if (s.userId !== userId) return false;
+        if (topicId && s.topicId !== topicId) return false;
+        return true;
+      })
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getLatestConnectionSummary(userId: string, topicId: string): Promise<ConnectionSummary | undefined> {
+    const summaries = await this.getConnectionSummaries(userId, topicId);
+    return summaries[0];
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -682,6 +830,98 @@ export class DbStorage implements IStorage {
   async getSharedAssessment(shareToken: string): Promise<Assessment | undefined> {
     const result = await this.db.select().from(assessments)
       .where(and(eq(assessments.shareToken, shareToken), eq(assessments.isShared, 1)))
+      .limit(1);
+    return result[0];
+  }
+
+  // Connection Questions operations
+  async createConnectionTopic(insertTopic: InsertConnectionTopic): Promise<ConnectionTopic> {
+    const result = await this.db.insert(connectionTopics).values(insertTopic).returning();
+    return result[0];
+  }
+
+  async getConnectionTopics(): Promise<ConnectionTopic[]> {
+    return await this.db.select().from(connectionTopics).orderBy(connectionTopics.order);
+  }
+
+  async getConnectionTopic(id: string): Promise<ConnectionTopic | undefined> {
+    const result = await this.db.select().from(connectionTopics).where(eq(connectionTopics.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createConnectionQuestion(insertQuestion: InsertConnectionQuestion): Promise<ConnectionQuestion> {
+    const result = await this.db.insert(connectionQuestions).values(insertQuestion).returning();
+    return result[0];
+  }
+
+  async getConnectionQuestions(topicId?: string): Promise<ConnectionQuestion[]> {
+    if (topicId) {
+      return await this.db.select().from(connectionQuestions)
+        .where(eq(connectionQuestions.topicId, topicId))
+        .orderBy(connectionQuestions.order);
+    }
+    return await this.db.select().from(connectionQuestions).orderBy(connectionQuestions.order);
+  }
+
+  async getConnectionQuestion(id: string): Promise<ConnectionQuestion | undefined> {
+    const result = await this.db.select().from(connectionQuestions).where(eq(connectionQuestions.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createConnectionResponse(insertResponse: InsertConnectionResponse): Promise<ConnectionResponse> {
+    const result = await this.db.insert(connectionResponses).values(insertResponse).returning();
+    return result[0];
+  }
+
+  async updateConnectionResponse(id: string, updates: Partial<ConnectionResponse>): Promise<ConnectionResponse | undefined> {
+    const result = await this.db.update(connectionResponses)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(connectionResponses.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async getConnectionResponses(userId: string, questionId?: string): Promise<ConnectionResponse[]> {
+    if (questionId) {
+      return await this.db.select().from(connectionResponses)
+        .where(and(eq(connectionResponses.userId, userId), eq(connectionResponses.questionId, questionId)));
+    }
+    return await this.db.select().from(connectionResponses).where(eq(connectionResponses.userId, userId));
+  }
+
+  async getConnectionResponsesByTopic(userId: string, topicId: string): Promise<ConnectionResponse[]> {
+    const questions = await this.getConnectionQuestions(topicId);
+    const questionIds = questions.map(q => q.id);
+    
+    if (questionIds.length === 0) return [];
+    
+    return await this.db.select().from(connectionResponses)
+      .where(and(
+        eq(connectionResponses.userId, userId),
+        or(...questionIds.map(qId => eq(connectionResponses.questionId, qId)))
+      ));
+  }
+
+  async createConnectionSummary(insertSummary: InsertConnectionSummary): Promise<ConnectionSummary> {
+    const result = await this.db.insert(connectionSummaries).values(insertSummary).returning();
+    return result[0];
+  }
+
+  async getConnectionSummaries(userId: string, topicId?: string): Promise<ConnectionSummary[]> {
+    if (topicId) {
+      return await this.db.select().from(connectionSummaries)
+        .where(and(eq(connectionSummaries.userId, userId), eq(connectionSummaries.topicId, topicId)))
+        .orderBy(desc(connectionSummaries.createdAt));
+    }
+    return await this.db.select().from(connectionSummaries)
+      .where(eq(connectionSummaries.userId, userId))
+      .orderBy(desc(connectionSummaries.createdAt));
+  }
+
+  async getLatestConnectionSummary(userId: string, topicId: string): Promise<ConnectionSummary | undefined> {
+    const result = await this.db.select().from(connectionSummaries)
+      .where(and(eq(connectionSummaries.userId, userId), eq(connectionSummaries.topicId, topicId)))
+      .orderBy(desc(connectionSummaries.createdAt))
       .limit(1);
     return result[0];
   }
