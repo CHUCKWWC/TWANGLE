@@ -162,6 +162,8 @@ export const retreatItineraries = pgTable("retreat_itineraries", {
   focuses: text("focuses").array().notNull(),
   currentCity: text("current_city"),
   retreatDestination: text("retreat_destination"),
+  streetAddress: text("street_address"),
+  travelDistance: text("travel_distance"),
   startDate: timestamp("start_date"),
   generatedItinerary: text("generated_itinerary").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
