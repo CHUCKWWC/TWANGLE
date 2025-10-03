@@ -28,6 +28,7 @@ export default function Home() {
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [showProgressDialog, setShowProgressDialog] = useState(false);
   const [assessmentResult, setAssessmentResult] = useState<AttachmentStyleResult | null>(null);
+  const [assessmentId, setAssessmentId] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
 
@@ -81,9 +82,10 @@ export default function Home() {
         const createResponse = await apiRequest("POST", "/api/assessments", {
           responses: newAnswers
         });
-        const { assessmentId } = await createResponse.json();
+        const { assessmentId: id } = await createResponse.json();
+        setAssessmentId(id);
         
-        const analyzeResponse = await apiRequest("POST", `/api/assessments/${assessmentId}/analyze`, {});
+        const analyzeResponse = await apiRequest("POST", `/api/assessments/${id}/analyze`, {});
         const { result } = await analyzeResponse.json();
         
         setAssessmentResult(result);
@@ -253,6 +255,7 @@ export default function Home() {
             scores={getScoresFromResult(assessmentResult)}
             hasRedFlags={false}
             result={assessmentResult}
+            assessmentId={assessmentId || undefined}
             onTalkToCoach={() => setCurrentView('coach')}
             onPlanRetreat={() => setCurrentView('retreat')}
             onViewExercises={() => setCurrentView('exercises')}
