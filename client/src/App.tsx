@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/Landing";
 import Home from "@/pages/Home";
 import RetreatItinerary from "@/pages/RetreatItinerary";
+import SharedAssessment from "@/pages/SharedAssessment";
 import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import NotFound from "@/pages/not-found";
@@ -17,6 +18,7 @@ function Router() {
 
   return (
     <Switch>
+      <Route path="/shared/:token" component={SharedAssessment} />
       {isLoading || !isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
