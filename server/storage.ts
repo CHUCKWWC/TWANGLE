@@ -16,6 +16,9 @@ import {
   type InsertSubscription,
   type RetreatItinerary,
   type InsertRetreatItinerary,
+  type Assessment,
+  type InsertAssessment,
+  type AttachmentStyleResult,
   users,
   subscriptions,
   chatSessions,
@@ -23,7 +26,8 @@ import {
   sessionFeedback,
   relationshipProgress,
   generalFeedback,
-  retreatItineraries
+  retreatItineraries,
+  assessments
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -72,6 +76,12 @@ export interface IStorage {
   createRetreatItinerary(itinerary: InsertRetreatItinerary): Promise<RetreatItinerary>;
   getRetreatItinerary(id: string): Promise<RetreatItinerary | undefined>;
   getRetreatItineraries(userId?: string): Promise<RetreatItinerary[]>;
+  
+  createAssessment(data: InsertAssessment): Promise<Assessment>;
+  getAssessment(id: string): Promise<Assessment | undefined>;
+  updateAssessmentResult(id: string, result: AttachmentStyleResult): Promise<Assessment | undefined>;
+  enableSharing(id: string): Promise<Assessment | undefined>;
+  getSharedAssessment(shareToken: string): Promise<Assessment | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -83,6 +93,7 @@ export class MemStorage implements IStorage {
   private generalFeedback: Map<string, GeneralFeedback>;
   private subscriptions: Map<string, Subscription>;
   private retreatItineraries: Map<string, RetreatItinerary>;
+  private assessments: Map<string, Assessment>;
 
   constructor() {
     this.users = new Map();
@@ -93,6 +104,7 @@ export class MemStorage implements IStorage {
     this.generalFeedback = new Map();
     this.subscriptions = new Map();
     this.retreatItineraries = new Map();
+    this.assessments = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -388,6 +400,58 @@ export class MemStorage implements IStorage {
     }
     return itineraries.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
+
+  async createAssessment(insertAssessment: InsertAssessment): Promise<Assessment> {
+    const id = randomUUID();
+    const now = new Date();
+    const assessment: Assessment = {
+      id,
+      userId: insertAssessment.userId ?? null,
+      responses: insertAssessment.responses,
+      result: insertAssessment.result ?? null,
+      shareToken: insertAssessment.shareToken ?? null,
+      isShared: insertAssessment.isShared ?? 0,
+      createdAt: now,
+    };
+    this.assessments.set(id, assessment);
+    return assessment;
+  }
+
+  async getAssessment(id: string): Promise<Assessment | undefined> {
+    return this.assessments.get(id);
+  }
+
+  async updateAssessmentResult(id: string, result: AttachmentStyleResult): Promise<Assessment | undefined> {
+    const assessment = this.assessments.get(id);
+    if (!assessment) return undefined;
+    
+    const updated: Assessment = {
+      ...assessment,
+      result: result as any,
+    };
+    this.assessments.set(id, updated);
+    return updated;
+  }
+
+  async enableSharing(id: string): Promise<Assessment | undefined> {
+    const assessment = this.assessments.get(id);
+    if (!assessment) return undefined;
+    
+    const shareToken = randomUUID().replace(/-/g, '').substring(0, 16);
+    const updated: Assessment = {
+      ...assessment,
+      shareToken,
+      isShared: 1,
+    };
+    this.assessments.set(id, updated);
+    return updated;
+  }
+
+  async getSharedAssessment(shareToken: string): Promise<Assessment | undefined> {
+    return Array.from(this.assessments.values()).find(
+      (assessment) => assessment.shareToken === shareToken && assessment.isShared === 1
+    );
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -586,6 +650,40 @@ export class DbStorage implements IStorage {
       return await this.db.select().from(retreatItineraries).where(eq(retreatItineraries.userId, userId)).orderBy(desc(retreatItineraries.createdAt));
     }
     return await this.db.select().from(retreatItineraries).orderBy(desc(retreatItineraries.createdAt));
+  }
+
+  async createAssessment(insertAssessment: InsertAssessment): Promise<Assessment> {
+    const result = await this.db.insert(assessments).values(insertAssessment).returning();
+    return result[0];
+  }
+
+  async getAssessment(id: string): Promise<Assessment | undefined> {
+    const result = await this.db.select().from(assessments).where(eq(assessments.id, id)).limit(1);
+    return result[0];
+  }
+
+  async updateAssessmentResult(id: string, result: AttachmentStyleResult): Promise<Assessment | undefined> {
+    const updated = await this.db.update(assessments)
+      .set({ result: result as any })
+      .where(eq(assessments.id, id))
+      .returning();
+    return updated[0];
+  }
+
+  async enableSharing(id: string): Promise<Assessment | undefined> {
+    const shareToken = randomUUID().replace(/-/g, '').substring(0, 16);
+    const updated = await this.db.update(assessments)
+      .set({ shareToken, isShared: 1 })
+      .where(eq(assessments.id, id))
+      .returning();
+    return updated[0];
+  }
+
+  async getSharedAssessment(shareToken: string): Promise<Assessment | undefined> {
+    const result = await this.db.select().from(assessments)
+      .where(and(eq(assessments.shareToken, shareToken), eq(assessments.isShared, 1)))
+      .limit(1);
+    return result[0];
   }
 }
 
