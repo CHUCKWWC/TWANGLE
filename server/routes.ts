@@ -799,23 +799,32 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Connection Questions - "Strengthen Your Connection" feature
   app.post("/api/connection/seed", isAuthenticated, async (req: any, res) => {
     try {
-      // Check if data already exists
+      const { connectionTopicsData, connectionQuestionsData } = await import('./connectionQuestionsData');
+      
+      // Check if data already exists - need BOTH topics AND questions
       const existingTopics = await storage.getConnectionTopics();
-      if (existingTopics.length > 0) {
+      const existingQuestions = await storage.getConnectionQuestions();
+      
+      if (existingTopics.length > 0 && existingQuestions.length > 0) {
         return res.json({ 
           message: "Connection questions already seeded",
           topicsCount: existingTopics.length,
+          questionsCount: existingQuestions.length,
           skipped: true,
         });
       }
 
-      const { connectionTopicsData, connectionQuestionsData } = await import('./connectionQuestionsData');
-      
-      // Create topics
+      // Create or get topics
       const topicMap = new Map<string, string>();
-      for (const topicData of connectionTopicsData) {
-        const topic = await storage.createConnectionTopic(topicData);
-        topicMap.set(topic.name, topic.id);
+      if (existingTopics.length === 0) {
+        for (const topicData of connectionTopicsData) {
+          const topic = await storage.createConnectionTopic(topicData);
+          topicMap.set(topic.name, topic.id);
+        }
+      } else {
+        for (const topic of existingTopics) {
+          topicMap.set(topic.name, topic.id);
+        }
       }
 
       // Create questions
@@ -835,7 +844,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
       res.json({ 
         message: "Connection questions seeded successfully",
-        topicsCreated: topicMap.size,
+        topicsCount: topicMap.size,
         questionsCreated: questionCount,
         skipped: false,
       });

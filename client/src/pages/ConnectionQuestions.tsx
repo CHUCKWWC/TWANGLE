@@ -71,7 +71,7 @@ export default function ConnectionQuestions() {
   // Save response mutation
   const saveResponseMutation = useMutation({
     mutationFn: async ({ questionId, response }: { questionId: string; response: string }) => {
-      return apiRequest("/api/connection/responses", "POST", { questionId, response });
+      return apiRequest("POST", "/api/connection/responses", { questionId, response });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/connection/topics", selectedTopicId, "questions"] });
@@ -81,7 +81,7 @@ export default function ConnectionQuestions() {
   // AI analysis mutation
   const analysisMutation = useMutation({
     mutationFn: async (topicId: string) => {
-      return apiRequest(`/api/connection/analyze/${topicId}`, "POST", {});
+      return apiRequest("POST", `/api/connection/analyze/${topicId}`, {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/connection/summaries"] });
