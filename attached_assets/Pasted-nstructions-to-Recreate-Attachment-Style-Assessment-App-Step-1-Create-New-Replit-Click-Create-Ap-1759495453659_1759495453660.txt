@@ -1,0 +1,322 @@
+nstructions to Recreate Attachment Style Assessment App
+Step 1: Create New Replit
+Click "Create App" on Replit home screen
+Choose "Node.js" or "TypeScript" template
+Name it "Attachment Assessment App"
+Step 2: Install Node.js 20
+Run in Shell:
+
+programming_language_install_tool with programming_languages: ["nodejs-20"]
+Step 3: Create Project Structure
+Create these directories:
+
+mkdir -p client/src/{components/ui,hooks,lib,pages} server/services shared
+Step 4: Install Dependencies
+Use the packager tool to install:
+
+Core dependencies:
+
+@neondatabase/serverless
+@tanstack/react-query
+@hookform/resolvers
+drizzle-orm
+drizzle-zod
+express
+openai
+react
+react-dom
+react-hook-form
+wouter
+zod
+framer-motion
+lucide-react
+recharts
+class-variance-authority
+clsx
+tailwind-merge
+tailwindcss-animate
+Radix UI components (for shadcn):
+
+@radix-ui/react-accordion
+@radix-ui/react-alert-dialog
+@radix-ui/react-avatar
+@radix-ui/react-checkbox
+@radix-ui/react-dialog
+@radix-ui/react-label
+@radix-ui/react-popover
+@radix-ui/react-progress
+@radix-ui/react-radio-group
+@radix-ui/react-scroll-area
+@radix-ui/react-select
+@radix-ui/react-separator
+@radix-ui/react-slider
+@radix-ui/react-switch
+@radix-ui/react-tabs
+@radix-ui/react-toast
+@radix-ui/react-tooltip
+Dev dependencies:
+
+@vitejs/plugin-react
+@types/express
+@types/node
+@types/react
+@types/react-dom
+drizzle-kit
+esbuild
+tailwindcss
+tsx
+typescript
+vite
+Step 5: Create Configuration Files
+package.json scripts:
+
+{
+  "scripts": {
+    "dev": "NODE_ENV=development tsx server/index.ts",
+    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "start": "NODE_ENV=production node dist/index.js",
+    "db:push": "drizzle-kit push"
+  }
+}
+vite.config.ts:
+
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "client", "src"),
+      "@shared": path.resolve(import.meta.dirname, "shared"),
+    },
+  },
+  root: path.resolve(import.meta.dirname, "client"),
+  build: {
+    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    emptyOutDir: true,
+  },
+});
+tsconfig.json:
+
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "paths": {
+      "@/*": ["./client/src/*"],
+      "@shared/*": ["./shared/*"]
+    }
+  }
+}
+drizzle.config.ts:
+
+import { defineConfig } from "drizzle-kit";
+export default defineConfig({
+  out: "./migrations",
+  schema: "./shared/schema.ts",
+  dialect: "postgresql",
+  dbCredentials: {
+    url: process.env.DATABASE_URL!,
+  },
+});
+tailwind.config.ts:
+
+import type { Config } from "tailwindcss";
+export default {
+  darkMode: ["class"],
+  content: ["./client/**/*.{ts,tsx}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [require("tailwindcss-animate")],
+} satisfies Config;
+Step 6: Set Up PostgreSQL Database
+Ask Replit to create a PostgreSQL database. It will auto-provision and add DATABASE_URL to environment variables.
+
+Step 7: Create Database Schema
+File: shared/schema.ts
+
+import { sql } from "drizzle-orm";
+import { pgTable, varchar, jsonb, timestamp, boolean } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+export const assessments = pgTable("assessments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  responses: jsonb("responses").notNull(),
+  result: jsonb("result"),
+  shareToken: varchar("share_token"),
+  isShared: boolean("is_shared").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export const insertAssessmentSchema = createInsertSchema(assessments).pick({
+  responses: true,
+});
+export const attachmentStyleResultSchema = z.object({
+  primaryStyle: z.enum(["secure", "anxious", "avoidant", "fearful"]),
+  stylePercentages: z.object({
+    secure: z.number(),
+    anxious: z.number(),
+    avoidant: z.number(),
+    fearful: z.number(),
+  }),
+  description: z.string(),
+  strengths: z.array(z.string()),
+  growthAreas: z.array(z.string()),
+  analysis: z.string(),
+});
+export type Assessment = typeof assessments.$inferSelect;
+export type AttachmentStyleResult = z.infer<typeof attachmentStyleResultSchema>;
+Step 8: Push Database Schema
+npm run db:push
+Step 9: Set Up OpenAI Integration
+Use the search integrations tool to find OpenAI blueprint:
+
+search_integrations with query: "openai"
+Then add it:
+
+use_integration with integration_id: "blueprint:javascript_openai" and operation: "add"
+Ask user for their OPENAI_API_KEY and save it as a secret.
+
+Step 10: Create Backend Files
+File: server/storage.ts
+
+import { type Assessment, assessments } from "@shared/schema";
+import { randomUUID } from "crypto";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
+import { eq } from "drizzle-orm";
+const sql = neon(process.env.DATABASE_URL!);
+const db = drizzle(sql);
+export const storage = {
+  async createAssessment(data: any): Promise<Assessment> {
+    const [result] = await db.insert(assessments).values(data).returning();
+    return result;
+  },
+  
+  async getAssessment(id: string): Promise<Assessment | undefined> {
+    const [result] = await db.select().from(assessments).where(eq(assessments.id, id)).limit(1);
+    return result;
+  },
+  
+  async updateAssessmentResult(id: string, result: any): Promise<Assessment | undefined> {
+    const [updated] = await db.update(assessments).set({ result }).where(eq(assessments.id, id)).returning();
+    return updated;
+  },
+  
+  async enableSharing(id: string): Promise<Assessment | undefined> {
+    const shareToken = randomUUID().replace(/-/g, '').substring(0, 16);
+    const [updated] = await db.update(assessments).set({ shareToken, isShared: true }).where(eq(assessments.id, id)).returning();
+    return updated;
+  },
+  
+  async getSharedAssessment(shareToken: string): Promise<Assessment | undefined> {
+    const [result] = await db.select().from(assessments).where(eq(assessments.shareToken, shareToken)).limit(1);
+    return result;
+  }
+};
+File: server/services/openai.ts
+
+import OpenAI from "openai";
+import type { AttachmentStyleResult } from "@shared/schema";
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+export async function analyzeAttachmentStyle(responses: Record<string, string>): Promise<AttachmentStyleResult> {
+  const prompt = `You are an expert in attachment theory psychology. Analyze these responses and return JSON:
+${Object.entries(responses).map(([q, a]) => `${q}: ${a}`).join('\n')}
+Return this exact JSON format:
+{
+  "primaryStyle": "secure" | "anxious" | "avoidant" | "fearful",
+  "stylePercentages": { "secure": number, "anxious": number, "avoidant": number, "fearful": number },
+  "description": "detailed description",
+  "strengths": ["array of strengths"],
+  "growthAreas": ["array of growth areas"],
+  "analysis": "comprehensive analysis"
+}`;
+  const response = await openai.chat.completions.create({
+    model: "gpt-5",
+    messages: [
+      { role: "system", content: "You are a compassionate attachment theory expert." },
+      { role: "user", content: prompt }
+    ],
+    response_format: { type: "json_object" },
+  });
+  return JSON.parse(response.choices[0].message.content || "{}");
+}
+File: server/routes.ts
+
+import type { Express } from "express";
+import { createServer } from "http";
+import { storage } from "./storage";
+import { insertAssessmentSchema } from "@shared/schema";
+import { analyzeAttachmentStyle } from "./services/openai";
+export function registerRoutes(app: Express) {
+  app.post("/api/assessments", async (req, res) => {
+    const data = insertAssessmentSchema.parse(req.body);
+    const assessment = await storage.createAssessment(data);
+    res.json({ assessmentId: assessment.id });
+  });
+  app.post("/api/assessments/:id/analyze", async (req, res) => {
+    const assessment = await storage.getAssessment(req.params.id);
+    if (!assessment) return res.status(404).json({ message: "Not found" });
+    
+    if (assessment.result) return res.json({ result: assessment.result });
+    
+    const result = await analyzeAttachmentStyle(assessment.responses as any);
+    await storage.updateAssessmentResult(req.params.id, result);
+    res.json({ result });
+  });
+  app.post("/api/assessments/:id/share", async (req, res) => {
+    const updated = await storage.enableSharing(req.params.id);
+    res.json({ 
+      shareToken: updated?.shareToken,
+      shareUrl: `${req.protocol}://${req.get('host')}/shared/${updated?.shareToken}`
+    });
+  });
+  app.get("/api/shared/:shareToken", async (req, res) => {
+    const assessment = await storage.getSharedAssessment(req.params.shareToken);
+    if (!assessment?.isShared) return res.status(404).json({ message: "Not found" });
+    res.json({ result: assessment.result });
+  });
+  return createServer(app);
+}
+File: server/index.ts
+
+import express from "express";
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic } from "./vite";
+const app = express();
+app.use(express.json());
+(async () => {
+  const server = registerRoutes(app);
+  
+  if (process.env.NODE_ENV === "development") {
+    const { setupVite } = await import("./vite");
+    await setupVite(app, server);
+  } else {
+    const { serveStatic } = await import("./vite");
+    serveStatic(app);
+  }
+  server.listen(5000, "0.0.0.0", () => {
+    console.log("Server on port 5000");
+  });
+})();
+Step 11: Copy Frontend Files
+Copy all files from client/src/ including:
+
+components/ui/* (all shadcn components)
+lib/questions.ts (10 assessment questions)
+lib/queryClient.ts (TanStack Query setup)
+pages/assessment.tsx (main page)
+pages/secure-attachment-landing.tsx (landing page)
+App.tsx (router)
+main.tsx (entry point)
+index.css (styles)
+Step 12: Create Workflow
+workflows_set_run_config_tool with name: "Start application", command: "npm run dev", wait_for_port: 5000, output_type: "webview"
