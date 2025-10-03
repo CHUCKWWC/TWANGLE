@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +41,7 @@ export default function ConnectionQuestions() {
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, string>>({});
+  const [currentResponse, setCurrentResponse] = useState("");
   const { toast } = useToast();
 
   // Fetch topics
@@ -107,6 +108,13 @@ export default function ConnectionQuestions() {
   const allAnswered = answeredCount === questions.length && questions.length > 0;
   const hasSummary = summaries.some(s => s.topicId === selectedTopicId);
 
+  // Update current response when question changes
+  useEffect(() => {
+    if (currentQuestion) {
+      setCurrentResponse(currentQuestion.userResponse?.response || responses[currentQuestion.id] || "");
+    }
+  }, [currentQuestionIndex, currentQuestion, responses]);
+
   const handleSaveResponse = async (questionId: string, response: string) => {
     if (!response.trim()) return;
     
@@ -114,9 +122,21 @@ export default function ConnectionQuestions() {
     await saveResponseMutation.mutateAsync({ questionId, response });
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
+    if (!currentQuestion) return;
+    
+    // Log the answer
+    console.log(`Answer to "${currentQuestion.question}":`, currentResponse);
+    
+    // Save the response if there's text (ensure it's saved before moving)
+    if (currentResponse.trim() && currentResponse !== currentQuestion.userResponse?.response) {
+      await handleSaveResponse(currentQuestion.id, currentResponse);
+    }
+    
+    // Move to next question
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
+      // Clear will happen in useEffect when question changes
     }
   };
 
@@ -264,11 +284,12 @@ export default function ConnectionQuestions() {
                   <Textarea
                     placeholder="Share your thoughts..."
                     className="min-h-[150px] text-base"
-                    defaultValue={currentQuestion.userResponse?.response || responses[currentQuestion.id] || ""}
-                    onBlur={(e) => {
-                      const value = e.target.value;
-                      if (value !== currentQuestion.userResponse?.response) {
-                        handleSaveResponse(currentQuestion.id, value);
+                    value={currentResponse}
+                    onChange={(e) => setCurrentResponse(e.target.value)}
+                    onBlur={() => {
+                      // Auto-save on blur to preserve answers
+                      if (currentResponse.trim() && currentResponse !== currentQuestion.userResponse?.response) {
+                        handleSaveResponse(currentQuestion.id, currentResponse);
                       }
                     }}
                     data-testid="textarea-response"
