@@ -802,53 +802,29 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Connection Questions - "Strengthen Your Connection" feature
   app.post("/api/connection/seed", isAuthenticated, async (req: any, res) => {
     try {
-      const { connectionTopicsData, connectionQuestionsData } = await import('./connectionQuestionsData');
+      const { connectionTopicsData } = await import('./connectionQuestionsData');
       
-      // Check if data already exists - need BOTH topics AND questions
+      // Check if topics already exist
       const existingTopics = await storage.getConnectionTopics();
-      const existingQuestions = await storage.getConnectionQuestions();
       
-      if (existingTopics.length > 0 && existingQuestions.length > 0) {
+      if (existingTopics.length > 0) {
         return res.json({ 
-          message: "Connection questions already seeded",
+          message: "Connection topics already seeded",
           topicsCount: existingTopics.length,
-          questionsCount: existingQuestions.length,
           skipped: true,
         });
       }
 
-      // Create or get topics
-      const topicMap = new Map<string, string>();
-      if (existingTopics.length === 0) {
-        for (const topicData of connectionTopicsData) {
-          const topic = await storage.createConnectionTopic(topicData);
-          topicMap.set(topic.name, topic.id);
-        }
-      } else {
-        for (const topic of existingTopics) {
-          topicMap.set(topic.name, topic.id);
-        }
-      }
-
-      // Create questions
-      let questionCount = 0;
-      for (const [topicName, questions] of Object.entries(connectionQuestionsData)) {
-        const topicId = topicMap.get(topicName);
-        if (!topicId) continue;
-
-        for (const questionData of questions) {
-          await storage.createConnectionQuestion({
-            topicId,
-            ...questionData,
-          });
-          questionCount++;
-        }
+      // Create topics only - questions will be AI-generated on demand
+      const createdTopics = [];
+      for (const topicData of connectionTopicsData) {
+        const topic = await storage.createConnectionTopic(topicData);
+        createdTopics.push(topic);
       }
 
       res.json({ 
-        message: "Connection questions seeded successfully",
-        topicsCount: topicMap.size,
-        questionsCreated: questionCount,
+        message: "Connection topics seeded successfully. Questions will be AI-generated when needed.",
+        topicsCount: createdTopics.length,
         skipped: false,
       });
     } catch (error: any) {
@@ -874,12 +850,93 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   });
 
   app.get("/api/connection/topics/:topicId/questions", isAuthenticated, async (req: any, res) => {
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(501).json({ 
+        error: "AI question generation not configured", 
+        message: "OpenAI API key is not available" 
+      });
+    }
+
     try {
-      const questions = await storage.getConnectionQuestions(req.params.topicId);
+      const { topicId } = req.params;
       const userId = req.user.claims.sub;
       
+      // Get the topic
+      const topic = await storage.getConnectionTopic(topicId);
+      if (!topic) {
+        return res.status(404).json({ error: "Topic not found" });
+      }
+
+      // Check if we already have questions for this topic
+      let questions = await storage.getConnectionQuestions(topicId);
+      
+      // If no questions exist, generate them with AI
+      if (questions.length === 0) {
+        const questionPrompt = `You are an expert relationship therapist. Generate 5 thoughtful, open-ended questions about "${topic.name}" that will help couples deepen their connection and understanding.
+
+Topic: ${topic.name}
+Description: ${topic.description}
+
+The questions should:
+- Be research-backed based on relationship science (Gottman Method, EFT, Attachment Theory)
+- Encourage vulnerability and honest communication
+- Help couples identify patterns and growth areas
+- Be specific enough to generate meaningful responses
+- Avoid yes/no questions
+- Be relevant to building a solid, healthy relationship
+
+Respond with a JSON object containing an array of exactly 5 questions:
+{
+  "questions": [
+    "Question 1 text here?",
+    "Question 2 text here?",
+    "Question 3 text here?",
+    "Question 4 text here?",
+    "Question 5 text here?"
+  ]
+}`;
+
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You are an expert relationship therapist who creates thoughtful questions to help couples strengthen their connection. Always respond with valid JSON.",
+            },
+            {
+              role: "user",
+              content: questionPrompt,
+            },
+          ],
+          temperature: 0.8,
+          response_format: { type: "json_object" },
+        });
+
+        const generatedContent = completion.choices[0].message.content || "{}";
+        let generatedQuestions: string[] = [];
+        
+        try {
+          const parsed = JSON.parse(generatedContent);
+          generatedQuestions = parsed.questions || [];
+        } catch (e) {
+          console.error("Failed to parse AI questions:", e);
+          return res.status(500).json({ error: "Failed to generate questions" });
+        }
+
+        // Save generated questions to database
+        for (let i = 0; i < generatedQuestions.length && i < 5; i++) {
+          const question = await storage.createConnectionQuestion({
+            topicId,
+            question: generatedQuestions[i],
+            order: i + 1,
+            description: "",
+          });
+          questions.push(question);
+        }
+      }
+      
       // Get user's responses for these questions
-      const responses = await storage.getConnectionResponsesByTopic(userId, req.params.topicId);
+      const responses = await storage.getConnectionResponsesByTopic(userId, topicId);
       const responseMap = new Map(responses.map(r => [r.questionId, r]));
       
       // Combine questions with responses
