@@ -796,6 +796,253 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // Connection Questions - "Strengthen Your Connection" feature
+  app.post("/api/connection/seed", isAuthenticated, async (req: any, res) => {
+    try {
+      const { connectionTopicsData, connectionQuestionsData } = await import('./connectionQuestionsData');
+      
+      // Create topics
+      const topicMap = new Map<string, string>();
+      for (const topicData of connectionTopicsData) {
+        const topic = await storage.createConnectionTopic(topicData);
+        topicMap.set(topic.name, topic.id);
+      }
+
+      // Create questions
+      let questionCount = 0;
+      for (const [topicName, questions] of Object.entries(connectionQuestionsData)) {
+        const topicId = topicMap.get(topicName);
+        if (!topicId) continue;
+
+        for (const questionData of questions) {
+          await storage.createConnectionQuestion({
+            topicId,
+            ...questionData,
+          });
+          questionCount++;
+        }
+      }
+
+      res.json({ 
+        message: "Connection questions seeded successfully",
+        topicsCreated: topicMap.size,
+        questionsCreated: questionCount,
+      });
+    } catch (error: any) {
+      console.error("Seed connection questions error:", error);
+      res.status(500).json({
+        error: "Failed to seed connection questions",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/connection/topics", isAuthenticated, async (req: any, res) => {
+    try {
+      const topics = await storage.getConnectionTopics();
+      res.json(topics);
+    } catch (error: any) {
+      console.error("Get topics error:", error);
+      res.status(500).json({
+        error: "Failed to get topics",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/connection/topics/:topicId/questions", isAuthenticated, async (req: any, res) => {
+    try {
+      const questions = await storage.getConnectionQuestions(req.params.topicId);
+      const userId = req.user.claims.sub;
+      
+      // Get user's responses for these questions
+      const responses = await storage.getConnectionResponsesByTopic(userId, req.params.topicId);
+      const responseMap = new Map(responses.map(r => [r.questionId, r]));
+      
+      // Combine questions with responses
+      const questionsWithResponses = questions.map(q => ({
+        ...q,
+        userResponse: responseMap.get(q.id) || null,
+      }));
+      
+      res.json(questionsWithResponses);
+    } catch (error: any) {
+      console.error("Get questions error:", error);
+      res.status(500).json({
+        error: "Failed to get questions",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/connection/responses", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { questionId, response } = req.body;
+
+      if (!questionId || !response) {
+        return res.status(400).json({ error: "questionId and response are required" });
+      }
+
+      // Check if response already exists
+      const existing = await storage.getConnectionResponses(userId, questionId);
+      
+      let result;
+      if (existing.length > 0) {
+        // Update existing response
+        result = await storage.updateConnectionResponse(existing[0].id, { response });
+      } else {
+        // Create new response
+        result = await storage.createConnectionResponse({
+          userId,
+          questionId,
+          response,
+          isShared: 0,
+        });
+      }
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Save response error:", error);
+      res.status(500).json({
+        error: "Failed to save response",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/connection/responses", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const topicId = req.query.topicId as string | undefined;
+      
+      let responses;
+      if (topicId) {
+        responses = await storage.getConnectionResponsesByTopic(userId, topicId);
+      } else {
+        responses = await storage.getConnectionResponses(userId);
+      }
+      
+      res.json(responses);
+    } catch (error: any) {
+      console.error("Get responses error:", error);
+      res.status(500).json({
+        error: "Failed to get responses",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/connection/analyze/:topicId", isAuthenticated, async (req: any, res) => {
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(501).json({ 
+        error: "AI analysis not configured", 
+        message: "OpenAI API key is not available" 
+      });
+    }
+
+    try {
+      const userId = req.user.claims.sub;
+      const { topicId } = req.params;
+      
+      // Get topic and questions
+      const topic = await storage.getConnectionTopic(topicId);
+      if (!topic) {
+        return res.status(404).json({ error: "Topic not found" });
+      }
+      
+      const questions = await storage.getConnectionQuestions(topicId);
+      const responses = await storage.getConnectionResponsesByTopic(userId, topicId);
+      
+      if (responses.length === 0) {
+        return res.status(400).json({ error: "No responses to analyze for this topic" });
+      }
+      
+      // Build context for AI
+      const questionResponsePairs = responses.map(r => {
+        const question = questions.find(q => q.id === r.questionId);
+        return {
+          question: question?.question || "",
+          response: r.response,
+        };
+      });
+      
+      const analysisPrompt = `You are an expert relationship therapist analyzing a couple's responses about ${topic.name}.
+
+Topic: ${topic.name}
+Description: ${topic.description}
+
+Their responses:
+${questionResponsePairs.map((pair, i) => `
+${i + 1}. ${pair.question}
+   Answer: ${pair.response}
+`).join('\n')}
+
+Based on these responses, provide:
+1. A brief summary of their current state in this area (2-3 sentences)
+2. 3 key insights about patterns, strengths, or concerns you notice
+3. 3 specific, actionable recommendations to improve in this area
+
+Format your response as JSON with this structure:
+{
+  "summary": "Brief 2-3 sentence summary",
+  "insights": ["insight 1", "insight 2", "insight 3"],
+  "recommendations": ["recommendation 1", "recommendation 2", "recommendation 3"]
+}`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are a relationship expert providing compassionate, evidence-based analysis and guidance.",
+          },
+          {
+            role: "user",
+            content: analysisPrompt,
+          },
+        ],
+        temperature: 0.7,
+        response_format: { type: "json_object" },
+      });
+
+      const analysisResult = JSON.parse(completion.choices[0].message.content || "{}");
+      
+      // Save summary to database
+      const summary = await storage.createConnectionSummary({
+        userId,
+        topicId,
+        summary: analysisResult.summary,
+        insights: analysisResult.insights || [],
+        recommendations: analysisResult.recommendations || [],
+      });
+
+      res.json(summary);
+    } catch (error: any) {
+      console.error("AI analysis error:", error);
+      res.status(500).json({
+        error: "Failed to analyze responses",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/connection/summaries", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const topicId = req.query.topicId as string | undefined;
+      
+      const summaries = await storage.getConnectionSummaries(userId, topicId);
+      res.json(summaries);
+    } catch (error: any) {
+      console.error("Get summaries error:", error);
+      res.status(500).json({
+        error: "Failed to get summaries",
+        details: error.message,
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
