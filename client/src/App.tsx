@@ -9,6 +9,8 @@ import Landing from "@/pages/Landing";
 import Home from "@/pages/Home";
 import RetreatItinerary from "@/pages/RetreatItinerary";
 import SharedAssessment from "@/pages/SharedAssessment";
+import ConnectionQuestions from "@/pages/ConnectionQuestions";
+import ConnectionInsights from "@/pages/ConnectionInsights";
 import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import NotFound from "@/pages/not-found";
@@ -29,6 +31,8 @@ function Router() {
         <>
           <Route path="/" component={Home} />
           <Route path="/retreat/:id" component={RetreatItinerary} />
+          <Route path="/connection" component={ConnectionQuestions} />
+          <Route path="/connection/insights" component={ConnectionInsights} />
           <Route path="/terms" component={TermsOfService} />
           <Route path="/privacy" component={PrivacyPolicy} />
         </>

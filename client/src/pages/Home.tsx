@@ -11,11 +11,12 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { RelationshipProgressDialog } from "@/components/RelationshipProgressDialog";
 import { UserMenu } from "@/components/UserMenu";
-import { BookOpen, FileText, Loader2 } from "lucide-react";
+import { BookOpen, FileText, Loader2, Heart } from "lucide-react";
 import { ASSESSMENT_QUESTIONS } from "@/lib/questions";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { AttachmentStyleResult } from "@shared/schema";
+import { Link } from "wouter";
 
 type View = 'welcome' | 'assessment' | 'results' | 'coach' | 'retreat' | 'exercises' | 'summaries';
 
@@ -191,6 +192,15 @@ export default function Home() {
               >
                 Twangle
               </button>
+              <Link href="/connection">
+                <button
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded"
+                  data-testid="link-connection"
+                >
+                  <Heart className="w-4 h-4" />
+                  Connection
+                </button>
+              </Link>
               <button
                 onClick={() => setCurrentView('summaries')}
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded"
