@@ -192,15 +192,6 @@ export default function Home() {
               >
                 Twangle
               </button>
-              <Link href="/connection">
-                <button
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded"
-                  data-testid="link-connection"
-                >
-                  <Heart className="w-4 h-4" />
-                  Conversation Starters
-                </button>
-              </Link>
               <button
                 onClick={() => setCurrentView('summaries')}
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded"
