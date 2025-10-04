@@ -232,6 +232,7 @@ export const connectionQuestions = pgTable("connection_questions", {
   question: text("question").notNull(),
   description: text("description"),
   order: integer("order").notNull(),
+  generatedBy: text("generated_by").default("curated"),
 });
 
 export const insertConnectionQuestionSchema = createInsertSchema(connectionQuestions).omit({
