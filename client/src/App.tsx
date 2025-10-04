@@ -11,6 +11,7 @@ import RetreatItinerary from "@/pages/RetreatItinerary";
 import SharedAssessment from "@/pages/SharedAssessment";
 import ConnectionQuestions from "@/pages/ConnectionQuestions";
 import ConnectionInsights from "@/pages/ConnectionInsights";
+import DebugPage from "@/pages/DebugPage";
 import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import NotFound from "@/pages/not-found";
@@ -33,6 +34,7 @@ function Router() {
           <Route path="/retreat/:id" component={RetreatItinerary} />
           <Route path="/connection" component={ConnectionQuestions} />
           <Route path="/connection/insights" component={ConnectionInsights} />
+          <Route path="/debug" component={DebugPage} />
           <Route path="/terms" component={TermsOfService} />
           <Route path="/privacy" component={PrivacyPolicy} />
         </>
