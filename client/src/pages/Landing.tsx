@@ -315,7 +315,7 @@ export default function Landing() {
       <div className="py-20 px-6 bg-gradient-to-br from-primary/20 via-background to-secondary/10">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 font-[Poppins]">
-            Ready to Strengthen Your Connection?
+            Ready to Start the Conversation?
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
             Join thousands of couples growing together with Twangle. Start with a free assessment and 

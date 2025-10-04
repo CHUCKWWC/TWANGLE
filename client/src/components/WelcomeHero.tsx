@@ -49,9 +49,9 @@ export default function WelcomeHero({ onStartAssessment, onJumpToCoach, onPlanRe
               size="lg" 
               variant="outline" 
               className="text-lg px-8 py-6 bg-background/20 backdrop-blur-md text-primary-foreground border-2 border-primary-foreground/30"
-              data-testid="button-strengthen-connection"
+              data-testid="button-conversation-starters"
             >
-              Strengthen Connection
+              Conversation Starters
             </Button>
           </Link>
           

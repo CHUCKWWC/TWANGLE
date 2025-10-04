@@ -9,7 +9,7 @@ The application provides:
   - Questions cover relationship patterns, conflict resolution, intimacy, and emotional regulation
   - AI generates personalized insights including strengths, growth areas, and detailed analysis
   - Results can be shared via unique shareable links with full ownership verification
-- **Strengthen Your Connection**: Topic-based question system with AI-generated questions and analysis
+- **Conversation Starters**: Topic-based question system with AI-generated questions and analysis
   - 8 relationship topics: Communication, Emotional Intimacy, Physical Intimacy, Conflict Resolution, Trust & Security, Shared Goals, Quality Time, Appreciation
   - 5 AI-generated questions per topic (dynamically created using GPT-4o-mini based on topic and relationship science)
   - AI-powered analysis generates personalized summaries, insights, and recommendations

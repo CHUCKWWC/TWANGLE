@@ -198,7 +198,7 @@ export default function Home() {
                   data-testid="link-connection"
                 >
                   <Heart className="w-4 h-4" />
-                  Connection
+                  Conversation Starters
                 </button>
               </Link>
               <button
