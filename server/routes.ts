@@ -849,29 +849,58 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   app.post("/api/connection/seed", isAuthenticated, async (req: any, res) => {
     try {
       const { connectionTopicsData } = await import('./connectionQuestionsData');
+      const { CURATED_QUESTIONS } = await import('./curatedQuestions');
       
       // Check if topics already exist
       const existingTopics = await storage.getConnectionTopics();
       
-      if (existingTopics.length > 0) {
-        return res.json({ 
-          message: "Connection topics already seeded",
-          topicsCount: existingTopics.length,
-          skipped: true,
-        });
+      let createdTopics = [];
+      let createdQuestions = 0;
+      
+      // Seed topics if they don't exist
+      if (existingTopics.length === 0) {
+        for (const topicData of connectionTopicsData) {
+          const topic = await storage.createConnectionTopic(topicData);
+          createdTopics.push(topic);
+        }
+      } else {
+        createdTopics = existingTopics;
       }
 
-      // Create topics only - questions will be AI-generated on demand
-      const createdTopics = [];
-      for (const topicData of connectionTopicsData) {
-        const topic = await storage.createConnectionTopic(topicData);
-        createdTopics.push(topic);
+      // Seed curated questions (idempotent - won't duplicate)
+      for (const curatedQ of CURATED_QUESTIONS) {
+        // Find the matching topic by name/icon
+        const topic = createdTopics.find(t => {
+          // Match based on topic ID convention
+          const topicIdFromName = t.name.toLowerCase().replace(/\s+/g, '-').replace(/&/g, '');
+          return topicIdFromName === curatedQ.topicId || curatedQ.topicId === t.id;
+        });
+
+        if (!topic) {
+          console.warn(`Topic not found for question with topicId: ${curatedQ.topicId}`);
+          continue;
+        }
+
+        // Check if question already exists
+        const existing = await storage.getConnectionQuestions(topic.id);
+        const questionExists = existing.some(q => q.question === curatedQ.question);
+        
+        if (!questionExists) {
+          await storage.createConnectionQuestion({
+            topicId: topic.id,
+            question: curatedQ.question,
+            order: curatedQ.order,
+            generatedBy: "curated",
+          });
+          createdQuestions++;
+        }
       }
 
       res.json({ 
-        message: "Connection topics seeded successfully. Questions will be AI-generated when needed.",
+        message: "Connection topics and curated questions seeded successfully",
         topicsCount: createdTopics.length,
-        skipped: false,
+        questionsCreated: createdQuestions,
+        skipped: existingTopics.length > 0,
       });
     } catch (error: any) {
       console.error("Seed connection questions error:", error);
@@ -897,14 +926,6 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
   app.get("/api/connection/topics/:topicId/questions", isAuthenticated, async (req: any, res) => {
     console.log(`[CONNECTION QUESTIONS] Request received for topic: ${req.params.topicId}`);
-    
-    if (!process.env.OPENAI_API_KEY) {
-      console.log("[CONNECTION QUESTIONS] ERROR: OpenAI API key not configured");
-      return res.status(501).json({ 
-        error: "AI question generation not configured", 
-        message: "OpenAI API key is not available" 
-      });
-    }
 
     try {
       const { topicId } = req.params;
@@ -919,76 +940,16 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       }
       console.log(`[CONNECTION QUESTIONS] Found topic: ${topic.name}`);
 
-      // Check if we already have questions for this topic
-      let questions = await storage.getConnectionQuestions(topicId);
-      console.log(`[CONNECTION QUESTIONS] Existing questions: ${questions.length}`);
+      // Get curated questions for this topic
+      const questions = await storage.getConnectionQuestions(topicId);
+      console.log(`[CONNECTION QUESTIONS] Found ${questions.length} curated questions`);
       
-      // If no questions exist, generate them with AI
       if (questions.length === 0) {
-        console.log(`[CONNECTION QUESTIONS] Generating AI questions for topic: ${topic.name}`);
-        const questionPrompt = `You are an expert relationship therapist. Generate 5 thoughtful, open-ended questions about "${topic.name}" that will help couples deepen their connection and understanding.
-
-Topic: ${topic.name}
-Description: ${topic.description}
-
-The questions should:
-- Be research-backed based on relationship science (Gottman Method, EFT, Attachment Theory)
-- Encourage vulnerability and honest communication
-- Help couples identify patterns and growth areas
-- Be specific enough to generate meaningful responses
-- Avoid yes/no questions
-- Be relevant to building a solid, healthy relationship
-
-Respond with a JSON object containing an array of exactly 5 questions:
-{
-  "questions": [
-    "Question 1 text here?",
-    "Question 2 text here?",
-    "Question 3 text here?",
-    "Question 4 text here?",
-    "Question 5 text here?"
-  ]
-}`;
-
-        const completion = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content: "You are an expert relationship therapist who creates thoughtful questions to help couples strengthen their connection. Always respond with valid JSON.",
-            },
-            {
-              role: "user",
-              content: questionPrompt,
-            },
-          ],
-          temperature: 0.8,
-          response_format: { type: "json_object" },
+        console.log(`[CONNECTION QUESTIONS] WARNING: No questions found for topic. Topics may need to be seeded.`);
+        return res.status(404).json({ 
+          error: "No questions found for this topic",
+          message: "Questions may need to be seeded. Please contact support or run the seed endpoint."
         });
-
-        const generatedContent = completion.choices[0].message.content || "{}";
-        let generatedQuestions: string[] = [];
-        
-        try {
-          const parsed = JSON.parse(generatedContent);
-          generatedQuestions = parsed.questions || [];
-        } catch (e) {
-          console.error("Failed to parse AI questions:", e);
-          return res.status(500).json({ error: "Failed to generate questions" });
-        }
-
-        // Save generated questions to database
-        console.log(`[CONNECTION QUESTIONS] Saving ${generatedQuestions.length} questions to database`);
-        for (let i = 0; i < generatedQuestions.length && i < 5; i++) {
-          const question = await storage.createConnectionQuestion({
-            topicId,
-            question: generatedQuestions[i],
-            order: i + 1,
-            description: "",
-          });
-          questions.push(question);
-        }
-        console.log(`[CONNECTION QUESTIONS] Successfully created ${questions.length} questions`);
       }
       
       // Get user's responses for these questions
