@@ -44,19 +44,19 @@ export default function DebugPage() {
     }
   };
 
-  const handleMigrate = async () => {
+  const handleClearQuestions = async () => {
     setMigrating(true);
     try {
       await apiRequest("POST", "/api/connection/migrate-to-ai", {});
       toast({
-        title: "Migration Complete",
-        description: "Old questions cleared. Curated questions will be seeded on next seed operation.",
+        title: "Questions Cleared",
+        description: "All questions and responses have been cleared. Run seed to add curated questions.",
       });
       refetch();
     } catch (error: any) {
       toast({
-        title: "Migration Failed",
-        description: error.message || "Failed to migrate",
+        title: "Clear Failed",
+        description: error.message || "Failed to clear questions",
         variant: "destructive",
       });
     } finally {
@@ -76,9 +76,8 @@ export default function DebugPage() {
   }
 
   const hasIssues = 
-    !debugInfo?.openaiConfigured || 
     debugInfo?.topicCount === 0 || 
-    debugInfo?.totalQuestions > 10;
+    debugInfo?.totalQuestions === 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -104,16 +103,16 @@ export default function DebugPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">OpenAI API Configured</span>
+                <span className="text-sm font-medium">OpenAI API (for optional analysis)</span>
                 {debugInfo?.openaiConfigured ? (
                   <Badge variant="default" className="bg-green-500">
                     <CheckCircle2 className="w-3 h-3 mr-1" />
-                    Yes
+                    Configured
                   </Badge>
                 ) : (
-                  <Badge variant="destructive">
+                  <Badge variant="secondary">
                     <XCircle className="w-3 h-3 mr-1" />
-                    No
+                    Not Configured
                   </Badge>
                 )}
               </div>
@@ -126,25 +125,25 @@ export default function DebugPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Total Questions</span>
-                <Badge variant={debugInfo?.totalQuestions === 0 ? "default" : "secondary"}>
-                  {debugInfo?.totalQuestions || 0}
+                <span className="text-sm font-medium">Curated Questions</span>
+                <Badge variant={debugInfo?.totalQuestions === 64 ? "default" : debugInfo?.totalQuestions === 0 ? "destructive" : "secondary"}>
+                  {debugInfo?.totalQuestions || 0} / 64 expected
                 </Badge>
               </div>
             </CardContent>
           </Card>
 
           {!debugInfo?.openaiConfigured && (
-            <Card className="border-destructive">
+            <Card className="border-yellow-500">
               <CardHeader>
-                <CardTitle className="text-destructive">Missing OpenAI API Key</CardTitle>
+                <CardTitle className="text-yellow-600">Missing OpenAI API Key</CardTitle>
                 <CardDescription>
-                  The OPENAI_API_KEY environment variable is not configured. AI question generation will not work.
+                  The OPENAI_API_KEY environment variable is not configured. AI analysis will not work (questions will still work).
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  Add OPENAI_API_KEY to your production environment secrets and redeploy.
+                  Questions use curated content and work without API key. Add OPENAI_API_KEY only if you want optional AI analysis.
                 </p>
               </CardContent>
             </Card>
@@ -160,27 +159,24 @@ export default function DebugPage() {
               </CardHeader>
               <CardContent>
                 <Button onClick={handleSeed} disabled={seeding} data-testid="button-seed">
-                  {seeding ? "Seeding..." : "Seed Topics Now"}
+                  {seeding ? "Seeding..." : "Seed Topics & Questions Now"}
                 </Button>
               </CardContent>
             </Card>
           )}
 
-          {debugInfo && debugInfo.totalQuestions > 10 && (
-            <Card className="border-yellow-500">
+          {debugInfo && debugInfo.totalQuestions === 0 && debugInfo.topicCount > 0 && (
+            <Card className="border-destructive">
               <CardHeader>
-                <CardTitle className="text-yellow-600">Old Static Questions Detected</CardTitle>
+                <CardTitle className="text-destructive">No Questions Found</CardTitle>
                 <CardDescription>
-                  Your database contains {debugInfo.totalQuestions} old static questions. These must be cleared to enable AI generation.
+                  Topics exist but no curated questions have been seeded. Expected: 64 questions (8 per topic).
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button onClick={handleMigrate} disabled={migrating} variant="destructive" data-testid="button-migrate">
-                  {migrating ? "Migrating..." : "Clear Old Questions"}
+                <Button onClick={handleSeed} disabled={seeding} data-testid="button-seed-questions">
+                  {seeding ? "Seeding..." : "Seed Curated Questions"}
                 </Button>
-                <p className="text-xs text-muted-foreground mt-2">
-                  This will delete all existing questions and responses. New questions will be AI-generated on demand.
-                </p>
               </CardContent>
             </Card>
           )}
