@@ -800,6 +800,28 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   });
 
   // Connection Questions - "Strengthen Your Connection" feature
+  
+  // Migration endpoint to clear old static questions and enable AI generation
+  app.post("/api/connection/migrate-to-ai", isAuthenticated, async (req: any, res) => {
+    try {
+      // Delete all existing questions and responses to enable fresh AI generation
+      const deletedResponses = await storage.deleteAllConnectionResponses();
+      const deletedQuestions = await storage.deleteAllConnectionQuestions();
+      
+      res.json({ 
+        message: "Migration complete. Old questions cleared. AI will generate new questions on demand.",
+        deletedQuestions,
+        deletedResponses,
+      });
+    } catch (error: any) {
+      console.error("Migration error:", error);
+      res.status(500).json({
+        error: "Failed to migrate to AI questions",
+        details: error.message,
+      });
+    }
+  });
+
   app.post("/api/connection/seed", isAuthenticated, async (req: any, res) => {
     try {
       const { connectionTopicsData } = await import('./connectionQuestionsData');
