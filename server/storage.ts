@@ -112,6 +112,10 @@ export interface IStorage {
   createConnectionSummary(summary: InsertConnectionSummary): Promise<ConnectionSummary>;
   getConnectionSummaries(userId: string, topicId?: string): Promise<ConnectionSummary[]>;
   getLatestConnectionSummary(userId: string, topicId: string): Promise<ConnectionSummary | undefined>;
+  
+  // Migration helpers
+  deleteAllConnectionQuestions(): Promise<number>;
+  deleteAllConnectionResponses(): Promise<number>;
 }
 
 export class MemStorage implements IStorage {
@@ -420,6 +424,8 @@ export class MemStorage implements IStorage {
       currentCity: insertItinerary.currentCity ?? null,
       retreatDestination: insertItinerary.retreatDestination ?? null,
       startDate: insertItinerary.startDate ?? null,
+      streetAddress: insertItinerary.streetAddress ?? null,
+      travelDistance: insertItinerary.travelDistance ?? null,
       generatedItinerary: insertItinerary.generatedItinerary,
       createdAt: new Date(),
     };
@@ -599,6 +605,18 @@ export class MemStorage implements IStorage {
   async getLatestConnectionSummary(userId: string, topicId: string): Promise<ConnectionSummary | undefined> {
     const summaries = await this.getConnectionSummaries(userId, topicId);
     return summaries[0];
+  }
+
+  async deleteAllConnectionQuestions(): Promise<number> {
+    const count = this.connectionQuestions.size;
+    this.connectionQuestions.clear();
+    return count;
+  }
+
+  async deleteAllConnectionResponses(): Promise<number> {
+    const count = this.connectionResponses.size;
+    this.connectionResponses.clear();
+    return count;
   }
 }
 
@@ -924,6 +942,16 @@ export class DbStorage implements IStorage {
       .orderBy(desc(connectionSummaries.createdAt))
       .limit(1);
     return result[0];
+  }
+
+  async deleteAllConnectionQuestions(): Promise<number> {
+    const result = await this.db.delete(connectionQuestions);
+    return result.rowCount || 0;
+  }
+
+  async deleteAllConnectionResponses(): Promise<number> {
+    const result = await this.db.delete(connectionResponses);
+    return result.rowCount || 0;
   }
 }
 
