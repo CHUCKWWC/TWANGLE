@@ -29,8 +29,8 @@ export default function DebugPage() {
     try {
       await apiRequest("POST", "/api/connection/seed", {});
       toast({
-        title: "Topics Seeded",
-        description: "Connection topics have been initialized successfully.",
+        title: "Topics & Questions Seeded",
+        description: "Connection topics and curated questions have been initialized successfully.",
       });
       refetch();
     } catch (error: any) {
@@ -50,7 +50,7 @@ export default function DebugPage() {
       await apiRequest("POST", "/api/connection/migrate-to-ai", {});
       toast({
         title: "Migration Complete",
-        description: "Old questions cleared. AI will generate new questions on demand.",
+        description: "Old questions cleared. Curated questions will be seeded on next seed operation.",
       });
       refetch();
     } catch (error: any) {
