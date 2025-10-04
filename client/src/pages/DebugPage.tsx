@@ -86,7 +86,7 @@ export default function DebugPage() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Connection Questions Debug</h1>
           <p className="text-muted-foreground">
-            Diagnostic information for the Strengthen Your Connection feature
+            Diagnostic information for the Conversation Starters feature
           </p>
         </div>
 

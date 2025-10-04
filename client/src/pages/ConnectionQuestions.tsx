@@ -165,7 +165,7 @@ export default function ConnectionQuestions() {
             </Link>
             <div className="flex items-center gap-3 mb-2">
               <Heart className="h-8 w-8 text-primary" />
-              <h1 className="text-4xl font-bold" data-testid="text-page-title">Strengthen Your Connection</h1>
+              <h1 className="text-4xl font-bold" data-testid="text-page-title">Conversation Starters</h1>
             </div>
             <p className="text-muted-foreground text-lg">
               Explore thoughtful questions designed to deepen understanding and foster meaningful conversations with your partner.
