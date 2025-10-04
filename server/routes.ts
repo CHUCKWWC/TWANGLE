@@ -801,6 +801,30 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
   // Connection Questions - "Strengthen Your Connection" feature
   
+  // Debug endpoint to check connection questions status
+  app.get("/api/connection/debug", isAuthenticated, async (req: any, res) => {
+    try {
+      const topics = await storage.getConnectionTopics();
+      const allQuestions = await storage.getConnectionQuestions();
+      
+      const questionsByTopic: Record<string, number> = {};
+      for (const topic of topics) {
+        const topicQuestions = allQuestions.filter(q => q.topicId === topic.id);
+        questionsByTopic[topic.name] = topicQuestions.length;
+      }
+      
+      res.json({
+        openaiConfigured: !!process.env.OPENAI_API_KEY,
+        topicCount: topics.length,
+        totalQuestions: allQuestions.length,
+        questionsByTopic,
+        topics: topics.map(t => ({ id: t.id, name: t.name })),
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Migration endpoint to clear old static questions and enable AI generation
   app.post("/api/connection/migrate-to-ai", isAuthenticated, async (req: any, res) => {
     try {
@@ -872,7 +896,10 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   });
 
   app.get("/api/connection/topics/:topicId/questions", isAuthenticated, async (req: any, res) => {
+    console.log(`[CONNECTION QUESTIONS] Request received for topic: ${req.params.topicId}`);
+    
     if (!process.env.OPENAI_API_KEY) {
+      console.log("[CONNECTION QUESTIONS] ERROR: OpenAI API key not configured");
       return res.status(501).json({ 
         error: "AI question generation not configured", 
         message: "OpenAI API key is not available" 
@@ -882,18 +909,23 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     try {
       const { topicId } = req.params;
       const userId = req.user.claims.sub;
+      console.log(`[CONNECTION QUESTIONS] User: ${userId}, Topic: ${topicId}`);
       
       // Get the topic
       const topic = await storage.getConnectionTopic(topicId);
       if (!topic) {
+        console.log(`[CONNECTION QUESTIONS] ERROR: Topic not found: ${topicId}`);
         return res.status(404).json({ error: "Topic not found" });
       }
+      console.log(`[CONNECTION QUESTIONS] Found topic: ${topic.name}`);
 
       // Check if we already have questions for this topic
       let questions = await storage.getConnectionQuestions(topicId);
+      console.log(`[CONNECTION QUESTIONS] Existing questions: ${questions.length}`);
       
       // If no questions exist, generate them with AI
       if (questions.length === 0) {
+        console.log(`[CONNECTION QUESTIONS] Generating AI questions for topic: ${topic.name}`);
         const questionPrompt = `You are an expert relationship therapist. Generate 5 thoughtful, open-ended questions about "${topic.name}" that will help couples deepen their connection and understanding.
 
 Topic: ${topic.name}
@@ -946,6 +978,7 @@ Respond with a JSON object containing an array of exactly 5 questions:
         }
 
         // Save generated questions to database
+        console.log(`[CONNECTION QUESTIONS] Saving ${generatedQuestions.length} questions to database`);
         for (let i = 0; i < generatedQuestions.length && i < 5; i++) {
           const question = await storage.createConnectionQuestion({
             topicId,
@@ -955,11 +988,13 @@ Respond with a JSON object containing an array of exactly 5 questions:
           });
           questions.push(question);
         }
+        console.log(`[CONNECTION QUESTIONS] Successfully created ${questions.length} questions`);
       }
       
       // Get user's responses for these questions
       const responses = await storage.getConnectionResponsesByTopic(userId, topicId);
       const responseMap = new Map(responses.map(r => [r.questionId, r]));
+      console.log(`[CONNECTION QUESTIONS] Found ${responses.length} existing responses`);
       
       // Combine questions with responses
       const questionsWithResponses = questions.map(q => ({
@@ -967,9 +1002,11 @@ Respond with a JSON object containing an array of exactly 5 questions:
         userResponse: responseMap.get(q.id) || null,
       }));
       
+      console.log(`[CONNECTION QUESTIONS] Returning ${questionsWithResponses.length} questions with responses`);
       res.json(questionsWithResponses);
     } catch (error: any) {
-      console.error("Get questions error:", error);
+      console.error("[CONNECTION QUESTIONS] ERROR:", error);
+      console.error("[CONNECTION QUESTIONS] Error stack:", error.stack);
       res.status(500).json({
         error: "Failed to get questions",
         details: error.message,
