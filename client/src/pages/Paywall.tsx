@@ -1,10 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart } from "lucide-react";
 import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 // Stripe Pricing Table Configuration
 const STRIPE_PRICING_TABLE_ID = "prctbl_1SEr1uFHAup9QfDRlc63t1OH";
-const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_live_51RZWPDFHAup9QfDR9nOmIfophtS5wsyFRYf6rTzzB9jg1PjHYSWEAtzL8me4CLAo07aWY1UnnxGZ9dZni9A4WOzC00xaDMx9fU";
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_live_51RZWPDFHAup9QfDR9nOmIfophtS5wsyFRYf6rTzzB9jg1PjHYSWEAtzL8me4CLAo07aWY1UnnxGZ9dZni9A4WOzC00xaDMx9fU";
 
 // TypeScript declaration for Stripe pricing table custom element
 declare global {
@@ -13,12 +14,15 @@ declare global {
       'stripe-pricing-table': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         'pricing-table-id': string;
         'publishable-key': string;
+        'customer-email'?: string;
       };
     }
   }
 }
 
 export default function Paywall() {
+  const { user } = useAuth();
+
   useEffect(() => {
     // Load Stripe pricing table script
     const script = document.createElement('script');
@@ -63,6 +67,7 @@ export default function Paywall() {
                 <stripe-pricing-table
                   pricing-table-id={STRIPE_PRICING_TABLE_ID}
                   publishable-key={STRIPE_PUBLISHABLE_KEY}
+                  customer-email={user?.email || undefined}
                 />
               </div>
             </div>
