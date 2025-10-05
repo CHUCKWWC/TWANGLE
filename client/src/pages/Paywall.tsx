@@ -1,101 +1,81 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, Heart } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Heart } from "lucide-react";
+import { useEffect } from "react";
+
+// Stripe Pricing Table Configuration
+const STRIPE_PRICING_TABLE_ID = "prctbl_1SEr1uFHAup9QfDRlc63t1OH";
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "pk_live_51RZWPDFHAup9QfDR9nOmIfophtS5wsyFRYf6rTzzB9jg1PjHYSWEAtzL8me4CLAo07aWY1UnnxGZ9dZni9A4WOzC00xaDMx9fU";
+
+// TypeScript declaration for Stripe pricing table custom element
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'stripe-pricing-table': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        'pricing-table-id': string;
+        'publishable-key': string;
+      };
+    }
+  }
+}
 
 export default function Paywall() {
-  const { toast } = useToast();
+  useEffect(() => {
+    // Load Stripe pricing table script
+    const script = document.createElement('script');
+    script.src = 'https://js.stripe.com/v3/pricing-table.js';
+    script.async = true;
+    document.body.appendChild(script);
 
-  const checkoutMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/billing/checkout");
-      return response.json();
-    },
-    onSuccess: (data: { url: string }) => {
-      window.location.href = data.url;
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to start checkout",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const features = [
-    "Unlimited AI relationship coaching with Coach Charles",
-    "Personalized attachment style assessment",
-    "Science-based exercises and activities",
-    "DIY Couples retreat planning tools",
-    "Weekly progress summaries with actionable steps",
-    "Relationship progress tracking",
-  ];
+    return () => {
+      // Cleanup script on unmount
+      document.body.removeChild(script);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4">
-      <Card className="max-w-lg w-full">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex justify-center">
-            <div className="bg-primary/10 p-4 rounded-full">
-              <Heart className="w-12 h-12 text-primary" />
-            </div>
-          </div>
-          <div>
-            <CardTitle className="font-display text-3xl">
-              Start Your Relationship Journey
-            </CardTitle>
-            <CardDescription className="text-base mt-2">
-              Get access to evidence-based coaching and tools to strengthen your bond
-            </CardDescription>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
-          <div className="text-center">
-            <div className="text-4xl font-bold text-primary">
-              $9.99<span className="text-xl text-muted-foreground">/month</span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Cancel anytime, no questions asked
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <p className="font-semibold text-sm text-muted-foreground">Everything included:</p>
-            {features.map((feature, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                <span className="text-sm">{feature}</span>
+      <div className="max-w-4xl w-full space-y-6">
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader className="text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="bg-primary/10 p-4 rounded-full">
+                <Heart className="w-12 h-12 text-primary" />
               </div>
-            ))}
-          </div>
+            </div>
+            <div>
+              <CardTitle className="font-display text-3xl">
+                Strengthen Your Relationship
+              </CardTitle>
+              <CardDescription className="text-base mt-2">
+                Get unlimited access to AI coaching, assessments, and relationship-building tools
+              </CardDescription>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
+            <div className="text-center space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Choose the plan that works best for you
+              </p>
+              
+              {/* Stripe Hosted Pricing Table */}
+              <div data-testid="stripe-pricing-table">
+                <stripe-pricing-table
+                  pricing-table-id={STRIPE_PRICING_TABLE_ID}
+                  publishable-key={STRIPE_PUBLISHABLE_KEY}
+                />
+              </div>
+            </div>
 
-          <div className="bg-secondary/50 p-4 rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              <strong>Your Investment:</strong> Professional relationship coaching typically costs $150-300 per session. 
-              Twangle gives you unlimited access for the price of a nice dinner out.
-            </p>
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex flex-col gap-3">
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={() => checkoutMutation.mutate()}
-            disabled={checkoutMutation.isPending}
-            data-testid="button-subscribe"
-          >
-            {checkoutMutation.isPending ? "Loading..." : "Start Subscription"}
-          </Button>
-          <p className="text-xs text-center text-muted-foreground">
-            Secure checkout powered by Stripe
-          </p>
-        </CardFooter>
-      </Card>
+            <div className="bg-secondary/50 p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong>Your Investment:</strong> Professional relationship coaching typically costs $150-300 per session. 
+                Twangle gives you unlimited access for less than the price of dinner out.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
