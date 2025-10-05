@@ -95,6 +95,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user profile
+  app.put('/api/user/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { displayName } = req.body;
+
+      if (displayName !== undefined && typeof displayName !== 'string') {
+        return res.status(400).json({ message: "Display name must be a string" });
+      }
+
+      const updatedUser = await storage.updateUser(userId, { displayName });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
   // Chat endpoint (protected)
   app.post("/api/chat", isAuthenticated, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
