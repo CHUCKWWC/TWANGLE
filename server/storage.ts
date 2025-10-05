@@ -53,6 +53,7 @@ export interface IStorage {
   
   createChatSession(session: InsertChatSession): Promise<ChatSession>;
   getChatSession(id: string): Promise<ChatSession | undefined>;
+  getChatSessionsByUser(userId: string): Promise<ChatSession[]>;
   updateChatSession(id: string, updates: Partial<ChatSession>): Promise<ChatSession | undefined>;
   
   createWeeklySummary(summary: InsertWeeklySummary): Promise<WeeklySummary>;
@@ -79,6 +80,7 @@ export interface IStorage {
   
   createAssessment(data: InsertAssessment): Promise<Assessment>;
   getAssessment(id: string): Promise<Assessment | undefined>;
+  getAssessmentsByUser(userId: string): Promise<Assessment[]>;
   updateAssessmentResult(id: string, result: AttachmentStyleResult): Promise<Assessment | undefined>;
   enableSharing(id: string): Promise<Assessment | undefined>;
   getSharedAssessment(shareToken: string): Promise<Assessment | undefined>;
@@ -183,6 +185,10 @@ export class MemStorage implements IStorage {
 
   async getChatSession(id: string): Promise<ChatSession | undefined> {
     return this.chatSessions.get(id);
+  }
+
+  async getChatSessionsByUser(userId: string): Promise<ChatSession[]> {
+    return Array.from(this.chatSessions.values()).filter(session => session.userId === userId);
   }
 
   async updateChatSession(id: string, updates: Partial<ChatSession>): Promise<ChatSession | undefined> {
@@ -340,8 +346,11 @@ export class MemStorage implements IStorage {
       id,
       userId: insertSubscription.userId,
       stripeSubscriptionId: insertSubscription.stripeSubscriptionId,
+      priceId: insertSubscription.priceId ?? null,
+      planTier: insertSubscription.planTier ?? null,
       status: insertSubscription.status,
       currentPeriodEnd: insertSubscription.currentPeriodEnd ?? null,
+      cancelAtPeriodEnd: insertSubscription.cancelAtPeriodEnd ?? 0,
       createdAt: now,
       updatedAt: now,
     };
@@ -421,6 +430,10 @@ export class MemStorage implements IStorage {
 
   async getAssessment(id: string): Promise<Assessment | undefined> {
     return this.assessments.get(id);
+  }
+
+  async getAssessmentsByUser(userId: string): Promise<Assessment[]> {
+    return Array.from(this.assessments.values()).filter(assessment => assessment.userId === userId);
   }
 
   async updateAssessmentResult(id: string, result: AttachmentStyleResult): Promise<Assessment | undefined> {
@@ -521,6 +534,10 @@ export class DbStorage implements IStorage {
   async getChatSession(id: string): Promise<ChatSession | undefined> {
     const result = await this.db.select().from(chatSessions).where(eq(chatSessions.id, id)).limit(1);
     return result[0];
+  }
+
+  async getChatSessionsByUser(userId: string): Promise<ChatSession[]> {
+    return await this.db.select().from(chatSessions).where(eq(chatSessions.userId, userId));
   }
 
   async updateChatSession(id: string, updates: Partial<ChatSession>): Promise<ChatSession | undefined> {
@@ -662,6 +679,10 @@ export class DbStorage implements IStorage {
   async getAssessment(id: string): Promise<Assessment | undefined> {
     const result = await this.db.select().from(assessments).where(eq(assessments.id, id)).limit(1);
     return result[0];
+  }
+
+  async getAssessmentsByUser(userId: string): Promise<Assessment[]> {
+    return await this.db.select().from(assessments).where(eq(assessments.userId, userId));
   }
 
   async updateAssessmentResult(id: string, result: AttachmentStyleResult): Promise<Assessment | undefined> {
