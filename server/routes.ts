@@ -678,6 +678,29 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
     }
   });
 
+  app.get("/api/assessments/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const assessment = await storage.getAssessment(req.params.id);
+      
+      if (!assessment) {
+        return res.status(404).json({ error: "Assessment not found" });
+      }
+
+      if (assessment.userId !== userId) {
+        return res.status(403).json({ error: "Access denied to this assessment" });
+      }
+
+      res.json({ assessment });
+    } catch (error: any) {
+      console.error("Get assessment error:", error);
+      res.status(500).json({
+        error: "Failed to get assessment",
+        details: error.message,
+      });
+    }
+  });
+
   app.post("/api/assessments/:id/analyze", isAuthenticated, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 

@@ -7,6 +7,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/Landing";
 import Home from "@/pages/Home";
+import Assessment from "@/pages/Assessment";
+import Results from "@/pages/Results";
+import Coach from "@/pages/Coach";
+import Retreat from "@/pages/Retreat";
+import Exercises from "@/pages/Exercises";
+import Summaries from "@/pages/Summaries";
 import RetreatItinerary from "@/pages/RetreatItinerary";
 import SharedAssessment from "@/pages/SharedAssessment";
 import TermsOfService from "@/pages/TermsOfService";
@@ -39,10 +45,16 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={Home} />
+          <Route path="/assessment" component={Assessment} />
+          <Route path="/results" component={Results} />
+          <Route path="/coach" component={Coach} />
+          <Route path="/retreat" component={Retreat} />
+          <Route path="/exercises" component={Exercises} />
+          <Route path="/summaries" component={Summaries} />
+          <Route path="/retreat/:id" component={RetreatItinerary} />
           <Route path="/paywall" component={Paywall} />
           <Route path="/pay/success" component={PaySuccess} />
           <Route path="/pay/cancel" component={PayCancel} />
-          <Route path="/retreat/:id" component={RetreatItinerary} />
           <Route path="/terms" component={TermsOfService} />
           <Route path="/privacy" component={PrivacyPolicy} />
         </>
