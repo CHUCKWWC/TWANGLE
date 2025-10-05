@@ -32,11 +32,7 @@ export default function Profile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (displayName: string) => {
-      return await apiRequest("/api/user/profile", {
-        method: "PUT",
-        body: JSON.stringify({ displayName }),
-        headers: { "Content-Type": "application/json" },
-      });
+      return await apiRequest("PUT", "/api/user/profile", { displayName });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
