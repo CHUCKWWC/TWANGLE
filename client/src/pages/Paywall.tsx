@@ -5,7 +5,11 @@ import { useAuth } from "@/hooks/useAuth";
 
 // Stripe Pricing Table Configuration
 const STRIPE_PRICING_TABLE_ID = "prctbl_1SEr1uFHAup9QfDRlc63t1OH";
-const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY || "pk_live_51RZWPDFHAup9QfDR9nOmIfophtS5wsyFRYf6rTzzB9jg1PjHYSWEAtzL8me4CLAo07aWY1UnnxGZ9dZni9A4WOzC00xaDMx9fU";
+const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+
+if (!STRIPE_PUBLISHABLE_KEY) {
+  throw new Error("VITE_STRIPE_PUBLIC_KEY environment variable is required");
+}
 
 // TypeScript declaration for Stripe pricing table custom element
 declare global {
@@ -15,6 +19,7 @@ declare global {
         'pricing-table-id': string;
         'publishable-key': string;
         'customer-email'?: string;
+        'client-reference-id'?: string;
       };
     }
   }
@@ -68,6 +73,7 @@ export default function Paywall() {
                   pricing-table-id={STRIPE_PRICING_TABLE_ID}
                   publishable-key={STRIPE_PUBLISHABLE_KEY}
                   customer-email={user?.email || undefined}
+                  client-reference-id={user?.id || undefined}
                 />
               </div>
             </div>
