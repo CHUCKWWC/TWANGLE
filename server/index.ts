@@ -77,15 +77,47 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
           if (customer.deleted) break;
           
           let userId = customer.metadata?.userId;
+          let user;
           
-          if (!userId) {
-            const user = await storage.getUserByStripeCustomerId(customerId);
-            if (!user) {
-              console.warn(`Webhook: No user found for customer ${customerId}, skipping subscription creation`);
+          // Try to find user by multiple methods
+          if (userId) {
+            // User ID exists in metadata, fetch the user
+            user = await storage.getUser(userId);
+          } else {
+            // First, try client_reference_id from session
+            if (session.client_reference_id) {
+              user = await storage.getUser(session.client_reference_id);
+              if (user) {
+                userId = user.id;
+              }
+            }
+            
+            // Fallback to finding by stripeCustomerId
+            if (!userId) {
+              user = await storage.getUserByStripeCustomerId(customerId);
+              if (user) {
+                userId = user.id;
+              }
+            }
+            
+            if (!userId || !user) {
+              console.error(`Webhook: No user found for customer ${customerId}, session ${session.id}`);
               break;
             }
-            userId = user.id;
+            
+            // Update Stripe customer metadata with userId for future events
             await stripe.customers.update(customerId, { metadata: { userId } });
+          }
+
+          // Final validation
+          if (!user) {
+            console.error(`Webhook: User ${userId} not found in database`);
+            break;
+          }
+
+          // Persist stripeCustomerId if not already set
+          if (!user.stripeCustomerId) {
+            await storage.updateUser(userId, { stripeCustomerId: customerId });
           }
 
           const subscriptionData = getSubscriptionData(subscription);
@@ -108,15 +140,30 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
         if (customer.deleted) break;
         
         let userId = customer.metadata?.userId;
+        let user;
         
-        if (!userId) {
-          const user = await storage.getUserByStripeCustomerId(customerId);
+        if (userId) {
+          // User ID exists in metadata, fetch the user
+          user = await storage.getUser(userId);
+        } else {
+          user = await storage.getUserByStripeCustomerId(customerId);
           if (!user) {
             console.warn(`Webhook: No user found for customer ${customerId}, skipping subscription update`);
             break;
           }
           userId = user.id;
           await stripe.customers.update(customerId, { metadata: { userId } });
+        }
+
+        // Final validation
+        if (!user) {
+          console.error(`Webhook: User ${userId} not found in database`);
+          break;
+        }
+
+        // Persist stripeCustomerId if not already set
+        if (!user.stripeCustomerId) {
+          await storage.updateUser(userId, { stripeCustomerId: customerId });
         }
 
         const subscriptionData = getSubscriptionData(subscription);
