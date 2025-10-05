@@ -49,13 +49,91 @@ export async function getUncachableGoogleSheetClient() {
 
 let currentSpreadsheetId: string | null = null;
 let currentSheetDate: string | null = null;
+let twangleFolderId: string | null = null;
+let accessFolderId: string | null = null;
+let folderPromise: Promise<string> | null = null;
 
 function getTodayDateString(): string {
   const today = new Date();
   return today.toISOString().split('T')[0];
 }
 
-async function findExistingDailySheet(todayDate: string): Promise<string | null> {
+async function ensureFolderStructure(): Promise<string> {
+  if (accessFolderId) {
+    return accessFolderId;
+  }
+
+  if (folderPromise) {
+    return folderPromise;
+  }
+
+  folderPromise = (async () => {
+    const sheets = await getUncachableGoogleSheetClient();
+    const drive = google.drive({ version: 'v3', auth: sheets.context._options.auth as any });
+
+    const findFolder = async (folderName: string, parentId?: string): Promise<string | null> => {
+      const query = parentId 
+        ? `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`
+        : `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+      
+      const response = await drive.files.list({
+        q: query,
+        fields: 'files(id, name)',
+        pageSize: 10,
+        orderBy: 'createdTime desc',
+      });
+
+      return response.data.files?.[0]?.id || null;
+    };
+
+    const createFolder = async (folderName: string, parentId?: string): Promise<string> => {
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
+      
+      const existingId = await findFolder(folderName, parentId);
+      if (existingId) {
+        return existingId;
+      }
+
+      const fileMetadata: any = {
+        name: folderName,
+        mimeType: 'application/vnd.google-apps.folder',
+      };
+
+      if (parentId) {
+        fileMetadata.parents = [parentId];
+      }
+
+      const response = await drive.files.create({
+        requestBody: fileMetadata,
+        fields: 'id',
+      });
+
+      return response.data.id!;
+    };
+
+    twangleFolderId = await findFolder('Twangle');
+    if (!twangleFolderId) {
+      twangleFolderId = await createFolder('Twangle');
+      console.log(`Created 'Twangle' folder (${twangleFolderId})`);
+    } else {
+      console.log(`Found existing 'Twangle' folder (${twangleFolderId})`);
+    }
+
+    accessFolderId = await findFolder('Access', twangleFolderId);
+    if (!accessFolderId) {
+      accessFolderId = await createFolder('Access', twangleFolderId);
+      console.log(`Created 'Access' folder (${accessFolderId})`);
+    } else {
+      console.log(`Found existing 'Access' folder (${accessFolderId})`);
+    }
+
+    return accessFolderId;
+  })();
+
+  return folderPromise;
+}
+
+async function findExistingDailySheet(todayDate: string, folderId: string): Promise<string | null> {
   try {
     const sheets = await getUncachableGoogleSheetClient();
     const drive = google.drive({ version: 'v3', auth: sheets.context._options.auth as any });
@@ -63,7 +141,7 @@ async function findExistingDailySheet(todayDate: string): Promise<string | null>
     const title = `Twangle Access Log - ${todayDate}`;
     
     const response = await drive.files.list({
-      q: `name='${title}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`,
+      q: `name='${title}' and mimeType='application/vnd.google-apps.spreadsheet' and '${folderId}' in parents and trashed=false`,
       fields: 'files(id, name)',
       pageSize: 1,
     });
@@ -81,8 +159,9 @@ async function findExistingDailySheet(todayDate: string): Promise<string | null>
   }
 }
 
-async function createNewDailySheet(todayDate: string): Promise<string> {
+async function createNewDailySheet(todayDate: string, folderId: string): Promise<string> {
   const sheets = await getUncachableGoogleSheetClient();
+  const drive = google.drive({ version: 'v3', auth: sheets.context._options.auth as any });
   const title = `Twangle Access Log - ${todayDate}`;
 
   const response = await sheets.spreadsheets.create({
@@ -103,6 +182,7 @@ async function createNewDailySheet(todayDate: string): Promise<string> {
               { userEnteredValue: { stringValue: 'IP Address' } },
               { userEnteredValue: { stringValue: 'Location' } },
               { userEnteredValue: { stringValue: 'User Name' } },
+              { userEnteredValue: { stringValue: 'Email/Login' } },
               { userEnteredValue: { stringValue: 'User ID' } },
               { userEnteredValue: { stringValue: 'Path' } },
               { userEnteredValue: { stringValue: 'Method' } },
@@ -118,7 +198,13 @@ async function createNewDailySheet(todayDate: string): Promise<string> {
     throw new Error('Failed to create spreadsheet');
   }
 
-  console.log(`Created new daily access log sheet: ${title} (${spreadsheetId})`);
+  await drive.files.update({
+    fileId: spreadsheetId,
+    addParents: folderId,
+    fields: 'id, parents',
+  });
+
+  console.log(`Created new daily access log sheet: ${title} (${spreadsheetId}) in Access folder`);
   
   return spreadsheetId;
 }
@@ -130,14 +216,16 @@ async function getCurrentSpreadsheetId(): Promise<string> {
     return currentSpreadsheetId;
   }
   
-  const existingId = await findExistingDailySheet(todayDate);
+  const folderId = await ensureFolderStructure();
+  
+  const existingId = await findExistingDailySheet(todayDate, folderId);
   if (existingId) {
     currentSpreadsheetId = existingId;
     currentSheetDate = todayDate;
     return existingId;
   }
   
-  const newId = await createNewDailySheet(todayDate);
+  const newId = await createNewDailySheet(todayDate, folderId);
   currentSpreadsheetId = newId;
   currentSheetDate = todayDate;
   return newId;
@@ -148,6 +236,7 @@ export interface AccessLogEntry {
   ipAddress: string;
   location: string;
   userName: string;
+  userEmail: string;
   userId: string;
   path: string;
   method: string;
@@ -175,6 +264,7 @@ async function flushLogQueue(): Promise<void> {
       entry.ipAddress,
       entry.location,
       entry.userName,
+      entry.userEmail,
       entry.userId,
       entry.path,
       entry.method,
@@ -182,7 +272,7 @@ async function flushLogQueue(): Promise<void> {
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${todayDate}!A:G`,
+      range: `${todayDate}!A:H`,
       valueInputOption: 'RAW',
       requestBody: {
         values
@@ -249,7 +339,8 @@ export async function createAccessLogEntry(req: any, user: any): Promise<AccessL
     timestamp: new Date().toISOString(),
     ipAddress,
     location,
-    userName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email || 'Anonymous',
+    userName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 'Anonymous',
+    userEmail: user?.email || 'N/A',
     userId: user?.id || 'N/A',
     path: req.path,
     method: req.method,
