@@ -150,10 +150,27 @@ Preferred communication style: Simple, everyday language.
 
 **Environment Requirements:**
 - Node.js with ESM support
-- Environment variables: DATABASE_URL, OPENAI_API_KEY
+- Environment variables: DATABASE_URL, OPENAI_API_KEY, VITE_STRIPE_PUBLIC_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
 - PostgreSQL database (recommended: Neon serverless)
 
+**Stripe Integration:**
+- **Payment Processing**: Stripe hosted pricing table for subscriptions
+  - Requires VITE_STRIPE_PUBLIC_KEY (frontend), STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET (backend)
+  - Pricing table passes client-reference-id to link subscriptions to users
+  - Webhook handler processes checkout.session.completed, subscription created/updated/deleted, and invoice events
+  - Automatic user-subscription linking via client_reference_id or customer metadata
+
 ## Recent Changes
+
+### October 5, 2025 - Paywall Debugging and Subscription Linking Fixes
+- **Critical bug fixes for subscription paywall**:
+  - Added client-reference-id to Stripe pricing table component to pass user ID to Stripe checkout sessions
+  - Updated webhook handler to read client_reference_id from sessions for user identification
+  - Implemented proper fallback logic: client_reference_id → stripeCustomerId lookup → customer metadata
+  - Added automatic persistence of stripeCustomerId to user records for future event handling
+  - Removed hardcoded Stripe publishable key fallback for security (now requires VITE_STRIPE_PUBLIC_KEY env var)
+  - Fixed regression where existing subscribers with metadata couldn't update subscriptions
+- **Testing**: E2E test passed verifying complete paywall flow from login to payment pages
 
 ### October 4, 2025 - Removed Conversation Starters Feature
 - **Complete removal of Conversation Starters/Strengthen Your Connection feature**:
