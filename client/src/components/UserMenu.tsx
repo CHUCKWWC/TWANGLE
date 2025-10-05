@@ -18,11 +18,10 @@ export function UserMenu() {
 
   if (!user) return null;
 
-  const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || 'User';
-  const initials = [user.firstName?.[0], user.lastName?.[0]]
-    .filter(Boolean)
-    .join('')
-    .toUpperCase() || 'U';
+  const displayName = user.displayName || [user.firstName, user.lastName].filter(Boolean).join(' ') || 'User';
+  const initials = user.displayName 
+    ? user.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : [user.firstName?.[0], user.lastName?.[0]].filter(Boolean).join('').toUpperCase() || 'U';
 
   return (
     <DropdownMenu>

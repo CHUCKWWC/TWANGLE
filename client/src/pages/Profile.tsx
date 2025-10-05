@@ -1,11 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { AppHeader } from "@/components/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { User, Calendar, Activity, MessageSquare, MapPin, ClipboardList } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { User, Calendar, Activity, MessageSquare, MapPin, ClipboardList, Settings } from "lucide-react";
 import { format } from "date-fns";
+import { useState } from "react";
 
 interface UserStats {
   assessmentCount: number;
@@ -17,12 +23,46 @@ interface UserStats {
 
 export default function Profile() {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [newDisplayName, setNewDisplayName] = useState('');
   
   const { data: stats, isLoading: statsLoading } = useQuery<UserStats>({
     queryKey: ["/api/user/stats"],
   });
 
-  const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
+  const updateProfileMutation = useMutation({
+    mutationFn: async (displayName: string) => {
+      return await apiRequest("/api/user/profile", {
+        method: "PUT",
+        body: JSON.stringify({ displayName }),
+        headers: { "Content-Type": "application/json" },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setNewDisplayName('');
+      toast({
+        title: "Profile updated",
+        description: "Your display name has been updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleUpdateDisplayName = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newDisplayName.trim()) {
+      updateProfileMutation.mutate(newDisplayName.trim());
+    }
+  };
+
+  const displayName = user?.displayName || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
 
   const getSubscriptionBadge = (tier: string, status: string) => {
     if (status === 'active' && tier) {
@@ -76,6 +116,44 @@ export default function Profile() {
                     </span>
                   )}
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  <CardTitle>Profile Settings</CardTitle>
+                </div>
+                <CardDescription>Customize how your name appears in the app</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleUpdateDisplayName} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="displayName">Display Name</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="displayName"
+                        type="text"
+                        placeholder={displayName}
+                        value={newDisplayName}
+                        onChange={(e) => setNewDisplayName(e.target.value)}
+                        disabled={updateProfileMutation.isPending}
+                        data-testid="input-display-name"
+                      />
+                      <Button 
+                        type="submit" 
+                        disabled={!newDisplayName.trim() || updateProfileMutation.isPending}
+                        data-testid="button-save-display-name"
+                      >
+                        {updateProfileMutation.isPending ? 'Saving...' : 'Save'}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Current: {displayName}
+                    </p>
+                  </div>
+                </form>
               </CardContent>
             </Card>
 
