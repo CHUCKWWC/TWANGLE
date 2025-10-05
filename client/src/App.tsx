@@ -13,6 +13,7 @@ import Coach from "@/pages/Coach";
 import Retreat from "@/pages/Retreat";
 import Exercises from "@/pages/Exercises";
 import Summaries from "@/pages/Summaries";
+import Profile from "@/pages/Profile";
 import RetreatItinerary from "@/pages/RetreatItinerary";
 import SharedAssessment from "@/pages/SharedAssessment";
 import TermsOfService from "@/pages/TermsOfService";
@@ -51,6 +52,7 @@ function Router() {
           <Route path="/retreat" component={Retreat} />
           <Route path="/exercises" component={Exercises} />
           <Route path="/summaries" component={Summaries} />
+          <Route path="/profile" component={Profile} />
           <Route path="/retreat/:id" component={RetreatItinerary} />
           <Route path="/paywall" component={Paywall} />
           <Route path="/pay/success" component={PaySuccess} />

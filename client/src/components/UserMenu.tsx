@@ -1,5 +1,6 @@
 // Reference: blueprint:javascript_log_in_with_replit
-import { LogOut } from "lucide-react";
+import { LogOut, User as UserIcon } from "lucide-react";
+import { Link } from "wouter";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +57,12 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/profile" data-testid="link-profile" className="w-full cursor-pointer flex items-center">
+            <UserIcon className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <a href="/api/logout" data-testid="button-logout" className="w-full cursor-pointer">
             <LogOut className="mr-2 h-4 w-4" />

@@ -72,6 +72,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User stats endpoint
+  app.get('/api/user/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const assessments = await storage.getAssessmentsByUser(userId);
+      const chatSessions = await storage.getChatSessionsByUser(userId);
+      const retreats = await storage.getRetreatItineraries(userId);
+      const subscription = await storage.getSubscriptionByUserId(userId);
+      
+      res.json({
+        assessmentCount: assessments.length,
+        chatSessionCount: chatSessions.length,
+        retreatCount: retreats.length,
+        subscriptionStatus: subscription?.status || 'none',
+        subscriptionTier: subscription?.planTier || 'free',
+      });
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });
+
   // Chat endpoint (protected)
   app.post("/api/chat", isAuthenticated, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
