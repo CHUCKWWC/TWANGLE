@@ -44,8 +44,11 @@ export const subscriptions = pgTable("subscriptions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
   stripeSubscriptionId: text("stripe_subscription_id").unique().notNull(),
+  priceId: text("price_id"),
+  planTier: text("plan_tier"),
   status: text("status").notNull(),
   currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: integer("cancel_at_period_end").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

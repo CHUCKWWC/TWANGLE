@@ -12,8 +12,29 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-11-20.acacia",
+  apiVersion: "2025-09-30.clover",
 });
+
+// Helper function to determine plan tier from price ID
+function getPlanTier(priceId: string | null | undefined): 'free' | 'premium' {
+  // If there's a price ID from Stripe, user is on a premium plan
+  // Users without a subscription (no priceId) are on free tier
+  return priceId ? 'premium' : 'free';
+}
+
+// Helper function to extract subscription data
+function getSubscriptionData(subscription: any) {
+  const priceId = subscription.items?.data?.[0]?.price?.id || null;
+  const planTier = getPlanTier(priceId);
+  const cancelAtPeriodEnd = subscription.cancel_at_period_end ? 1 : 0;
+  
+  return {
+    priceId,
+    planTier,
+    cancelAtPeriodEnd,
+    currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined,
+  };
+}
 
 app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
@@ -22,19 +43,20 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
     return res.status(400).send('No signature');
   }
 
+  // Enforce webhook signature verification
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error('STRIPE_WEBHOOK_SECRET not configured');
+    return res.status(500).send('Webhook secret not configured');
+  }
+
   let event: Stripe.Event;
 
   try {
-    if (process.env.STRIPE_WEBHOOK_SECRET) {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-    } else {
-      event = JSON.parse(req.body.toString());
-      console.warn('WARNING: Webhook signature verification disabled - STRIPE_WEBHOOK_SECRET not set');
-    }
+    event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
   } catch (err: any) {
     console.error('Webhook signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -47,7 +69,7 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
         
         if (session.mode === 'subscription' && session.subscription) {
           const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription.id;
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription: any = await stripe.subscriptions.retrieve(subscriptionId);
           const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
           
           const customer = await stripe.customers.retrieve(customerId);
@@ -65,11 +87,12 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
             await stripe.customers.update(customerId, { metadata: { userId } });
           }
 
+          const subscriptionData = getSubscriptionData(subscription);
           await storage.upsertSubscription({
             userId,
             stripeSubscriptionId: subscription.id,
             status: subscription.status,
-            currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined,
+            ...subscriptionData,
           });
         }
         break;
@@ -77,7 +100,7 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
 
       case 'customer.subscription.created':
       case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription: any = event.data.object as Stripe.Subscription;
         const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
         
         const customer = await stripe.customers.retrieve(customerId);
@@ -95,28 +118,30 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
           await stripe.customers.update(customerId, { metadata: { userId } });
         }
 
+        const subscriptionData = getSubscriptionData(subscription);
         await storage.upsertSubscription({
           userId,
           stripeSubscriptionId: subscription.id,
           status: subscription.status,
-          currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined,
+          ...subscriptionData,
         });
         break;
       }
 
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription: any = event.data.object as Stripe.Subscription;
+        const subscriptionData = getSubscriptionData(subscription);
         await storage.updateSubscriptionStatus(
           subscription.id,
           'canceled',
-          subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined
+          subscriptionData.currentPeriodEnd
         );
         break;
       }
 
       case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+        const invoice: any = event.data.object as Stripe.Invoice;
+        const subscriptionId = invoice.subscription as string | null;
         if (subscriptionId) {
           await storage.updateSubscriptionStatus(
             subscriptionId,
@@ -127,10 +152,10 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
       }
 
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
+        const invoice: any = event.data.object as Stripe.Invoice;
+        const subscriptionId = invoice.subscription as string | null;
         if (subscriptionId) {
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription: any = await stripe.subscriptions.retrieve(subscriptionId);
           await storage.updateSubscriptionStatus(
             subscription.id,
             subscription.status,
@@ -151,9 +176,14 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Require SESSION_SECRET in production
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET is required in production');
+}
+
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "twangle-secret-key-change-in-production",
+    secret: process.env.SESSION_SECRET || "twangle-dev-secret-change-this",
     resave: false,
     saveUninitialized: false,
     cookie: {
