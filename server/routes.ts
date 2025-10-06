@@ -536,22 +536,30 @@ ${conversationText}`;
   app.get("/api/billing/status", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
       const subscription = await storage.getSubscriptionByUserId(userId);
+
+      const hasLifetimeAccess = user?.hasLifetimeAccess === 1;
 
       if (!subscription) {
         return res.json({
-          active: false,
-          status: null,
+          tier: hasLifetimeAccess ? "premium" : "free",
+          isActive: false,
+          hasLifetimeAccess,
           currentPeriodEnd: null,
+          cancelAtPeriodEnd: false,
         });
       }
 
       const isActive = subscription.status === 'active' || subscription.status === 'trialing';
+      const tier = isActive || hasLifetimeAccess ? "premium" : "free";
 
       res.json({
-        active: isActive,
-        status: subscription.status,
+        tier,
+        isActive,
+        hasLifetimeAccess,
         currentPeriodEnd: subscription.currentPeriodEnd,
+        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd === 1,
       });
     } catch (error: any) {
       console.error("Get billing status error:", error);

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import AICoachChat, { type Message } from "@/components/AICoachChat";
 import { AppHeader } from "@/components/AppHeader";
+import { RequirePlan } from "@/components/RequirePlan";
 
 export default function Coach() {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
@@ -63,7 +64,7 @@ export default function Coach() {
   };
 
   return (
-    <>
+    <RequirePlan message="Access unlimited AI coaching with a premium subscription">
       <AppHeader />
       <div className="pt-16">
         <AICoachChat
@@ -73,6 +74,6 @@ export default function Coach() {
           onViewSummaries={() => navigate("/summaries")}
         />
       </div>
-    </>
+    </RequirePlan>
   );
 }
