@@ -114,17 +114,11 @@ async function ensureFolderStructure(): Promise<string> {
     twangleFolderId = await findFolder('Twangle');
     if (!twangleFolderId) {
       twangleFolderId = await createFolder('Twangle');
-      console.log(`Created 'Twangle' folder (${twangleFolderId})`);
-    } else {
-      console.log(`Found existing 'Twangle' folder (${twangleFolderId})`);
     }
 
     accessFolderId = await findFolder('Access', twangleFolderId);
     if (!accessFolderId) {
       accessFolderId = await createFolder('Access', twangleFolderId);
-      console.log(`Created 'Access' folder (${accessFolderId})`);
-    } else {
-      console.log(`Found existing 'Access' folder (${accessFolderId})`);
     }
 
     return accessFolderId;
@@ -148,7 +142,6 @@ async function findExistingDailySheet(todayDate: string, folderId: string): Prom
     
     if (response.data.files && response.data.files.length > 0) {
       const spreadsheetId = response.data.files[0].id;
-      console.log(`Found existing daily access log sheet: ${title} (${spreadsheetId})`);
       return spreadsheetId || null;
     }
     
@@ -203,8 +196,6 @@ async function createNewDailySheet(todayDate: string, folderId: string): Promise
     addParents: folderId,
     fields: 'id, parents',
   });
-
-  console.log(`Created new daily access log sheet: ${title} (${spreadsheetId}) in Access folder`);
   
   return spreadsheetId;
 }
@@ -337,8 +328,7 @@ async function getLocationFromIP(ip: string): Promise<string> {
     return 'localhost';
   }
   
-  return 'Pending'
-;
+  return 'Unknown';
 }
 
 export async function createAccessLogEntry(req: any, user: any): Promise<AccessLogEntry> {
