@@ -9,7 +9,8 @@ import {
   Heart,
   TrendingUp,
   Calendar,
-  CheckCircle2
+  CheckCircle2,
+  Utensils
 } from "lucide-react";
 
 interface UserStats {
@@ -256,6 +257,15 @@ export default function Dashboard() {
               >
                 <Heart className="w-4 h-4 mr-2" />
                 Browse Relationship Exercises
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start" 
+                onClick={() => navigate("/datenight")}
+                data-testid="button-datenight"
+              >
+                <Utensils className="w-4 h-4 mr-2" />
+                Plan Date Night
               </Button>
               <Button 
                 variant="outline" 
