@@ -5,15 +5,12 @@
 Twangle ("Two Tangled Together") is a couples' relationship wellness application that combines psychological assessments, AI-powered coaching, and relationship-building tools. The platform helps couples understand their attachment styles, identify relationship patterns, and receive personalized guidance based on research-backed frameworks including Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory.
 
 The application provides:
-- **Attachment Style Assessment**: 20-question comprehensive assessment with AI-powered analysis using OpenAI GPT-4o-mini
-  - Questions cover relationship patterns, conflict resolution, intimacy, and emotional regulation
-  - AI generates personalized insights including strengths, growth areas, and detailed analysis
-  - Results can be shared via unique shareable links with full ownership verification
-- AI relationship coach (Coach Charles) powered by OpenAI
-- Research-based relationship exercises library
-- DIY couples retreat builder with timeline scheduling and AI-generated itineraries
-- Weekly coaching session summaries
-- User feedback system with lifetime access incentive (first 100 users)
+- Attachment Style Assessment: 20-question comprehensive assessment with AI-powered analysis.
+- AI relationship coach (Coach Charles).
+- Research-based relationship exercises library.
+- DIY couples retreat builder with AI-generated itineraries.
+- Weekly coaching session summaries.
+- User feedback system with lifetime access incentive.
 
 ## User Preferences
 
@@ -24,195 +21,109 @@ Preferred communication style: Simple, everyday language.
 ### Frontend Architecture
 
 **Framework & Tooling:**
-- React 18 with TypeScript for type safety
-- Vite as build tool and development server
-- Wouter for lightweight client-side routing
-- TanStack Query (React Query) for server state management
+- React 18 with TypeScript.
+- Vite as build tool.
+- Wouter for client-side routing.
+- TanStack Query for server state management.
 
 **UI Component System:**
-- Shadcn/ui component library with Radix UI primitives
-- Tailwind CSS for styling with custom design tokens
-- Custom theme system supporting light/dark modes
-- Responsive design with mobile-first approach
+- Shadcn/ui with Radix UI primitives.
+- Tailwind CSS for styling.
+- Custom theme system supporting light/dark modes.
+- Responsive design with mobile-first approach.
 
 **Design System:**
-- Typography: Poppins (headings), Inter (body), Quicksand (accents)
-- Color palette: Warm rose/mauve primary (HSL: 340 45% 55%), terracotta secondary
-- Warm, organic aesthetic prioritizing emotional safety over clinical appearance
-- Progressive intimacy model - UI deepens as user engagement increases
+- Typography: Poppins (headings), Inter (body), Quicksand (accents).
+- Color palette: Warm rose/mauve primary (HSL: 340 45% 55%), terracotta secondary.
+- Warm, organic aesthetic prioritizing emotional safety.
+- Progressive intimacy model.
 
 **Key UI Components:**
-- **Dashboard**: Comprehensive home page showing user progress, stats (assessments, coach sessions, retreats), quick action cards, and next steps guidance with proper error handling
-- WelcomeHero: Full-screen landing with hero image
-- AssessmentQuestion: Multi-step questionnaire interface with progress tracking
-- AttachmentResults: Visualization of attachment scores using Recharts pie charts
-- AICoachChat: Real-time chat interface with message history and suggested prompts
-- RetreatBuilder: Multi-step retreat planning wizard with location/date collection and AI itinerary generation
-- RetreatItinerary: Dedicated page displaying personalized AI-generated retreat plans with local recommendations
-- ExercisesLibrary: Accordion-based exercise browser with categorization
-- WeeklySummaries: Session summary viewer with action items
-- FeedbackForm: User feedback collection with lifetime access incentive banner
+- Dashboard: Shows user progress, stats, quick action cards, and next steps.
+- AssessmentQuestion: Multi-step questionnaire with progress tracking.
+- AttachmentResults: Visualization of attachment scores using Recharts.
+- AICoachChat: Real-time chat interface.
+- RetreatBuilder: Multi-step retreat planning wizard.
+- RetreatItinerary: Displays personalized AI-generated retreat plans.
+- ExercisesLibrary: Accordion-based exercise browser.
+- WeeklySummaries: Session summary viewer.
+- FeedbackForm: User feedback collection.
 
 ### Backend Architecture
 
 **Server Framework:**
-- Express.js on Node.js
-- TypeScript for type safety across frontend/backend
-- ESM module system
+- Express.js on Node.js with TypeScript.
+- ESM module system.
 
 **API Design:**
-- RESTful endpoints under `/api` prefix
-- POST `/api/chat` - OpenAI streaming chat completions
-- POST `/api/retreat/generate-itinerary` - Generate AI-powered personalized retreat itinerary
-- GET `/api/retreat/itineraries` - Retrieve user's saved retreat itineraries
-- GET `/api/retreat/itinerary/:id` - Retrieve specific retreat itinerary with access control
-- GET `/api/user/eligibility` - Check user eligibility for lifetime access
-- POST `/api/feedback/general` - Submit user feedback (with Zod validation)
-- **POST `/api/assessments`** - Create new attachment assessment with user responses
-- **POST `/api/assessments/:id/analyze`** - AI analysis of assessment using GPT-4o-mini (3-10 seconds)
-- **POST `/api/assessments/:id/share`** - Generate shareable link with ownership verification
-- **GET `/api/shared/:shareToken`** - Public endpoint to view shared assessment results
-- Session management for chat continuity
-- JSON request/response format with proper validation and error handling
-- Ownership verification on all protected resources
+- RESTful endpoints under `/api` prefix.
+- Endpoints for chat, retreat itinerary generation/retrieval, user eligibility, feedback, and attachment assessments (create, analyze, share, view shared).
+- Session management for chat continuity.
+- JSON request/response format with validation and error handling.
+- Ownership verification on protected resources.
 
 **AI Integration:**
-- OpenAI GPT integration for relationship coaching, retreat planning, and attachment analysis
-- Custom system prompts for different use cases:
-  - Coach Charles persona for conversational coaching with research-backed methodologies
-  - Retreat itinerary generation with personalized recommendations based on preferences
-  - **Attachment theory expert persona** for analyzing assessment responses with JSON-structured output
-  - Christian-informed values without explicit religious messaging
-  - Mobile-optimized response formatting
-- Streaming responses for real-time chat experience
-- **Structured JSON responses** for attachment analysis with Zod validation (primaryStyle, stylePercentages, description, strengths, growthAreas, analysis)
+- OpenAI GPT integration for relationship coaching, retreat planning, and attachment analysis.
+- Custom system prompts for Coach Charles persona, retreat itinerary generation, and attachment theory expert analysis.
+- Streaming responses for real-time chat.
+- Structured JSON responses for attachment analysis with Zod validation.
 
 ### Data Storage Solutions
 
 **Database:**
-- PostgreSQL via Neon serverless
-- Drizzle ORM for type-safe database queries
-- Schema-first design with Zod validation
+- PostgreSQL via Neon serverless.
+- Drizzle ORM for type-safe queries.
+- Schema-first design with Zod validation.
 
 **Data Models:**
-- Users: Authentication with Replit Auth, includes hasLifetimeAccess and userNumber fields
-- ChatSessions: Tracking conversation threads with message counts and timestamps
-- WeeklySummaries: AI-generated session summaries with action items array
-- GeneralFeedback: User feedback submissions with type, category, description, and rating
-- SessionFeedback: Session-specific feedback ratings
-- RelationshipProgress: Weekly relationship score tracking
-- RetreatItineraries: Stored retreat configurations and AI-generated itineraries with location/date details
-- **Assessments**: Attachment style assessments with user responses (JSONB), AI-generated results, share tokens, and ownership tracking
-  - Responses stored as question-answer pairs
-  - AI analysis includes: primaryStyle, stylePercentages (4 attachment types), description, strengths array, growthAreas array, detailed analysis
-  - Sharing enabled via unique UUID tokens with isShared flag and ownership verification
+- Users: Authentication, lifetime access.
+- ChatSessions: Conversation threads.
+- WeeklySummaries: AI-generated session summaries.
+- GeneralFeedback: User feedback.
+- SessionFeedback: Session-specific feedback ratings.
+- RelationshipProgress: Weekly relationship score tracking.
+- RetreatItineraries: Stored retreat configurations and AI-generated itineraries.
+- Assessments: Attachment style assessments with user responses (JSONB), AI-generated results, share tokens, and ownership tracking.
 
 **Storage Pattern:**
-- Interface-based storage abstraction (IStorage)
-- MemStorage implementation for development/testing
-- Production uses Drizzle with PostgreSQL connection pooling
-- UUID primary keys generated at database level
+- Interface-based storage abstraction.
+- Production uses Drizzle with PostgreSQL connection pooling.
+- UUID primary keys.
 
 ### Authentication & Authorization
 
 **Current Implementation:**
-- Replit Auth (OIDC-based authentication)
-- Session-based authentication with isAuthenticated middleware
-- User tracking with lifetime access feature for first 100 feedback submitters
-- All API endpoints protected with authentication
+- Replit Auth (OIDC-based).
+- Session-based authentication with `isAuthenticated` middleware.
+- User tracking with lifetime access feature.
+- All API endpoints protected with authentication.
 
 **Security Considerations:**
-- HTTPS-only cookies planned
-- Session store using connect-pg-simple for PostgreSQL
-- Password hashing not yet implemented (requires bcrypt/argon2)
+- HTTPS-only cookies planned.
+- Session store using `connect-pg-simple`.
 
-### External Dependencies
+### Build & Deployment
 
-**Third-Party Services:**
-- **OpenAI API**: GPT chat completions for AI coaching functionality
-  - Requires OPENAI_API_KEY environment variable
-  - Used for conversational coaching and session summarization
-
-- **Neon Database**: Serverless PostgreSQL hosting
-  - Requires DATABASE_URL environment variable
-  - Provides scalable database with connection pooling
-
-**Key NPM Packages:**
-- **UI/UX**: @radix-ui/* components, recharts for data visualization, embla-carousel
-- **Forms**: react-hook-form with @hookform/resolvers for validation
-- **Database**: drizzle-orm, drizzle-zod, @neondatabase/serverless
-- **Development**: vite, tsx for dev server, esbuild for production builds
-- **Date Handling**: date-fns for timestamp formatting
-
-**Build & Deployment:**
-- Development: `npm run dev` - TSX watches server, Vite serves client
-- Production: `npm run build` - Vite bundles client, esbuild bundles server
-- Database Migrations: `npm run db:push` - Drizzle schema push to PostgreSQL
+- Development: `npm run dev` (TSX watches server, Vite serves client).
+- Production: `npm run build` (Vite bundles client, esbuild bundles server).
+- Database Migrations: `npm run db:push`.
 
 **Environment Requirements:**
-- Node.js with ESM support
-- Environment variables: DATABASE_URL, OPENAI_API_KEY, VITE_STRIPE_PUBLIC_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
-- PostgreSQL database (recommended: Neon serverless)
+- Node.js with ESM support.
+- Environment variables: `DATABASE_URL`, `OPENAI_API_KEY`, `VITE_STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
+- PostgreSQL database.
 
-**Stripe Integration:**
-- **Payment Processing**: Stripe hosted pricing table for subscriptions
-  - Requires VITE_STRIPE_PUBLIC_KEY (frontend), STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET (backend)
-  - Pricing table passes client-reference-id to link subscriptions to users
-  - Webhook handler processes checkout.session.completed, subscription created/updated/deleted, and invoice events
-  - Automatic user-subscription linking via client_reference_id or customer metadata
+## External Dependencies
 
-## Recent Changes
+**Third-Party Services:**
+- **OpenAI API**: GPT chat completions for AI coaching, assessment analysis, and summarization.
+- **Neon Database**: Serverless PostgreSQL hosting.
+- **ip-api.com**: Free geolocation API for IP address lookups and geographic access restrictions (blocking Russia and China).
 
-### October 6, 2025 - Assessment Expansion to 20 Questions
-- **Expanded attachment assessment from 10 to 20 questions** for increased accuracy:
-  - Added 10 new questions covering: trust/abandonment fears (Q11), space needs (Q12), self-worth (Q13), expressing needs (Q14), jealousy responses (Q15), commitment/future planning (Q16), post-argument repair (Q17), physical affection (Q18), supporting partner (Q19), approach to challenges (Q20)
-  - All questions maintain balanced 4-option structure across attachment styles (secure, anxious, avoidant, fearful)
-  - Updated all UI references from "10 questions" to "20 questions" (Dashboard, Landing page, documentation)
-- **Comprehensive E2E testing**:
-  - Verified full 20-question assessment flow with AI analysis
-  - Tested sharing functionality: link generation, partner access without auth, ownership protection
-  - Confirmed all attachment results display correctly (style, percentages, strengths, growth areas, analysis)
-
-### October 6, 2025 - Dashboard Implementation
-- **Created comprehensive Dashboard component** to replace simple hero landing:
-  - Stats overview showing assessment count, coach session count, and retreat count from `/api/user/stats`
-  - Quick action cards for primary features (assessment, coach, retreat) with visual completion indicators
-  - "Your Next Steps" section guiding users to incomplete features
-  - "Explore Features" section with navigation to exercises, summaries, and results
-  - Proper error handling with retry functionality for API failures
-  - Loading states with centered spinner
-  - Error states with descriptive messages and retry button
-- **Updated Home page** to use Dashboard component instead of WelcomeHero
-- **Testing**: E2E test passed verifying dashboard loads, displays stats, and all navigation works correctly
-
-### October 5, 2025 - Paywall Debugging and Subscription Linking Fixes
-- **Critical bug fixes for subscription paywall**:
-  - Added client-reference-id to Stripe pricing table component to pass user ID to Stripe checkout sessions
-  - Updated webhook handler to read client_reference_id from sessions for user identification
-  - Implemented proper fallback logic: client_reference_id → stripeCustomerId lookup → customer metadata
-  - Added automatic persistence of stripeCustomerId to user records for future event handling
-  - Removed hardcoded Stripe publishable key fallback for security (now requires VITE_STRIPE_PUBLIC_KEY env var)
-  - Fixed regression where existing subscribers with metadata couldn't update subscriptions
-- **Testing**: E2E test passed verifying complete paywall flow from login to payment pages
-
-### October 4, 2025 - Removed Conversation Starters Feature
-- **Complete removal of Conversation Starters/Strengthen Your Connection feature**:
-  - Removed all connection-related frontend components (ConnectionQuestions.tsx, ConnectionInsights.tsx, DebugPage.tsx)
-  - Removed all connection API endpoints from server/routes.ts
-  - Removed connection storage methods from server/storage.ts
-  - Removed connection schemas from shared/schema.ts
-  - Dropped connection_topics, connection_questions, connection_responses, connection_summaries tables from database
-  - Removed navigation links from Home.tsx and WelcomeHero.tsx
-  - Updated replit.md to reflect removal
-
-### October 3, 2025 - Comprehensive Attachment Assessment System
-- **Complete rebuild of attachment assessment feature**:
-  - Created 20-question assessment covering relationship patterns, conflict resolution, intimacy, and emotional regulation
-  - Implemented AI-powered analysis using OpenAI GPT-4o-mini with specialized attachment theory prompt
-  - Added secure sharing functionality with full UUID tokens and ownership verification
-  - Enhanced results display with AI-generated strengths, growth areas, and personalized analysis
-- **Database schema**: Added assessments table with responses (JSONB), results, share tokens, and userId for ownership
-- **Backend API**: 4 new endpoints for assessment creation, AI analysis, sharing, and public shared view
-- **Frontend components**: Updated Home.tsx flow, enhanced AttachmentResults with AI insights and sharing UI
-- **Security**: Ownership verification on share endpoint, authenticated-only assessment creation, full UUID share tokens
-- **Testing**: End-to-end test passed covering complete flow from assessment to AI analysis to sharing
+**Key NPM Packages:**
+- **UI/UX**: `@radix-ui/*` components, `recharts`, `embla-carousel`.
+- **Forms**: `react-hook-form` with `@hookform/resolvers`.
+- **Database**: `drizzle-orm`, `drizzle-zod`, `@neondatabase/serverless`.
+- **Development**: `vite`, `tsx`, `esbuild`.
+- **Date Handling**: `date-fns`.
+- **Stripe Integration**: For payment processing and subscription management via hosted pricing table and webhooks.
