@@ -110,7 +110,8 @@ Preferred communication style: Simple, everyday language.
 - Two-tier system: Free and Premium.
 - Premium features gated using `RequirePlan` component.
 - Access granted via active subscription (status: 'active' or 'trialing') OR lifetime access flag.
-- Premium pages: Coach (AI coaching), Retreat (DIY retreat builder), Date Night (AI date planner), Summaries (weekly summaries).
+- Free features: Attachment assessments, exercises library, date night planner.
+- Premium pages: Coach (AI coaching), Retreat (DIY retreat builder), Summaries (weekly summaries).
 - `usePlan` hook provides subscription status to frontend components.
 
 **Security Considerations:**
