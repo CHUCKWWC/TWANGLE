@@ -48,6 +48,8 @@ Preferred communication style: Simple, everyday language.
 - ExercisesLibrary: Accordion-based exercise browser.
 - WeeklySummaries: Session summary viewer.
 - FeedbackForm: User feedback collection.
+- RequirePlan: Premium feature gate component with upgrade prompts.
+- Paywall: Stripe hosted pricing table for subscription purchases.
 
 ### Backend Architecture
 
@@ -58,6 +60,8 @@ Preferred communication style: Simple, everyday language.
 **API Design:**
 - RESTful endpoints under `/api` prefix.
 - Endpoints for chat, retreat itinerary generation/retrieval, user eligibility, feedback, and attachment assessments (create, analyze, share, view shared).
+- Billing endpoints: `/api/billing/status` (subscription status), `/api/billing/checkout` (create Stripe session), `/api/billing/portal` (customer portal).
+- Webhook handler: `/webhooks/stripe` for subscription events (checkout completed, subscription created/updated/deleted).
 - Session management for chat continuity.
 - JSON request/response format with validation and error handling.
 - Ownership verification on protected resources.
@@ -76,7 +80,8 @@ Preferred communication style: Simple, everyday language.
 - Schema-first design with Zod validation.
 
 **Data Models:**
-- Users: Authentication, lifetime access.
+- Users: Authentication, lifetime access, Stripe customer ID.
+- Subscriptions: Stripe subscription details (subscription ID, price ID, plan tier, status, period end, cancellation status).
 - ChatSessions: Conversation threads.
 - WeeklySummaries: AI-generated session summaries.
 - GeneralFeedback: User feedback.
@@ -98,9 +103,17 @@ Preferred communication style: Simple, everyday language.
 - User tracking with lifetime access feature.
 - All API endpoints protected with authentication.
 
+**Subscription & Access Control:**
+- Two-tier system: Free and Premium.
+- Premium features gated using `RequirePlan` component.
+- Access granted via active subscription (status: 'active' or 'trialing') OR lifetime access flag.
+- Premium pages: Coach (AI coaching), Retreat (DIY retreat builder), Summaries (weekly summaries).
+- `usePlan` hook provides subscription status to frontend components.
+
 **Security Considerations:**
 - HTTPS-only cookies planned.
 - Session store using `connect-pg-simple`.
+- Stripe webhook signature verification for subscription events.
 
 ### Build & Deployment
 
