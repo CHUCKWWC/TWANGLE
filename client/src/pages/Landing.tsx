@@ -88,7 +88,7 @@ export default function Landing() {
                 </div>
                 <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Attachment Assessment</h3>
                 <p className="text-muted-foreground">
-                  Discover your attachment style with a research-backed 25-question assessment. 
+                  Discover your attachment style with a research-backed 20-question assessment. 
                   Understand how you connect and what you need to thrive.
                 </p>
               </CardContent>
@@ -180,7 +180,7 @@ export default function Landing() {
               <div className="flex-1">
                 <h3 className="text-2xl font-semibold mb-3 font-[Poppins]">Take the Assessment</h3>
                 <p className="text-muted-foreground mb-4">
-                  Complete our 25-question attachment style assessment to understand your relationship patterns. 
+                  Complete our 20-question attachment style assessment to understand your relationship patterns. 
                   Discover whether you lean Secure, Anxious, Avoidant, or Fearful-Avoidant.
                 </p>
                 <div className="flex flex-wrap gap-2">

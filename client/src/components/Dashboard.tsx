@@ -134,7 +134,7 @@ export default function Dashboard() {
                     <p className="text-sm text-muted-foreground">
                       {hasCompletedAssessment 
                         ? "Track how your attachment style evolves"
-                        : "Discover your attachment style in 10 questions"
+                        : "Discover your attachment style in 20 questions"
                       }
                     </p>
                   </div>
