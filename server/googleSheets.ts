@@ -266,30 +266,22 @@ export async function logAccessToSheet(entry: AccessLogEntry): Promise<void> {
   }
 }
 
-async function getLocationFromIP(ip: string): Promise<string> {
-  if (ip === '127.0.0.1' || ip === '::1' || ip.startsWith('::ffff:127.')) {
-    return 'localhost';
-  }
-  
-  return 'Unknown';
-}
-
-export async function createAccessLogEntry(req: any, user: any): Promise<AccessLogEntry> {
+export async function createAccessLogEntry(req: any, user: any, location: string): Promise<AccessLogEntry> {
   const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() 
     || req.headers['x-real-ip'] 
     || req.connection?.remoteAddress 
     || req.socket?.remoteAddress 
     || 'Unknown';
   
-  const location = await getLocationFromIP(ipAddress);
-  
   return {
     timestamp: new Date().toISOString(),
     ipAddress,
     location,
-    userName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 'Anonymous',
-    userEmail: user?.email || 'N/A',
-    userId: user?.id || 'N/A',
+    userName: user?.claims?.first_name && user?.claims?.last_name 
+      ? `${user.claims.first_name} ${user.claims.last_name}` 
+      : user?.email || 'Anonymous',
+    userEmail: user?.claims?.email || user?.email || 'N/A',
+    userId: user?.claims?.sub || user?.id || 'N/A',
     path: req.path,
     method: req.method,
   };

@@ -8,6 +8,8 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import { getLocationFromIP, extractIPAddress } from "./geolocation";
+import { createAccessLogEntry, logAccessToSheet } from "./googleSheets";
 
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
@@ -109,10 +111,50 @@ export async function setupAuth(app: Express) {
     })(req, res, next);
   });
 
-  app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
+  app.get("/api/callback", async (req, res, next) => {
+    const ipAddress = extractIPAddress(req);
+    const geoData = await getLocationFromIP(ipAddress);
+    
+    if (geoData.blocked) {
+      return res.status(403).send('Access from your country is not permitted.');
+    }
+    
+    passport.authenticate(`replitauth:${req.hostname}`, (err: any, user: any) => {
+      if (err) {
+        return next(err);
+      }
+      
+      if (!user) {
+        return res.redirect("/api/login");
+      }
+      
+      req.logIn(user, async (err: any) => {
+        if (err) {
+          return next(err);
+        }
+        
+        const session = req.session as any;
+        if (!Array.isArray(session.loggedIPs)) {
+          session.loggedIPs = [];
+        }
+        
+        session.loggedIPs = session.loggedIPs.filter((ip: string) => ip && ip !== 'Unknown');
+        
+        const shouldLog = ipAddress && ipAddress !== 'Unknown' && !session.loggedIPs.includes(ipAddress);
+        
+        if (shouldLog) {
+          session.loggedIPs.push(ipAddress);
+          
+          try {
+            const logEntry = await createAccessLogEntry(req, user, geoData.location);
+            await logAccessToSheet(logEntry);
+          } catch (error) {
+            console.error('Failed to log access:', error);
+          }
+        }
+        
+        res.redirect("/");
+      });
     })(req, res, next);
   });
 

@@ -4,7 +4,6 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import Stripe from "stripe";
 import { storage } from "./storage";
-import { createAccessLogEntry, logAccessToSheet } from "./googleSheets";
 
 const app = express();
 
@@ -268,14 +267,6 @@ app.use((req, res, next) => {
 
       log(logLine);
     }
-    
-    createAccessLogEntry(req, (req as any).user).then(entry => {
-      logAccessToSheet(entry).catch(err => {
-        console.error('Failed to log to Google Sheets:', err);
-      });
-    }).catch(err => {
-      console.error('Failed to create access log entry:', err);
-    });
   });
 
   next();
