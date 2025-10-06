@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lock } from "lucide-react";
+import { Lock, Gift } from "lucide-react";
 
 interface RequirePlanProps {
   children: React.ReactNode;
@@ -48,8 +48,22 @@ export function RequirePlan({
           </CardHeader>
           
           <CardContent className="space-y-4">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+              <div className="flex items-start gap-3">
+                <Gift className="w-5 h-5 text-primary mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">
+                    Start your 7-day free trial
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Cancel anytime before day 7 to avoid charges.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <p className="text-sm text-muted-foreground text-center">
-              Upgrade to premium to access this feature and unlock:
+              Get full access to all premium features:
             </p>
             <ul className="text-sm space-y-2">
               <li>✓ Unlimited AI coaching sessions</li>
@@ -66,7 +80,7 @@ export function RequirePlan({
                 size="lg"
                 data-testid="button-upgrade-now"
               >
-                Upgrade Now
+                Start Free Trial
               </Button>
               <Button 
                 onClick={() => setLocation("/")} 
