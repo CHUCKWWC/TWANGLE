@@ -19,6 +19,8 @@ import {
   type Assessment,
   type InsertAssessment,
   type AttachmentStyleResult,
+  type DateNight,
+  type InsertDateNight,
   users,
   subscriptions,
   chatSessions,
@@ -27,7 +29,8 @@ import {
   relationshipProgress,
   generalFeedback,
   retreatItineraries,
-  assessments
+  assessments,
+  dateNights
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -84,6 +87,10 @@ export interface IStorage {
   updateAssessmentResult(id: string, result: AttachmentStyleResult): Promise<Assessment | undefined>;
   enableSharing(id: string): Promise<Assessment | undefined>;
   getSharedAssessment(shareToken: string): Promise<Assessment | undefined>;
+  
+  createDateNight(dateNight: InsertDateNight): Promise<DateNight>;
+  getDateNight(id: string): Promise<DateNight | undefined>;
+  getDateNights(userId?: string): Promise<DateNight[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -96,6 +103,7 @@ export class MemStorage implements IStorage {
   private subscriptions: Map<string, Subscription>;
   private retreatItineraries: Map<string, RetreatItinerary>;
   private assessments: Map<string, Assessment>;
+  private dateNights: Map<string, DateNight>;
 
   constructor() {
     this.users = new Map();
@@ -107,6 +115,7 @@ export class MemStorage implements IStorage {
     this.subscriptions = new Map();
     this.retreatItineraries = new Map();
     this.assessments = new Map();
+    this.dateNights = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -469,6 +478,38 @@ export class MemStorage implements IStorage {
       (assessment) => assessment.shareToken === shareToken && assessment.isShared === 1
     );
   }
+
+  async createDateNight(insertDateNight: InsertDateNight): Promise<DateNight> {
+    const id = randomUUID();
+    const dateNight: DateNight = {
+      id,
+      userId: insertDateNight.userId,
+      budget: insertDateNight.budget,
+      vibe: insertDateNight.vibe,
+      duration: insertDateNight.duration,
+      location: insertDateNight.location,
+      interests: insertDateNight.interests,
+      dietaryRestrictions: insertDateNight.dietaryRestrictions ?? null,
+      transportation: insertDateNight.transportation ?? null,
+      specialOccasion: insertDateNight.specialOccasion ?? null,
+      generatedPlan: insertDateNight.generatedPlan,
+      createdAt: new Date(),
+    };
+    this.dateNights.set(id, dateNight);
+    return dateNight;
+  }
+
+  async getDateNight(id: string): Promise<DateNight | undefined> {
+    return this.dateNights.get(id);
+  }
+
+  async getDateNights(userId?: string): Promise<DateNight[]> {
+    const plans = Array.from(this.dateNights.values());
+    if (userId) {
+      return plans.filter(p => p.userId === userId).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
+    return plans.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -709,6 +750,23 @@ export class DbStorage implements IStorage {
       .where(and(eq(assessments.shareToken, shareToken), eq(assessments.isShared, 1)))
       .limit(1);
     return result[0];
+  }
+
+  async createDateNight(insertDateNight: InsertDateNight): Promise<DateNight> {
+    const result = await this.db.insert(dateNights).values(insertDateNight).returning();
+    return result[0];
+  }
+
+  async getDateNight(id: string): Promise<DateNight | undefined> {
+    const result = await this.db.select().from(dateNights).where(eq(dateNights.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getDateNights(userId?: string): Promise<DateNight[]> {
+    if (userId) {
+      return await this.db.select().from(dateNights).where(eq(dateNights.userId, userId)).orderBy(desc(dateNights.createdAt));
+    }
+    return await this.db.select().from(dateNights).orderBy(desc(dateNights.createdAt));
   }
 }
 
