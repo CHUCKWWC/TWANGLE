@@ -18,7 +18,7 @@ import RetreatItinerary from "@/pages/RetreatItinerary";
 import SharedAssessment from "@/pages/SharedAssessment";
 import TermsOfService from "@/pages/TermsOfService";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import Paywall from "@/pages/Paywall";
+import PaywallCustom from "@/pages/PaywallCustom";
 import PaySuccess from "@/pages/PaySuccess";
 import PayCancel from "@/pages/PayCancel";
 import NotFound from "@/pages/not-found";
@@ -54,7 +54,7 @@ function Router() {
           <Route path="/summaries" component={Summaries} />
           <Route path="/profile" component={Profile} />
           <Route path="/retreat/:id" component={RetreatItinerary} />
-          <Route path="/paywall" component={Paywall} />
+          <Route path="/paywall" component={PaywallCustom} />
           <Route path="/pay/success" component={PaySuccess} />
           <Route path="/pay/cancel" component={PayCancel} />
           <Route path="/terms" component={TermsOfService} />
