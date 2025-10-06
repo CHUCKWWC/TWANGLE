@@ -11,6 +11,7 @@ import Assessment from "@/pages/Assessment";
 import Results from "@/pages/Results";
 import Coach from "@/pages/Coach";
 import Retreat from "@/pages/Retreat";
+import DateNight from "@/pages/DateNight";
 import Exercises from "@/pages/Exercises";
 import Summaries from "@/pages/Summaries";
 import Profile from "@/pages/Profile";
@@ -50,6 +51,7 @@ function Router() {
           <Route path="/results" component={Results} />
           <Route path="/coach" component={Coach} />
           <Route path="/retreat" component={Retreat} />
+          <Route path="/datenight" component={DateNight} />
           <Route path="/exercises" component={Exercises} />
           <Route path="/summaries" component={Summaries} />
           <Route path="/profile" component={Profile} />
