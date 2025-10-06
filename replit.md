@@ -163,6 +163,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 6, 2025 - Assessment Expansion to 20 Questions
+- **Expanded attachment assessment from 10 to 20 questions** for increased accuracy:
+  - Added 10 new questions covering: trust/abandonment fears (Q11), space needs (Q12), self-worth (Q13), expressing needs (Q14), jealousy responses (Q15), commitment/future planning (Q16), post-argument repair (Q17), physical affection (Q18), supporting partner (Q19), approach to challenges (Q20)
+  - All questions maintain balanced 4-option structure across attachment styles (secure, anxious, avoidant, fearful)
+  - Updated all UI references from "10 questions" to "20 questions" (Dashboard, Landing page, documentation)
+- **Comprehensive E2E testing**:
+  - Verified full 20-question assessment flow with AI analysis
+  - Tested sharing functionality: link generation, partner access without auth, ownership protection
+  - Confirmed all attachment results display correctly (style, percentages, strengths, growth areas, analysis)
+
 ### October 6, 2025 - Dashboard Implementation
 - **Created comprehensive Dashboard component** to replace simple hero landing:
   - Stats overview showing assessment count, coach session count, and retreat count from `/api/user/stats`
