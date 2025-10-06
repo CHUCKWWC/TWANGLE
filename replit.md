@@ -42,6 +42,7 @@ Preferred communication style: Simple, everyday language.
 - Progressive intimacy model - UI deepens as user engagement increases
 
 **Key UI Components:**
+- **Dashboard**: Comprehensive home page showing user progress, stats (assessments, coach sessions, retreats), quick action cards, and next steps guidance with proper error handling
 - WelcomeHero: Full-screen landing with hero image
 - AssessmentQuestion: Multi-step questionnaire interface with progress tracking
 - AttachmentResults: Visualization of attachment scores using Recharts pie charts
@@ -161,6 +162,18 @@ Preferred communication style: Simple, everyday language.
   - Automatic user-subscription linking via client_reference_id or customer metadata
 
 ## Recent Changes
+
+### October 6, 2025 - Dashboard Implementation
+- **Created comprehensive Dashboard component** to replace simple hero landing:
+  - Stats overview showing assessment count, coach session count, and retreat count from `/api/user/stats`
+  - Quick action cards for primary features (assessment, coach, retreat) with visual completion indicators
+  - "Your Next Steps" section guiding users to incomplete features
+  - "Explore Features" section with navigation to exercises, summaries, and results
+  - Proper error handling with retry functionality for API failures
+  - Loading states with centered spinner
+  - Error states with descriptive messages and retry button
+- **Updated Home page** to use Dashboard component instead of WelcomeHero
+- **Testing**: E2E test passed verifying dashboard loads, displays stats, and all navigation works correctly
 
 ### October 5, 2025 - Paywall Debugging and Subscription Linking Fixes
 - **Critical bug fixes for subscription paywall**:
