@@ -48,101 +48,41 @@ export async function getUncachableGoogleSheetClient() {
 }
 
 let currentSpreadsheetId: string | null = null;
-let currentSheetDate: string | null = null;
-let twangleFolderId: string | null = null;
-let accessFolderId: string | null = null;
-let folderPromise: Promise<string> | null = null;
+const SHEET_NAME = 'Access Log';
 
-function getTodayDateString(): string {
-  const today = new Date();
-  return today.toISOString().split('T')[0];
-}
-
-async function ensureFolderStructure(): Promise<string> {
-  if (accessFolderId) {
-    return accessFolderId;
-  }
-
-  if (folderPromise) {
-    return folderPromise;
-  }
-
-  folderPromise = (async () => {
-    const sheets = await getUncachableGoogleSheetClient();
-    const drive = google.drive({ version: 'v3', auth: sheets.context._options.auth as any });
-
-    const findFolder = async (folderName: string, parentId?: string): Promise<string | null> => {
-      const query = parentId 
-        ? `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and '${parentId}' in parents and trashed=false`
-        : `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
-      
-      const response = await drive.files.list({
-        q: query,
-        fields: 'files(id, name)',
-        pageSize: 10,
-        orderBy: 'createdTime desc',
-      });
-
-      return response.data.files?.[0]?.id || null;
-    };
-
-    const createFolder = async (folderName: string, parentId?: string): Promise<string> => {
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
-      
-      const existingId = await findFolder(folderName, parentId);
-      if (existingId) {
-        return existingId;
-      }
-
-      const fileMetadata: any = {
-        name: folderName,
-        mimeType: 'application/vnd.google-apps.folder',
-      };
-
-      if (parentId) {
-        fileMetadata.parents = [parentId];
-      }
-
-      const response = await drive.files.create({
-        requestBody: fileMetadata,
-        fields: 'id',
-      });
-
-      return response.data.id!;
-    };
-
-    twangleFolderId = await findFolder('Twangle');
-    if (!twangleFolderId) {
-      twangleFolderId = await createFolder('Twangle');
-    }
-
-    accessFolderId = await findFolder('Access', twangleFolderId);
-    if (!accessFolderId) {
-      accessFolderId = await createFolder('Access', twangleFolderId);
-    }
-
-    return accessFolderId;
-  })();
-
-  return folderPromise;
-}
-
-async function findExistingDailySheet(todayDate: string, folderId: string): Promise<string | null> {
+async function findExistingSheet(): Promise<string | null> {
   try {
     const sheets = await getUncachableGoogleSheetClient();
     const drive = google.drive({ version: 'v3', auth: sheets.context._options.auth as any });
     
-    const title = `Twangle Access Log - ${todayDate}`;
-    
     const response = await drive.files.list({
-      q: `name='${title}' and mimeType='application/vnd.google-apps.spreadsheet' and '${folderId}' in parents and trashed=false`,
-      fields: 'files(id, name)',
-      pageSize: 1,
+      q: `name contains 'Twangle Access Log' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`,
+      fields: 'files(id, name, createdTime)',
+      pageSize: 10,
+      orderBy: 'createdTime desc',
     });
     
     if (response.data.files && response.data.files.length > 0) {
-      const spreadsheetId = response.data.files[0].id;
-      return spreadsheetId || null;
+      for (const file of response.data.files) {
+        const spreadsheetId = file.id;
+        if (!spreadsheetId) continue;
+        
+        try {
+          const spreadsheet = await sheets.spreadsheets.get({
+            spreadsheetId,
+          });
+          
+          const hasAccessLogSheet = spreadsheet.data.sheets?.some(
+            sheet => sheet.properties?.title === SHEET_NAME
+          );
+          
+          if (hasAccessLogSheet) {
+            return spreadsheetId;
+          }
+        } catch (error) {
+          continue;
+        }
+      }
     }
     
     return null;
@@ -152,10 +92,12 @@ async function findExistingDailySheet(todayDate: string, folderId: string): Prom
   }
 }
 
-async function createNewDailySheet(todayDate: string, folderId: string): Promise<string> {
+async function createNewSheet(): Promise<string> {
   const sheets = await getUncachableGoogleSheetClient();
-  const drive = google.drive({ version: 'v3', auth: sheets.context._options.auth as any });
-  const title = `Twangle Access Log - ${todayDate}`;
+  const now = new Date();
+  const formattedDate = now.toISOString().replace(/[:.]/g, '-').split('T')[0];
+  const formattedTime = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+  const title = `Twangle Access Log ${formattedDate} ${formattedTime}`;
 
   const response = await sheets.spreadsheets.create({
     requestBody: {
@@ -164,7 +106,7 @@ async function createNewDailySheet(todayDate: string, folderId: string): Promise
       },
       sheets: [{
         properties: {
-          title: todayDate,
+          title: SHEET_NAME,
         },
         data: [{
           startRow: 0,
@@ -190,35 +132,23 @@ async function createNewDailySheet(todayDate: string, folderId: string): Promise
   if (!spreadsheetId) {
     throw new Error('Failed to create spreadsheet');
   }
-
-  await drive.files.update({
-    fileId: spreadsheetId,
-    addParents: folderId,
-    fields: 'id, parents',
-  });
   
   return spreadsheetId;
 }
 
 async function getCurrentSpreadsheetId(): Promise<string> {
-  const todayDate = getTodayDateString();
-  
-  if (currentSpreadsheetId && currentSheetDate === todayDate) {
+  if (currentSpreadsheetId) {
     return currentSpreadsheetId;
   }
   
-  const folderId = await ensureFolderStructure();
-  
-  const existingId = await findExistingDailySheet(todayDate, folderId);
+  const existingId = await findExistingSheet();
   if (existingId) {
     currentSpreadsheetId = existingId;
-    currentSheetDate = todayDate;
     return existingId;
   }
   
-  const newId = await createNewDailySheet(todayDate, folderId);
+  const newId = await createNewSheet();
   currentSpreadsheetId = newId;
-  currentSheetDate = todayDate;
   return newId;
 }
 
@@ -253,7 +183,6 @@ async function flushLogQueue(): Promise<void> {
   try {
     const sheets = await getUncachableGoogleSheetClient();
     const spreadsheetId = await getCurrentSpreadsheetId();
-    const todayDate = getTodayDateString();
 
     const values = entriesToFlush.map(entry => [
       entry.timestamp,
@@ -268,7 +197,7 @@ async function flushLogQueue(): Promise<void> {
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${todayDate}!A:H`,
+      range: `${SHEET_NAME}!A:H`,
       valueInputOption: 'RAW',
       requestBody: {
         values
@@ -277,15 +206,29 @@ async function flushLogQueue(): Promise<void> {
     
     retryCount = 0;
   } catch (error: any) {
-    retryCount++;
+    const isSheetNotFound = error?.message?.includes('Unable to parse range') || 
+                            error?.message?.includes('not found') ||
+                            error?.code === 400 || 
+                            error?.status === 400 ||
+                            error?.code === 404 || 
+                            error?.status === 404;
     
-    if (retryCount <= MAX_RETRIES && logQueue.length < MAX_QUEUE_SIZE) {
+    if (isSheetNotFound && retryCount === 0) {
+      console.error('Sheet or worksheet not found, clearing cache and creating new sheet');
+      currentSpreadsheetId = null;
       logQueue.unshift(...entriesToFlush);
-    } else if (retryCount > MAX_RETRIES) {
-      console.error(`Max retries (${MAX_RETRIES}) exceeded. Dropping ${entriesToFlush.length} log entries.`);
-      retryCount = 0;
+      retryCount++;
     } else {
-      console.error(`Queue size limit (${MAX_QUEUE_SIZE}) exceeded. Dropping ${entriesToFlush.length} log entries.`);
+      retryCount++;
+      
+      if (retryCount <= MAX_RETRIES && logQueue.length < MAX_QUEUE_SIZE) {
+        logQueue.unshift(...entriesToFlush);
+      } else if (retryCount > MAX_RETRIES) {
+        console.error(`Max retries (${MAX_RETRIES}) exceeded. Dropping ${entriesToFlush.length} log entries.`);
+        retryCount = 0;
+      } else {
+        console.error(`Queue size limit (${MAX_QUEUE_SIZE}) exceeded. Dropping ${entriesToFlush.length} log entries.`);
+      }
     }
   } finally {
     isFlushInProgress = false;
