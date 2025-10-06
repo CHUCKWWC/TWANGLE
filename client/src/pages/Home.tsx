@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
-import WelcomeHero from "@/components/WelcomeHero";
+import Dashboard from "@/components/Dashboard";
 import { AppHeader } from "@/components/AppHeader";
 import { RelationshipProgressDialog } from "@/components/RelationshipProgressDialog";
 
 export default function Home() {
   const [showProgressDialog, setShowProgressDialog] = useState(false);
-  const [, navigate] = useLocation();
 
   useEffect(() => {
     const lastProgressCheck = localStorage.getItem('lastProgressCheck');
@@ -26,26 +24,10 @@ export default function Home() {
     }
   }, []);
 
-  const handleStartAssessment = () => {
-    navigate("/assessment");
-  };
-
-  const handleJumpToCoach = () => {
-    navigate("/coach");
-  };
-
-  const handlePlanRetreat = () => {
-    navigate("/retreat");
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <WelcomeHero
-        onStartAssessment={handleStartAssessment}
-        onJumpToCoach={handleJumpToCoach}
-        onPlanRetreat={handlePlanRetreat}
-      />
+      <Dashboard />
       <RelationshipProgressDialog 
         open={showProgressDialog} 
         onOpenChange={setShowProgressDialog}
