@@ -213,3 +213,26 @@ export const attachmentStyleResultSchema = z.object({
 export type Assessment = typeof assessments.$inferSelect;
 export type InsertAssessment = z.infer<typeof insertAssessmentSchema>;
 export type AttachmentStyleResult = z.infer<typeof attachmentStyleResultSchema>;
+
+export const dateNights = pgTable("date_nights", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  budget: text("budget").notNull(),
+  vibe: text("vibe").notNull(),
+  duration: text("duration").notNull(),
+  location: text("location").notNull(),
+  interests: text("interests").array().notNull(),
+  dietaryRestrictions: text("dietary_restrictions"),
+  transportation: text("transportation"),
+  specialOccasion: text("special_occasion"),
+  generatedPlan: text("generated_plan").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertDateNightSchema = createInsertSchema(dateNights).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertDateNight = z.infer<typeof insertDateNightSchema>;
+export type DateNight = typeof dateNights.$inferSelect;
