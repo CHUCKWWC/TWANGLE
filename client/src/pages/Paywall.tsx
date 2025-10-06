@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart } from "lucide-react";
+import { Heart, Shield } from "lucide-react";
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -53,15 +53,29 @@ export default function Paywall() {
             </div>
             <div>
               <CardTitle className="font-display text-3xl">
-                Strengthen Your Relationship
+                Start Your 7-Day Free Trial
               </CardTitle>
               <CardDescription className="text-base mt-2">
-                Get unlimited access to AI coaching, assessments, and relationship-building tools
+                Try all premium features risk-free. Cancel anytime during the trial.
               </CardDescription>
             </div>
           </CardHeader>
           
           <CardContent className="space-y-6">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-primary mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">
+                    Try free for 7 days, then continue or cancel
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Add a payment method to start your trial. Cancel anytime before day 7 to avoid charges.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="text-center space-y-4">
               <p className="text-sm text-muted-foreground">
                 Choose the plan that works best for you
