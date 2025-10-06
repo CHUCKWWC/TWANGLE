@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Heart, Sparkles, DollarSign, Clock, MapPin, Loader2, Calendar } from "lucide-react";
+import { Heart, Sparkles, DollarSign, Clock, MapPin, Loader2, Calendar, Utensils, Palette, Trees, Music, Gamepad2, Sparkle } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -41,12 +41,12 @@ const LOCATION_OPTIONS = [
 ];
 
 const INTEREST_OPTIONS = [
-  { value: 'food', label: 'Foodie Experience', icon: '🍽️' },
-  { value: 'art', label: 'Art & Culture', icon: '🎨' },
-  { value: 'nature', label: 'Nature & Outdoors', icon: '🌳' },
-  { value: 'music', label: 'Music & Entertainment', icon: '🎵' },
-  { value: 'games', label: 'Games & Activities', icon: '🎮' },
-  { value: 'wellness', label: 'Wellness & Relaxation', icon: '🧘' },
+  { value: 'food', label: 'Foodie Experience', icon: Utensils },
+  { value: 'art', label: 'Art & Culture', icon: Palette },
+  { value: 'nature', label: 'Nature & Outdoors', icon: Trees },
+  { value: 'music', label: 'Music & Entertainment', icon: Music },
+  { value: 'games', label: 'Games & Activities', icon: Gamepad2 },
+  { value: 'wellness', label: 'Wellness & Relaxation', icon: Sparkle },
 ];
 
 export default function DateNightPlanner({}: DateNightPlannerProps) {
@@ -301,18 +301,21 @@ export default function DateNightPlanner({}: DateNightPlannerProps) {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {INTEREST_OPTIONS.map((option) => (
-                <Badge
-                  key={option.value}
-                  variant={interests.includes(option.value) ? "default" : "outline"}
-                  className="cursor-pointer hover-elevate px-3 py-2"
-                  onClick={() => toggleInterest(option.value)}
-                  data-testid={`badge-interest-${option.value}`}
-                >
-                  <span className="mr-1.5">{option.icon}</span>
-                  {option.label}
-                </Badge>
-              ))}
+              {INTEREST_OPTIONS.map((option) => {
+                const IconComponent = option.icon;
+                return (
+                  <Badge
+                    key={option.value}
+                    variant={interests.includes(option.value) ? "default" : "outline"}
+                    className="cursor-pointer hover-elevate px-3 py-2"
+                    onClick={() => toggleInterest(option.value)}
+                    data-testid={`badge-interest-${option.value}`}
+                  >
+                    <IconComponent className="w-3 h-3 mr-1.5" />
+                    {option.label}
+                  </Badge>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
