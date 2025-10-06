@@ -23,7 +23,7 @@ interface UserStats {
 export default function Dashboard() {
   const [, navigate] = useLocation();
 
-  const { data: stats, isLoading } = useQuery<UserStats>({
+  const { data: stats, isLoading, isError, error, refetch } = useQuery<UserStats>({
     queryKey: ["/api/user/stats"],
   });
 
@@ -31,6 +31,29 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle className="text-destructive">Unable to Load Dashboard</CardTitle>
+            <CardDescription>
+              We couldn't fetch your stats. Please try again.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              {error instanceof Error ? error.message : "An error occurred while loading your data"}
+            </p>
+            <Button onClick={() => refetch()} data-testid="button-retry">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
