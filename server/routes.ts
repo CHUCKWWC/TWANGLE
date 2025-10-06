@@ -570,6 +570,139 @@ ${conversationText}`;
     }
   });
 
+  app.get("/api/billing/config", async (req, res) => {
+    res.json({
+      publishableKey: process.env.VITE_STRIPE_PUBLIC_KEY,
+    });
+  });
+
+  app.get("/api/billing/prices", async (req, res) => {
+    if (!stripe) {
+      return res.status(501).json({ 
+        error: "Billing not configured" 
+      });
+    }
+
+    try {
+      const prices = [
+        {
+          id: 'monthly',
+          priceId: process.env.STRIPE_PRICE_MONTHLY_ID,
+          name: 'Monthly Plan',
+          price: 7.99,
+          interval: 'month',
+          trialDays: 7,
+        },
+        {
+          id: 'annual',
+          priceId: process.env.STRIPE_PRICE_ANNUAL_ID,
+          name: 'Annual Plan',
+          price: 59.99,
+          interval: 'year',
+          trialDays: 7,
+          savings: '25% savings',
+        },
+      ];
+
+      res.json({ prices });
+    } catch (error: any) {
+      console.error("Get prices error:", error);
+      res.status(500).json({
+        error: "Failed to get prices",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/billing/create-subscription", isAuthenticated, async (req: any, res) => {
+    if (!stripe) {
+      return res.status(501).json({ 
+        error: "Billing not configured" 
+      });
+    }
+
+    try {
+      const userId = req.user.claims.sub;
+      const { paymentMethodId, priceId } = req.body;
+
+      if (!paymentMethodId || !priceId) {
+        return res.status(400).json({ 
+          error: "Missing required fields: paymentMethodId and priceId" 
+        });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      let stripeCustomerId = user.stripeCustomerId;
+
+      if (!stripeCustomerId) {
+        const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || undefined;
+        const customer = await stripe.customers.create({
+          email: user.email ?? undefined,
+          name,
+          metadata: { userId: user.id },
+          payment_method: paymentMethodId,
+          invoice_settings: {
+            default_payment_method: paymentMethodId,
+          },
+        });
+        stripeCustomerId = customer.id;
+        await storage.updateUser(userId, { stripeCustomerId: customer.id });
+      } else {
+        await stripe.paymentMethods.attach(paymentMethodId, {
+          customer: stripeCustomerId,
+        });
+        await stripe.customers.update(stripeCustomerId, {
+          invoice_settings: {
+            default_payment_method: paymentMethodId,
+          },
+        });
+      }
+
+      const subscription = await stripe.subscriptions.create({
+        customer: stripeCustomerId,
+        items: [{ price: priceId }],
+        payment_settings: {
+          payment_method_types: ['card'],
+          save_default_payment_method: 'on_subscription',
+        },
+        trial_period_days: 7,
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      const subscriptionPriceId = subscription.items?.data?.[0]?.price?.id || null;
+      const planTier = subscriptionPriceId ? 'premium' : 'free';
+      const subscriptionData: any = subscription;
+      
+      await storage.upsertSubscription({
+        userId: userId,
+        stripeSubscriptionId: subscription.id,
+        priceId: subscriptionPriceId,
+        planTier,
+        status: subscription.status,
+        currentPeriodEnd: subscriptionData.current_period_end 
+          ? new Date(subscriptionData.current_period_end * 1000) 
+          : undefined,
+        cancelAtPeriodEnd: subscriptionData.cancel_at_period_end ? 1 : 0,
+      });
+
+      res.json({ 
+        subscriptionId: subscription.id,
+        clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
+        status: subscription.status,
+      });
+    } catch (error: any) {
+      console.error("Create subscription error:", error);
+      res.status(500).json({
+        error: "Failed to create subscription",
+        details: error.message,
+      });
+    }
+  });
+
   app.post("/api/retreat/generate-itinerary", isAuthenticated, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
