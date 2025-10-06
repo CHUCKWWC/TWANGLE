@@ -113,9 +113,12 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/callback", async (req, res, next) => {
     const ipAddress = extractIPAddress(req);
+    console.log('[Auth Callback] IP Address:', ipAddress);
     const geoData = await getLocationFromIP(ipAddress);
+    console.log('[Auth Callback] Geolocation result:', geoData);
     
     if (geoData.blocked) {
+      console.log('[Auth Callback] Access blocked for country:', geoData.countryCode);
       return res.status(403).send('Access from your country is not permitted.');
     }
     
@@ -138,19 +141,26 @@ export async function setupAuth(app: Express) {
           session.loggedIPs = [];
         }
         
+        console.log('[Auth Callback] Session loggedIPs before filter:', session.loggedIPs);
         session.loggedIPs = session.loggedIPs.filter((ip: string) => ip && ip !== 'Unknown');
+        console.log('[Auth Callback] Session loggedIPs after filter:', session.loggedIPs);
         
         const shouldLog = ipAddress && ipAddress !== 'Unknown' && !session.loggedIPs.includes(ipAddress);
+        console.log('[Auth Callback] Should log?', shouldLog, '(IP:', ipAddress, ')');
         
         if (shouldLog) {
           session.loggedIPs.push(ipAddress);
+          console.log('[Auth Callback] Added IP to session, creating log entry...');
           
           try {
             const logEntry = await createAccessLogEntry(req, user, geoData.location);
             await logAccessToSheet(logEntry);
+            console.log('[Auth Callback] Successfully logged access to Google Sheets');
           } catch (error) {
             console.error('Failed to log access:', error);
           }
+        } else {
+          console.log('[Auth Callback] Skipping log - IP already logged in this session');
         }
         
         res.redirect("/");
