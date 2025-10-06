@@ -5,7 +5,7 @@
 Twangle ("Two Tangled Together") is a couples' relationship wellness application that combines psychological assessments, AI-powered coaching, and relationship-building tools. The platform helps couples understand their attachment styles, identify relationship patterns, and receive personalized guidance based on research-backed frameworks including Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory.
 
 The application provides:
-- **Attachment Style Assessment**: 10-question comprehensive assessment with AI-powered analysis using OpenAI GPT-4o-mini
+- **Attachment Style Assessment**: 20-question comprehensive assessment with AI-powered analysis using OpenAI GPT-4o-mini
   - Questions cover relationship patterns, conflict resolution, intimacy, and emotional regulation
   - AI generates personalized insights including strengths, growth areas, and detailed analysis
   - Results can be shared via unique shareable links with full ownership verification
@@ -197,7 +197,7 @@ Preferred communication style: Simple, everyday language.
 
 ### October 3, 2025 - Comprehensive Attachment Assessment System
 - **Complete rebuild of attachment assessment feature**:
-  - Created 10-question assessment covering relationship patterns, conflict resolution, intimacy, and emotional regulation
+  - Created 20-question assessment covering relationship patterns, conflict resolution, intimacy, and emotional regulation
   - Implemented AI-powered analysis using OpenAI GPT-4o-mini with specialized attachment theory prompt
   - Added secure sharing functionality with full UUID tokens and ownership verification
   - Enhanced results display with AI-generated strengths, growth areas, and personalized analysis
