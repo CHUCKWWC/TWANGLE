@@ -9,6 +9,7 @@ The application provides:
 - AI relationship coach (Coach Charles).
 - Research-based relationship exercises library.
 - DIY couples retreat builder with AI-generated itineraries.
+- AI-powered Date Night planner with personalized recommendations.
 - Weekly coaching session summaries.
 - User feedback system with lifetime access incentive.
 
@@ -45,6 +46,7 @@ Preferred communication style: Simple, everyday language.
 - AICoachChat: Real-time chat interface.
 - RetreatBuilder: Multi-step retreat planning wizard.
 - RetreatItinerary: Displays personalized AI-generated retreat plans.
+- DateNightPlanner: AI-powered date night planning form with customizable preferences.
 - ExercisesLibrary: Accordion-based exercise browser.
 - WeeklySummaries: Session summary viewer.
 - FeedbackForm: User feedback collection.
@@ -59,7 +61,7 @@ Preferred communication style: Simple, everyday language.
 
 **API Design:**
 - RESTful endpoints under `/api` prefix.
-- Endpoints for chat, retreat itinerary generation/retrieval, user eligibility, feedback, and attachment assessments (create, analyze, share, view shared).
+- Endpoints for chat, retreat itinerary generation/retrieval, date night plan generation/retrieval, user eligibility, feedback, and attachment assessments (create, analyze, share, view shared).
 - Billing endpoints: `/api/billing/status` (subscription status), `/api/billing/checkout` (create Stripe session), `/api/billing/portal` (customer portal).
 - Webhook handler: `/webhooks/stripe` for subscription events (checkout completed, subscription created/updated/deleted).
 - Session management for chat continuity.
@@ -67,8 +69,8 @@ Preferred communication style: Simple, everyday language.
 - Ownership verification on protected resources.
 
 **AI Integration:**
-- OpenAI GPT integration for relationship coaching, retreat planning, and attachment analysis.
-- Custom system prompts for Coach Charles persona, retreat itinerary generation, and attachment theory expert analysis.
+- OpenAI GPT integration for relationship coaching, retreat planning, date night planning, and attachment analysis.
+- Custom system prompts for Coach Charles persona, retreat itinerary generation, date night recommendations, and attachment theory expert analysis.
 - Streaming responses for real-time chat.
 - Structured JSON responses for attachment analysis with Zod validation.
 
@@ -88,6 +90,7 @@ Preferred communication style: Simple, everyday language.
 - SessionFeedback: Session-specific feedback ratings.
 - RelationshipProgress: Weekly relationship score tracking.
 - RetreatItineraries: Stored retreat configurations and AI-generated itineraries.
+- DateNights: AI-generated date night plans with user preferences (budget, vibe, duration, location, interests, dietary restrictions, transportation, special occasion).
 - Assessments: Attachment style assessments with user responses (JSONB), AI-generated results, share tokens, and ownership tracking.
 
 **Storage Pattern:**
@@ -107,7 +110,7 @@ Preferred communication style: Simple, everyday language.
 - Two-tier system: Free and Premium.
 - Premium features gated using `RequirePlan` component.
 - Access granted via active subscription (status: 'active' or 'trialing') OR lifetime access flag.
-- Premium pages: Coach (AI coaching), Retreat (DIY retreat builder), Summaries (weekly summaries).
+- Premium pages: Coach (AI coaching), Retreat (DIY retreat builder), Date Night (AI date planner), Summaries (weekly summaries).
 - `usePlan` hook provides subscription status to frontend components.
 
 **Security Considerations:**
