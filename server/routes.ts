@@ -10,7 +10,8 @@ import {
   insertRetreatItinerarySchema,
   insertAssessmentSchema,
   attachmentStyleResultSchema,
-  type AttachmentStyleResult
+  type AttachmentStyleResult,
+  insertDateNightSchema
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 
@@ -834,6 +835,129 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
       console.error("Get retreat itinerary error:", error);
       res.status(500).json({
         error: "Failed to get retreat itinerary",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/datenight/generate", isAuthenticated, async (req: any, res) => {
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(501).json({ 
+        error: "AI date night planning not configured", 
+        message: "OpenAI API key is not available" 
+      });
+    }
+
+    try {
+      const userId = req.user.claims.sub;
+      const validationResult = insertDateNightSchema.safeParse({
+        userId,
+        ...req.body,
+        generatedPlan: "",
+      });
+
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          error: "Validation failed", 
+          details: fromZodError(validationResult.error).message 
+        });
+      }
+
+      const { budget, vibe, duration, location, interests, dietaryRestrictions, transportation, specialOccasion } = validationResult.data;
+
+      const dietaryInfo = dietaryRestrictions ? `\n- Dietary restrictions/preferences: ${dietaryRestrictions}` : '';
+      const transportInfo = transportation ? `\n- Transportation: ${transportation}` : '';
+      const occasionInfo = specialOccasion ? `\n\nSpecial Occasion: ${specialOccasion} - Make this extra special and memorable!` : '';
+
+      const dateNightPrompt = `Create a personalized date night plan for a couple.
+
+Date Night Details:
+- Budget: ${budget}
+- Vibe: ${vibe}
+- Duration: ${duration}
+- Location preference: ${location}
+- Shared interests: ${interests.join(', ')}${dietaryInfo}${transportInfo}${occasionInfo}
+
+Format the date night plan as a warm, romantic, and actionable itinerary with:
+1. A welcoming introduction that sets the mood
+2. Detailed timeline with specific suggestions (e.g., "6:00 PM - Aperitivo at...")
+3. Restaurant recommendations that match their vibe, budget, and dietary needs
+4. Activity suggestions based on their interests
+5. Conversation starters and connection exercises woven throughout the evening
+6. Practical tips (what to wear, how to get there, reservations needed)
+7. A sweet closing message with encouragement for their relationship
+
+Make it feel personal, achievable, and designed to deepen their connection. Include specific venue suggestions when possible, backup options, and little romantic touches that make the evening memorable.
+
+Use clear formatting with headers, bullet points, and a warm tone that feels like advice from a trusted friend.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are Coach Charles, an expert relationship coach who creates personalized date night plans. Your plans blend romance with research-backed connection exercises, making every date both fun and meaningful for the couple's relationship.",
+          },
+          {
+            role: "user",
+            content: dateNightPrompt,
+          },
+        ],
+        temperature: 0.8,
+      });
+
+      const generatedPlan = completion.choices[0].message.content || "Unable to generate plan";
+      
+      const savedDateNight = await storage.createDateNight({
+        ...validationResult.data,
+        generatedPlan
+      });
+
+      res.json({
+        dateNightId: savedDateNight.id,
+        plan: savedDateNight
+      });
+    } catch (error: any) {
+      console.error("Date night generation error:", error);
+      res.status(500).json({
+        error: "Failed to generate date night plan",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/datenight/plans", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const plans = await storage.getDateNights(userId);
+      res.json({ plans });
+    } catch (error: any) {
+      console.error("Get date night plans error:", error);
+      res.status(500).json({
+        error: "Failed to get date night plans",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/datenight/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const plan = await storage.getDateNight(req.params.id);
+      
+      if (!plan) {
+        return res.status(404).json({ error: "Date night plan not found" });
+      }
+
+      if (plan.userId !== userId) {
+        return res.status(403).json({ error: "Access denied to this date night plan" });
+      }
+
+      res.json({ plan });
+    } catch (error: any) {
+      console.error("Get date night plan error:", error);
+      res.status(500).json({
+        error: "Failed to get date night plan",
         details: error.message,
       });
     }
