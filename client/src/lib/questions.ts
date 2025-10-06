@@ -111,4 +111,104 @@ export const ASSESSMENT_QUESTIONS: Question[] = [
       { id: 'd', text: 'I want deep intimacy but struggle to fully open up', value: 'fearful' },
     ],
   },
+  {
+    id: '11',
+    text: 'When I think about my partner being unfaithful or leaving, I...',
+    options: [
+      { id: 'a', text: 'Trust my partner and don\'t dwell on these fears', value: 'secure' },
+      { id: 'b', text: 'Often worry about it and seek reassurance', value: 'anxious' },
+      { id: 'c', text: 'Tell myself I would be fine on my own anyway', value: 'avoidant' },
+      { id: 'd', text: 'Fear it deeply but try not to show my partner', value: 'fearful' },
+    ],
+  },
+  {
+    id: '12',
+    text: 'When my partner needs space or time alone, I...',
+    options: [
+      { id: 'a', text: 'Respect their need and use the time for myself', value: 'secure' },
+      { id: 'b', text: 'Feel anxious and wonder if something is wrong', value: 'anxious' },
+      { id: 'c', text: 'Welcome the independence and freedom', value: 'avoidant' },
+      { id: 'd', text: 'Give them space but feel hurt or worried', value: 'fearful' },
+    ],
+  },
+  {
+    id: '13',
+    text: 'My sense of self-worth in relationships...',
+    options: [
+      { id: 'a', text: 'Remains stable whether I\'m in a relationship or not', value: 'secure' },
+      { id: 'b', text: 'Depends heavily on my partner\'s approval and affection', value: 'anxious' },
+      { id: 'c', text: 'Is based more on my achievements than my relationships', value: 'avoidant' },
+      { id: 'd', text: 'Fluctuates based on how loved I feel in the moment', value: 'fearful' },
+    ],
+  },
+  {
+    id: '14',
+    text: 'When it comes to expressing my needs in a relationship, I...',
+    options: [
+      { id: 'a', text: 'Communicate them clearly and expect the same from my partner', value: 'secure' },
+      { id: 'b', text: 'Sometimes struggle to ask, fearing I\'m being too needy', value: 'anxious' },
+      { id: 'c', text: 'Prefer not to voice them and handle things myself', value: 'avoidant' },
+      { id: 'd', text: 'Want to express them but fear being seen as demanding', value: 'fearful' },
+    ],
+  },
+  {
+    id: '15',
+    text: 'If my partner seems interested in someone else, I...',
+    options: [
+      { id: 'a', text: 'Feel secure enough to discuss it openly without accusations', value: 'secure' },
+      { id: 'b', text: 'Feel very threatened and may become clingy or jealous', value: 'anxious' },
+      { id: 'c', text: 'Distance myself emotionally as a form of self-protection', value: 'avoidant' },
+      { id: 'd', text: 'Feel intensely jealous but try to hide or suppress it', value: 'fearful' },
+    ],
+  },
+  {
+    id: '16',
+    text: 'When planning the future with my partner, I feel...',
+    options: [
+      { id: 'a', text: 'Excited and comfortable making long-term plans together', value: 'secure' },
+      { id: 'b', text: 'Eager to commit but anxious they might not feel the same', value: 'anxious' },
+      { id: 'c', text: 'Uncomfortable with too much planning or commitment', value: 'avoidant' },
+      { id: 'd', text: 'Want commitment but fear being trapped or disappointed', value: 'fearful' },
+    ],
+  },
+  {
+    id: '17',
+    text: 'After an argument with my partner, I usually...',
+    options: [
+      { id: 'a', text: 'Reach out when ready to repair and reconnect', value: 'secure' },
+      { id: 'b', text: 'Immediately try to fix things, even if I\'m still upset', value: 'anxious' },
+      { id: 'c', text: 'Need extended time alone before I can reconnect', value: 'avoidant' },
+      { id: 'd', text: 'Want to reconnect but fear they\'re still angry with me', value: 'fearful' },
+    ],
+  },
+  {
+    id: '18',
+    text: 'Physical affection in my relationship...',
+    options: [
+      { id: 'a', text: 'Feels natural and I both give and receive it comfortably', value: 'secure' },
+      { id: 'b', text: 'Is very important to me and I seek it frequently', value: 'anxious' },
+      { id: 'c', text: 'Can sometimes feel overwhelming or too much', value: 'avoidant' },
+      { id: 'd', text: 'I desire it but sometimes feel uncomfortable receiving it', value: 'fearful' },
+    ],
+  },
+  {
+    id: '19',
+    text: 'When my partner is going through a difficult time, I...',
+    options: [
+      { id: 'a', text: 'Offer support while respecting their way of coping', value: 'secure' },
+      { id: 'b', text: 'Want to help but worry I\'m not doing enough', value: 'anxious' },
+      { id: 'c', text: 'Give them space, assuming they prefer to handle it alone', value: 'avoidant' },
+      { id: 'd', text: 'Want to support them but feel unsure how to help', value: 'fearful' },
+    ],
+  },
+  {
+    id: '20',
+    text: 'My overall approach to relationship challenges is...',
+    options: [
+      { id: 'a', text: 'View them as opportunities to grow closer and stronger', value: 'secure' },
+      { id: 'b', text: 'See them as threats that might lead to abandonment', value: 'anxious' },
+      { id: 'c', text: 'Consider whether the relationship is worth the effort', value: 'avoidant' },
+      { id: 'd', text: 'Feel torn between working through them and giving up', value: 'fearful' },
+    ],
+  },
 ];
