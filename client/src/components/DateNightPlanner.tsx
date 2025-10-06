@@ -62,7 +62,7 @@ export default function DateNightPlanner({}: DateNightPlannerProps) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
 
-  const { data: plansData } = useQuery({
+  const { data: plansData } = useQuery<{ plans: any[] }>({
     queryKey: ['/api/datenight/plans'],
   });
 
