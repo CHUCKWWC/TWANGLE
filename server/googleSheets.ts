@@ -244,14 +244,19 @@ export interface AccessLogEntry {
 
 let logQueue: AccessLogEntry[] = [];
 let flushTimeout: NodeJS.Timeout | null = null;
+let retryCount = 0;
+let isFlushInProgress = false;
 const BATCH_SIZE = 10;
 const FLUSH_INTERVAL = 5000;
+const MAX_RETRIES = 3;
+const MAX_QUEUE_SIZE = 1000;
 
 async function flushLogQueue(): Promise<void> {
-  if (logQueue.length === 0) {
+  if (logQueue.length === 0 || isFlushInProgress) {
     return;
   }
 
+  isFlushInProgress = true;
   const entriesToFlush = logQueue.splice(0, BATCH_SIZE);
   
   try {
@@ -279,16 +284,26 @@ async function flushLogQueue(): Promise<void> {
       }
     });
     
-    console.log(`Flushed ${entriesToFlush.length} log entries to Google Sheets`);
-  } catch (error) {
-    console.error('Failed to flush logs to Google Sheet:', error);
-    logQueue.unshift(...entriesToFlush);
-  }
-
-  if (logQueue.length > 0) {
-    scheduleFlush();
-  } else {
-    flushTimeout = null;
+    retryCount = 0;
+  } catch (error: any) {
+    retryCount++;
+    
+    if (retryCount <= MAX_RETRIES && logQueue.length < MAX_QUEUE_SIZE) {
+      logQueue.unshift(...entriesToFlush);
+    } else if (retryCount > MAX_RETRIES) {
+      console.error(`Max retries (${MAX_RETRIES}) exceeded. Dropping ${entriesToFlush.length} log entries.`);
+      retryCount = 0;
+    } else {
+      console.error(`Queue size limit (${MAX_QUEUE_SIZE}) exceeded. Dropping ${entriesToFlush.length} log entries.`);
+    }
+  } finally {
+    isFlushInProgress = false;
+    
+    if (logQueue.length > 0) {
+      scheduleFlush();
+    } else {
+      flushTimeout = null;
+    }
   }
 }
 
