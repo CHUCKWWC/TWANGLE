@@ -3,6 +3,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { detectFacebookReferral, optionalAuth } from "./anonymousAuth";
 import OpenAI from "openai";
 import Stripe from "stripe";
 import { 
@@ -60,13 +61,31 @@ Format your responses for mobile readability:
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth (Reference: blueprint:javascript_log_in_with_replit)
   await setupAuth(app);
+  
+  // Setup Facebook referral detection for anonymous sessions
+  app.use(detectFacebookReferral);
 
   // Auth routes (Reference: blueprint:javascript_log_in_with_replit)
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', optionalAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      // If authenticated user, return user data
+      if (req.isAuthenticated?.() && req.user) {
+        const userId = req.user.claims.sub;
+        const user = await storage.getUser(userId);
+        return res.json(user);
+      }
+      
+      // If anonymous user, return anonymous session data
+      if (req.anonymousUser) {
+        return res.json({
+          id: req.anonymousUser.anonId,
+          isAnonymous: true,
+          source: req.anonymousUser.source,
+        });
+      }
+      
+      // No session at all
+      res.status(401).json({ message: "Unauthorized" });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
