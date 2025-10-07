@@ -21,16 +21,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  const { data, isLoading } = useQuery<{ user: User }>({
-    queryKey: ["/api/auth/me"],
+  const { data: userData, isLoading } = useQuery({
+    queryKey: ["/api/auth/user"],
     retry: false,
   });
 
   useEffect(() => {
-    if (data?.user) {
-      setUser(data.user);
+    if (userData && !userData.isAnonymous) {
+      setUser({
+        id: userData.id,
+        name: userData.firstName && userData.lastName ? `${userData.firstName} ${userData.lastName}` : userData.firstName || userData.email || '',
+        email: userData.email,
+        profilePicture: userData.profileImageUrl,
+      });
     }
-  }, [data]);
+  }, [userData]);
 
   const loginMutation = useMutation({
     mutationFn: async (facebookResponse: any) => {
@@ -45,8 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data as { user: User };
     },
     onSuccess: (data) => {
-      setUser(data.user);
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      setUser({
+        id: data.user.id,
+        name: data.user.firstName && data.user.lastName ? `${data.user.firstName} ${data.user.lastName}` : data.user.firstName || data.user.email || '',
+        email: data.user.email,
+        profilePicture: data.user.profileImageUrl,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
   });
 
@@ -56,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       setUser(null);
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
   });
 
