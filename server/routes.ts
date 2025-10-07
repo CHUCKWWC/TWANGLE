@@ -7,6 +7,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { detectFacebookReferral, optionalAuth } from "./anonymousAuth";
 import OpenAI from "openai";
 import Stripe from "stripe";
+import { trackSubscribe, trackCompleteRegistration } from "./facebookConversions";
 import { 
   insertGeneralFeedbackSchema, 
   insertRetreatItinerarySchema,
@@ -174,6 +175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Check if user exists by email first
         let user = await storage.getUserByEmail(fbUserData.email);
+        let isNewUser = false;
         
         if (!user) {
           // Create new user with verified Facebook data
@@ -188,6 +190,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             lastName,
             profileImageUrl: fbUserData.picture?.data?.url || null,
           });
+          
+          isNewUser = true;
+          
+          // Track Facebook conversion for new registration
+          trackCompleteRegistration({
+            email: user.email!,
+            firstName: user.firstName || undefined,
+            lastName: user.lastName || undefined,
+          }).catch(err => console.error('Facebook conversion tracking error:', err));
         }
 
         // Create a session by logging in the user with Passport
@@ -954,6 +965,15 @@ ${conversationText}`;
           : undefined,
         cancelAtPeriodEnd: subscriptionData.cancel_at_period_end ? 1 : 0,
       });
+
+      // Track Facebook conversion for subscription
+      const priceAmount = subscription.items?.data?.[0]?.price?.unit_amount || 0;
+      const value = priceAmount / 100; // Convert cents to dollars
+      trackSubscribe({
+        email: user.email!,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+      }, value, 'USD').catch(err => console.error('Facebook conversion tracking error:', err));
 
       res.json({ 
         subscriptionId: subscription.id,
