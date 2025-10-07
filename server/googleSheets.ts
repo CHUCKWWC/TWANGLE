@@ -273,15 +273,21 @@ export async function createAccessLogEntry(req: any, user: any, location: string
     || req.socket?.remoteAddress 
     || 'Unknown';
   
+  // Check if this is an anonymous user
+  const isAnonymous = req.anonymousUser?.anonId;
+  const anonymousSource = req.anonymousUser?.source || 'Unknown';
+  
   return {
     timestamp: new Date().toISOString(),
     ipAddress,
     location,
-    userName: user?.claims?.first_name && user?.claims?.last_name 
-      ? `${user.claims.first_name} ${user.claims.last_name}` 
-      : user?.email || 'Anonymous',
-    userEmail: user?.claims?.email || user?.email || 'N/A',
-    userId: user?.claims?.sub || user?.id || 'N/A',
+    userName: isAnonymous 
+      ? `Anonymous (${anonymousSource})` 
+      : user?.claims?.first_name && user?.claims?.last_name 
+        ? `${user.claims.first_name} ${user.claims.last_name}` 
+        : user?.email || 'Anonymous',
+    userEmail: isAnonymous ? `${anonymousSource} Visitor` : (user?.claims?.email || user?.email || 'N/A'),
+    userId: isAnonymous ? req.anonymousUser.anonId : (user?.claims?.sub || user?.id || 'N/A'),
     path: req.path,
     method: req.method,
   };
