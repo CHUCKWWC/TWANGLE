@@ -103,14 +103,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate the access token with Facebook's Graph API
       try {
+        // Create app access token for secure validation
+        const appId = process.env.VITE_FACEBOOK_APP_ID || process.env.FACEBOOK_APP_ID;
+        const appSecret = process.env.FACEBOOK_APP_SECRET;
+        
+        if (!appId) {
+          console.error('Facebook App ID not configured');
+          return res.status(500).json({ message: "Facebook login not configured" });
+        }
+
+        const appAccessToken = appSecret ? `${appId}|${appSecret}` : accessToken;
+        
         const tokenDebugResponse = await fetch(
-          `https://graph.facebook.com/debug_token?input_token=${accessToken}&access_token=${accessToken}`
+          `https://graph.facebook.com/debug_token?input_token=${accessToken}&access_token=${appAccessToken}`
         );
+        
+        if (!tokenDebugResponse.ok) {
+          console.error('Facebook debug_token API error:', tokenDebugResponse.status);
+          return res.status(401).json({ message: "Failed to validate token with Facebook" });
+        }
+
         const tokenDebugData = await tokenDebugResponse.json();
 
         if (!tokenDebugData.data?.is_valid) {
           console.error('Invalid Facebook token:', tokenDebugData);
           return res.status(401).json({ message: "Invalid Facebook access token" });
+        }
+
+        // Verify the token is for our app (critical security check)
+        if (appSecret && tokenDebugData.data.app_id !== appId) {
+          console.error('Token app ID mismatch:', { expected: appId, actual: tokenDebugData.data.app_id });
+          return res.status(401).json({ message: "Token not issued for this app" });
         }
 
         if (tokenDebugData.data.user_id !== userID) {
@@ -122,11 +145,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userResponse = await fetch(
           `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${accessToken}`
         );
+        
+        if (!userResponse.ok) {
+          console.error('Facebook Graph API error:', userResponse.status);
+          return res.status(401).json({ message: "Failed to fetch user data from Facebook" });
+        }
+
         const fbUserData = await userResponse.json();
 
         if (fbUserData.error) {
           console.error('Facebook API error:', fbUserData.error);
           return res.status(401).json({ message: "Failed to fetch user data from Facebook" });
+        }
+
+        // Verify the user ID matches the token
+        if (fbUserData.id !== tokenDebugData.data.user_id) {
+          console.error('User ID mismatch between token and profile:', { 
+            token: tokenDebugData.data.user_id, 
+            profile: fbUserData.id 
+          });
+          return res.status(401).json({ message: "User data verification failed" });
         }
 
         if (!fbUserData.email) {
