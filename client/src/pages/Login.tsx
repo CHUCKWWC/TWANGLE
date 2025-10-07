@@ -9,17 +9,20 @@ export default function Login() {
   const { toast } = useToast();
   const isDev = import.meta.env.DEV;
 
-  const devLoginMutation = useMutation({
+  const reviewerLoginMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/auth/dev-login", {});
+      const response = await apiRequest("POST", "/api/auth/reviewer-login", {
+        accessCode: "FB_REVIEW_2025_TWANGLE"
+      });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Logged in",
-        description: "You're now logged in as Test User",
+        description: "You're now logged in as Facebook Test Reviewer",
       });
+      window.location.href = "/";
     },
     onError: (error: any) => {
       toast({
@@ -62,17 +65,15 @@ export default function Login() {
         <div className="pt-8 flex flex-col items-center gap-4">
           <FacebookLoginButton />
           
-          {isDev && (
-            <Button
-              variant="outline"
-              onClick={() => devLoginMutation.mutate()}
-              disabled={devLoginMutation.isPending}
-              data-testid="button-dev-login"
-              className="w-full max-w-sm"
-            >
-              {devLoginMutation.isPending ? "Logging in..." : "🔧 Dev Login (Bypass Facebook)"}
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            onClick={() => reviewerLoginMutation.mutate()}
+            disabled={reviewerLoginMutation.isPending}
+            data-testid="button-reviewer-login"
+            className="w-full max-w-sm text-xs"
+          >
+            {reviewerLoginMutation.isPending ? "Logging in..." : "Facebook Reviewer Test Access"}
+          </Button>
           
           <p className="text-xs text-muted-foreground max-w-xs">
             By continuing, you agree to our <a href="/terms" className="text-primary underline" data-testid="link-terms">Terms of Service</a> and <a href="/privacy" className="text-primary underline" data-testid="link-privacy">Privacy Policy</a>

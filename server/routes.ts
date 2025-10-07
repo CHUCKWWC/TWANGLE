@@ -218,6 +218,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test reviewer login endpoint (for Facebook App Review)
+  app.post('/api/auth/reviewer-login', async (req: any, res) => {
+    try {
+      const { accessCode } = req.body;
+      
+      // Only allow this specific access code
+      if (accessCode !== 'FB_REVIEW_2025_TWANGLE') {
+        return res.status(401).json({ message: "Invalid access code" });
+      }
+
+      // Get the test reviewer account
+      const user = await storage.getUser('facebook_test_reviewer_2025');
+      
+      if (!user) {
+        return res.status(404).json({ message: "Test account not found" });
+      }
+
+      // Create a session for the test reviewer
+      const sessionUser = {
+        claims: {
+          sub: user.id,
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          profile_image_url: user.profileImageUrl,
+        }
+      };
+
+      req.logIn(sessionUser, (err: any) => {
+        if (err) {
+          console.error('Reviewer login error:', err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+
+        res.json({ user });
+      });
+    } catch (error) {
+      console.error("Reviewer authentication error:", error);
+      res.status(500).json({ message: "Authentication failed" });
+    }
+  });
+
   // User stats endpoint
   app.get('/api/user/stats', isAuthenticated, async (req: any, res) => {
     try {
