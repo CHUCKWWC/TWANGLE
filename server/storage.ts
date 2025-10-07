@@ -91,6 +91,8 @@ export interface IStorage {
   createDateNight(dateNight: InsertDateNight): Promise<DateNight>;
   getDateNight(id: string): Promise<DateNight | undefined>;
   getDateNights(userId?: string): Promise<DateNight[]>;
+  getDateNightsByAnonId(anonId: string): Promise<DateNight[]>;
+  getAssessmentsByAnonId(anonId: string): Promise<Assessment[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -510,6 +512,16 @@ export class MemStorage implements IStorage {
     }
     return plans.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
+  
+  async getDateNightsByAnonId(anonId: string): Promise<DateNight[]> {
+    const plans = Array.from(this.dateNights.values());
+    return plans.filter(p => p.anonId === anonId).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+  
+  async getAssessmentsByAnonId(anonId: string): Promise<Assessment[]> {
+    const assessmentList = Array.from(this.assessments.values());
+    return assessmentList.filter(a => a.anonId === anonId).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -767,6 +779,14 @@ export class DbStorage implements IStorage {
       return await this.db.select().from(dateNights).where(eq(dateNights.userId, userId)).orderBy(desc(dateNights.createdAt));
     }
     return await this.db.select().from(dateNights).orderBy(desc(dateNights.createdAt));
+  }
+  
+  async getDateNightsByAnonId(anonId: string): Promise<DateNight[]> {
+    return await this.db.select().from(dateNights).where(eq(dateNights.anonId, anonId)).orderBy(desc(dateNights.createdAt));
+  }
+  
+  async getAssessmentsByAnonId(anonId: string): Promise<Assessment[]> {
+    return await this.db.select().from(assessments).where(eq(assessments.anonId, anonId)).orderBy(desc(assessments.createdAt));
   }
 }
 

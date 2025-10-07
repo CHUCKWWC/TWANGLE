@@ -184,6 +184,7 @@ export type RetreatItinerary = typeof retreatItineraries.$inferSelect;
 export const assessments = pgTable("assessments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id"),
+  anonId: varchar("anon_id"),
   responses: jsonb("responses").notNull(),
   result: jsonb("result"),
   shareToken: varchar("share_token"),
@@ -216,7 +217,8 @@ export type AttachmentStyleResult = z.infer<typeof attachmentStyleResultSchema>;
 
 export const dateNights = pgTable("date_nights", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull(),
+  userId: varchar("user_id"),
+  anonId: varchar("anon_id"),
   budget: text("budget").notNull(),
   vibe: text("vibe").notNull(),
   duration: text("duration").notNull(),

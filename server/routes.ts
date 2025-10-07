@@ -859,7 +859,7 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
     }
   });
 
-  app.post("/api/datenight/generate", isAuthenticated, async (req: any, res) => {
+  app.post("/api/datenight/generate", optionalAuth, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI date night planning not configured", 
@@ -868,9 +868,17 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
     }
 
     try {
-      const userId = req.user.claims.sub;
+      // Determine userId or anonId
+      const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
+      const anonId = req.anonymousUser?.anonId || null;
+      
+      if (!userId && !anonId) {
+        return res.status(401).json({ error: "Authentication or anonymous session required" });
+      }
+      
       const validationResult = insertDateNightSchema.safeParse({
         userId,
+        anonId,
         ...req.body,
         generatedPlan: "",
       });
@@ -945,10 +953,18 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.get("/api/datenight/plans", isAuthenticated, async (req: any, res) => {
+  app.get("/api/datenight/plans", optionalAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const plans = await storage.getDateNights(userId);
+      const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
+      const anonId = req.anonymousUser?.anonId || null;
+      
+      if (!userId && !anonId) {
+        return res.json({ plans: [] });
+      }
+      
+      const plans = userId 
+        ? await storage.getDateNights(userId)
+        : await storage.getDateNightsByAnonId(anonId!);
       res.json({ plans });
     } catch (error: any) {
       console.error("Get date night plans error:", error);
@@ -982,11 +998,18 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.post("/api/assessments", isAuthenticated, async (req: any, res) => {
+  app.post("/api/assessments", optionalAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
+      const anonId = req.anonymousUser?.anonId || null;
+      
+      if (!userId && !anonId) {
+        return res.status(401).json({ error: "Authentication or anonymous session required" });
+      }
+      
       const validationResult = insertAssessmentSchema.safeParse({ 
         userId,
+        anonId,
         responses: req.body.responses 
       });
 
@@ -1008,16 +1031,21 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.get("/api/assessments/:id", isAuthenticated, async (req: any, res) => {
+  app.get("/api/assessments/:id", optionalAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
+      const anonId = req.anonymousUser?.anonId || null;
       const assessment = await storage.getAssessment(req.params.id);
       
       if (!assessment) {
         return res.status(404).json({ error: "Assessment not found" });
       }
 
-      if (assessment.userId !== userId) {
+      // Allow access if user owns it or anon user owns it
+      if (assessment.userId && assessment.userId !== userId) {
+        return res.status(403).json({ error: "Access denied to this assessment" });
+      }
+      if (assessment.anonId && assessment.anonId !== anonId) {
         return res.status(403).json({ error: "Access denied to this assessment" });
       }
 
@@ -1031,7 +1059,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.post("/api/assessments/:id/analyze", isAuthenticated, async (req: any, res) => {
+  app.post("/api/assessments/:id/analyze", optionalAuth, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI analysis not configured", 
