@@ -92,6 +92,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Facebook login endpoint
+  app.post('/api/auth/facebook', async (req: any, res) => {
+    try {
+      const { accessToken, userID, name, email, picture } = req.body;
+
+      if (!userID || !email) {
+        return res.status(400).json({ message: "Facebook user ID and email are required" });
+      }
+
+      // Check if user exists by email first
+      let user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        // Create new user with Facebook ID
+        const nameParts = name ? name.split(' ') : ['', ''];
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        user = await storage.upsertUser({
+          id: `facebook_${userID}`,
+          email,
+          firstName,
+          lastName,
+          profileImageUrl: picture?.data?.url || null,
+        });
+      }
+
+      // Create a session by logging in the user with Passport
+      const sessionUser = {
+        claims: {
+          sub: user.id,
+          email: user.email,
+          first_name: user.firstName,
+          last_name: user.lastName,
+          profile_image_url: user.profileImageUrl,
+        }
+      };
+
+      req.logIn(sessionUser, (err: any) => {
+        if (err) {
+          console.error('Facebook login error:', err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+
+        res.json({ user });
+      });
+    } catch (error) {
+      console.error("Facebook authentication error:", error);
+      res.status(500).json({ message: "Facebook authentication failed" });
+    }
+  });
+
   // User stats endpoint
   app.get('/api/user/stats', isAuthenticated, async (req: any, res) => {
     try {
