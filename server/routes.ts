@@ -260,6 +260,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Facebook deauthorize callback
+  app.post('/api/auth/facebook/deauthorize', express.urlencoded({ extended: true }), async (req, res) => {
+    try {
+      const signedRequest = req.body.signed_request;
+      
+      if (!signedRequest || typeof signedRequest !== 'string') {
+        console.error('Invalid deauthorize request: missing signed_request');
+        return res.status(400).send('Invalid request');
+      }
+
+      // Parse the signed request
+      const [encodedSig, payload] = signedRequest.split('.');
+      
+      if (!encodedSig || !payload) {
+        console.error('Invalid signed request format');
+        return res.status(400).send('Invalid request format');
+      }
+
+      // Decode payload
+      const dataStr = Buffer.from(payload, 'base64').toString('utf-8');
+      const data = JSON.parse(dataStr);
+
+      // Verify algorithm
+      if (data.algorithm?.toUpperCase() !== 'HMAC-SHA256') {
+        console.error('Invalid algorithm:', data.algorithm);
+        return res.status(400).send('Invalid algorithm');
+      }
+
+      // Verify signature (optional but recommended)
+      const appSecret = process.env.FACEBOOK_APP_SECRET;
+      if (appSecret) {
+        const crypto = await import('crypto');
+        const hmac = crypto.createHmac('sha256', appSecret);
+        const expectedSig = hmac.update(payload).digest('base64')
+          .replace(/\//g, '_')
+          .replace(/\+/g, '-')
+          .replace(/={1,2}$/, '');
+        
+        if (encodedSig !== expectedSig) {
+          console.error('Invalid signature');
+          return res.status(400).send('Invalid signature');
+        }
+      }
+
+      const facebookUserId = data.user_id;
+      
+      if (!facebookUserId) {
+        console.error('No user_id in deauthorize request');
+        return res.status(400).send('Missing user_id');
+      }
+
+      // Find and handle the user
+      const userId = `facebook_${facebookUserId}`;
+      const user = await storage.getUser(userId);
+      
+      if (user) {
+        // Log the deauthorization
+        console.log(`User deauthorized: ${user.email} (${userId})`);
+        
+        // Option 1: Delete the user (uncomment if you want to delete)
+        // await storage.deleteUser(userId);
+        
+        // Option 2: Mark as deauthorized (keeping data for potential re-authorization)
+        // You could add a 'deauthorized' flag to the user schema if needed
+        
+        // For now, we just log it and keep the data
+      }
+
+      // Must return 200 OK
+      res.status(200).send('OK');
+    } catch (error) {
+      console.error('Deauthorize callback error:', error);
+      // Still return 200 to Facebook
+      res.status(200).send('OK');
+    }
+  });
+
   // User stats endpoint
   app.get('/api/user/stats', isAuthenticated, async (req: any, res) => {
     try {
