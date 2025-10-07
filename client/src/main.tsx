@@ -2,11 +2,13 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Initialize Facebook SDK
+// Initialize Facebook SDK and Pixel
 declare global {
   interface Window {
     FB: any;
     fbAsyncInit: () => void;
+    fbq: any;
+    _fbq: any;
   }
 }
 
@@ -86,5 +88,12 @@ window.fbAsyncInit = function() {
   js.src = "https://connect.facebook.net/en_US/sdk.js";
   fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));
+
+// Initialize Facebook Pixel
+const pixelId = import.meta.env.VITE_FACEBOOK_PIXEL_ID;
+if (pixelId && window.fbq) {
+  window.fbq('init', pixelId);
+  window.fbq('track', 'PageView');
+}
 
 createRoot(document.getElementById("root")!).render(<App />);
