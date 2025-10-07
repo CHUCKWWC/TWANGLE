@@ -97,47 +97,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { accessToken, userID, name, email, picture } = req.body;
 
-      if (!userID || !email) {
-        return res.status(400).json({ message: "Facebook user ID and email are required" });
+      if (!accessToken || !userID) {
+        return res.status(400).json({ message: "Facebook access token and user ID are required" });
       }
 
-      // Check if user exists by email first
-      let user = await storage.getUserByEmail(email);
-      
-      if (!user) {
-        // Create new user with Facebook ID
-        const nameParts = name ? name.split(' ') : ['', ''];
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
+      // Validate the access token with Facebook's Graph API
+      try {
+        const tokenDebugResponse = await fetch(
+          `https://graph.facebook.com/debug_token?input_token=${accessToken}&access_token=${accessToken}`
+        );
+        const tokenDebugData = await tokenDebugResponse.json();
 
-        user = await storage.upsertUser({
-          id: `facebook_${userID}`,
-          email,
-          firstName,
-          lastName,
-          profileImageUrl: picture?.data?.url || null,
+        if (!tokenDebugData.data?.is_valid) {
+          console.error('Invalid Facebook token:', tokenDebugData);
+          return res.status(401).json({ message: "Invalid Facebook access token" });
+        }
+
+        if (tokenDebugData.data.user_id !== userID) {
+          console.error('Token user ID mismatch:', { expected: userID, actual: tokenDebugData.data.user_id });
+          return res.status(401).json({ message: "Token user ID mismatch" });
+        }
+
+        // Fetch verified user data from Facebook
+        const userResponse = await fetch(
+          `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${accessToken}`
+        );
+        const fbUserData = await userResponse.json();
+
+        if (fbUserData.error) {
+          console.error('Facebook API error:', fbUserData.error);
+          return res.status(401).json({ message: "Failed to fetch user data from Facebook" });
+        }
+
+        if (!fbUserData.email) {
+          return res.status(400).json({ message: "Facebook account must have an email address" });
+        }
+
+        // Check if user exists by email first
+        let user = await storage.getUserByEmail(fbUserData.email);
+        
+        if (!user) {
+          // Create new user with verified Facebook data
+          const nameParts = fbUserData.name ? fbUserData.name.split(' ') : ['', ''];
+          const firstName = nameParts[0] || '';
+          const lastName = nameParts.slice(1).join(' ') || '';
+
+          user = await storage.upsertUser({
+            id: `facebook_${fbUserData.id}`,
+            email: fbUserData.email,
+            firstName,
+            lastName,
+            profileImageUrl: fbUserData.picture?.data?.url || null,
+          });
+        }
+
+        // Create a session by logging in the user with Passport
+        const sessionUser = {
+          claims: {
+            sub: user.id,
+            email: user.email,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            profile_image_url: user.profileImageUrl,
+          }
+        };
+
+        req.logIn(sessionUser, (err: any) => {
+          if (err) {
+            console.error('Facebook login error:', err);
+            return res.status(500).json({ message: "Failed to create session" });
+          }
+
+          res.json({ user });
         });
+      } catch (fbError) {
+        console.error('Facebook API validation error:', fbError);
+        return res.status(401).json({ message: "Failed to validate Facebook credentials" });
       }
-
-      // Create a session by logging in the user with Passport
-      const sessionUser = {
-        claims: {
-          sub: user.id,
-          email: user.email,
-          first_name: user.firstName,
-          last_name: user.lastName,
-          profile_image_url: user.profileImageUrl,
-        }
-      };
-
-      req.logIn(sessionUser, (err: any) => {
-        if (err) {
-          console.error('Facebook login error:', err);
-          return res.status(500).json({ message: "Failed to create session" });
-        }
-
-        res.json({ user });
-      });
     } catch (error) {
       console.error("Facebook authentication error:", error);
       res.status(500).json({ message: "Facebook authentication failed" });
