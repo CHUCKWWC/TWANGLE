@@ -4,7 +4,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { detectFacebookReferral, optionalAuth } from "./anonymousAuth";
+import { detectFacebookReferral, optionalAuth, ensureAnonymousSession } from "./anonymousAuth";
 import { logUserAccess } from "./accessLogger";
 import OpenAI from "openai";
 import Stripe from "stripe";
@@ -82,6 +82,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup Facebook referral detection for anonymous sessions
   app.use(detectFacebookReferral);
+  
+  // Ensure all visitors have an anonymous session (freemium model)
+  app.use(ensureAnonymousSession);
 
   // Auth routes (Reference: blueprint:javascript_log_in_with_replit)
   app.get('/api/auth/user', optionalAuth, logUserAccess, async (req: any, res) => {
@@ -1257,16 +1260,19 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.get("/api/datenight/:id", isAuthenticated, async (req: any, res) => {
+  app.get("/api/datenight/:id", optionalAuth, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
+      const anonId = req.anonymousUser?.anonId || null;
       const plan = await storage.getDateNight(req.params.id);
       
       if (!plan) {
         return res.status(404).json({ error: "Date night plan not found" });
       }
 
-      if (plan.userId !== userId) {
+      // Check ownership - either by userId or anonId
+      const hasAccess = (userId && plan.userId === userId) || (anonId && plan.anonId === anonId);
+      if (!hasAccess) {
         return res.status(403).json({ error: "Access denied to this date night plan" });
       }
 
