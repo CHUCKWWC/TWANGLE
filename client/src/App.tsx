@@ -22,6 +22,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import PaywallCustom from "@/pages/PaywallCustom";
 import PaySuccess from "@/pages/PaySuccess";
 import PayCancel from "@/pages/PayCancel";
+import Reports from "@/pages/Reports";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -59,6 +60,7 @@ function Router() {
           <Route path="/paywall" component={PaywallCustom} />
           <Route path="/pay/success" component={PaySuccess} />
           <Route path="/pay/cancel" component={PayCancel} />
+          <Route path="/reports" component={Reports} />
           <Route path="/terms" component={TermsOfService} />
           <Route path="/privacy" component={PrivacyPolicy} />
         </>
