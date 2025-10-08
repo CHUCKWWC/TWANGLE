@@ -3,10 +3,14 @@ import { FileText, BookOpen, BarChart3 } from "lucide-react";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
+import { useAuth } from "@/hooks/useAuth";
+import { isAdminUser } from "@shared/adminAccess";
 
 export function AppHeader() {
   const [location] = useLocation();
+  const { user } = useAuth();
   const isWelcome = location === "/";
+  const showReports = isAdminUser(user?.email);
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 ${isWelcome ? 'bg-transparent' : 'bg-background/80 backdrop-blur-md border-b border-border'}`}>
@@ -36,14 +40,16 @@ export function AppHeader() {
               <BookOpen className="w-4 h-4" />
               Exercises
             </Link>
-            <Link 
-              href="/reports" 
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-              data-testid="link-reports"
-            >
-              <BarChart3 className="w-4 h-4" />
-              Reports
-            </Link>
+            {showReports && (
+              <Link 
+                href="/reports" 
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
+                data-testid="link-reports"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Reports
+              </Link>
+            )}
           </div>
         )}
         {isWelcome && <div />}
