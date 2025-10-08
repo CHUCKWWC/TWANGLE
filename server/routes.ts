@@ -5,6 +5,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { detectFacebookReferral, optionalAuth } from "./anonymousAuth";
+import { logUserAccess } from "./accessLogger";
 import OpenAI from "openai";
 import Stripe from "stripe";
 import { trackSubscribe, trackCompleteRegistration } from "./facebookConversions";
@@ -68,7 +69,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(detectFacebookReferral);
 
   // Auth routes (Reference: blueprint:javascript_log_in_with_replit)
-  app.get('/api/auth/user', optionalAuth, async (req: any, res) => {
+  app.get('/api/auth/user', optionalAuth, logUserAccess, async (req: any, res) => {
     try {
       // If authenticated user, return user data
       if (req.isAuthenticated?.() && req.user) {
@@ -1441,6 +1442,63 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       console.error("Get shared assessment error:", error);
       res.status(500).json({
         error: "Failed to get shared assessment",
+        details: error.message,
+      });
+    }
+  });
+
+  // Access reporting endpoints
+  app.get("/api/reports/access-logs", isAuthenticated, async (req: any, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 100;
+      const logs = await storage.getAccessLogs(limit);
+      res.json(logs);
+    } catch (error: any) {
+      console.error("Get access logs error:", error);
+      res.status(500).json({
+        error: "Failed to get access logs",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/reports/access-stats-country", isAuthenticated, async (req: any, res) => {
+    try {
+      const stats = await storage.getAccessStatsByCountry();
+      res.json(stats);
+    } catch (error: any) {
+      console.error("Get country stats error:", error);
+      res.status(500).json({
+        error: "Failed to get country statistics",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/reports/access-stats-user", isAuthenticated, async (req: any, res) => {
+    try {
+      const stats = await storage.getAccessStatsByUser();
+      res.json(stats);
+    } catch (error: any) {
+      console.error("Get user stats error:", error);
+      res.status(500).json({
+        error: "Failed to get user statistics",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/reports/access-summary", isAuthenticated, async (req: any, res) => {
+    try {
+      const [totalAccess, uniqueUsers] = await Promise.all([
+        storage.getTotalAccessCount(),
+        storage.getUniqueUserAccessCount(),
+      ]);
+      res.json({ totalAccess, uniqueUsers });
+    } catch (error: any) {
+      console.error("Get access summary error:", error);
+      res.status(500).json({
+        error: "Failed to get access summary",
         details: error.message,
       });
     }
