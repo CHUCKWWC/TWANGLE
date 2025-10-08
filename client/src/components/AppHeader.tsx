@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { FileText, BookOpen } from "lucide-react";
+import { FileText, BookOpen, BarChart3 } from "lucide-react";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
@@ -35,6 +35,14 @@ export function AppHeader() {
             >
               <BookOpen className="w-4 h-4" />
               Exercises
+            </Link>
+            <Link 
+              href="/reports" 
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
+              data-testid="link-reports"
+            >
+              <BarChart3 className="w-4 h-4" />
+              Reports
             </Link>
           </div>
         )}

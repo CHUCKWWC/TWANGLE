@@ -449,6 +449,7 @@ export class MemStorage implements IStorage {
     const assessment: Assessment = {
       id,
       userId: insertAssessment.userId ?? null,
+      anonId: insertAssessment.anonId ?? null,
       responses: insertAssessment.responses,
       result: insertAssessment.result ?? null,
       shareToken: insertAssessment.shareToken ?? null,
@@ -503,7 +504,8 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const dateNight: DateNight = {
       id,
-      userId: insertDateNight.userId,
+      userId: insertDateNight.userId ?? null,
+      anonId: insertDateNight.anonId ?? null,
       budget: insertDateNight.budget,
       vibe: insertDateNight.vibe,
       duration: insertDateNight.duration,
@@ -539,6 +541,51 @@ export class MemStorage implements IStorage {
   async getAssessmentsByAnonId(anonId: string): Promise<Assessment[]> {
     const assessmentList = Array.from(this.assessments.values());
     return assessmentList.filter(a => a.anonId === anonId).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async createAccessLog(log: InsertAccessLog): Promise<AccessLog> {
+    const id = randomUUID();
+    const accessLog: AccessLog = {
+      id,
+      userId: log.userId ?? null,
+      email: log.email ?? null,
+      displayName: log.displayName ?? null,
+      ipAddress: log.ipAddress,
+      country: log.country ?? null,
+      countryCode: log.countryCode ?? null,
+      city: log.city ?? null,
+      region: log.region ?? null,
+      location: log.location ?? null,
+      userAgent: log.userAgent ?? null,
+      path: log.path ?? null,
+      accessType: log.accessType,
+      createdAt: new Date(),
+    };
+    return accessLog;
+  }
+
+  async getAccessLogs(limit: number = 100): Promise<AccessLog[]> {
+    return [];
+  }
+
+  async getAccessLogsByUser(userId: string): Promise<AccessLog[]> {
+    return [];
+  }
+
+  async getAccessStatsByCountry(): Promise<Array<{ country: string; countryCode: string; count: number }>> {
+    return [];
+  }
+
+  async getAccessStatsByUser(): Promise<Array<{ userId: string; email: string; displayName: string; count: number; lastAccess: Date }>> {
+    return [];
+  }
+
+  async getTotalAccessCount(): Promise<number> {
+    return 0;
+  }
+
+  async getUniqueUserAccessCount(): Promise<number> {
+    return 0;
   }
 }
 
