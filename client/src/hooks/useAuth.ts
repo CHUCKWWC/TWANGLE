@@ -8,9 +8,11 @@ export function useAuth() {
     retry: false,
   });
 
+  const isAnonymous = (user as any)?.isAnonymous === true;
+
   return {
     user,
     isLoading,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && !isAnonymous,
   };
 }
