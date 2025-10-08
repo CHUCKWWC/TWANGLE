@@ -30,6 +30,29 @@ export const detectFacebookReferral: RequestHandler = (req, res, next) => {
   next();
 };
 
+// Create anonymous session for all unauthenticated visitors (freemium model)
+export const ensureAnonymousSession: RequestHandler = (req, res, next) => {
+  const session = req.session as any;
+  
+  // Skip if user is authenticated
+  if (req.isAuthenticated?.()) {
+    return next();
+  }
+  
+  // Create anonymous session if it doesn't exist
+  if (!session.anonymousUser) {
+    const anonId = randomUUID();
+    session.anonymousUser = {
+      anonId,
+      source: 'direct',
+      createdAt: new Date().toISOString(),
+    };
+    console.log('[Anonymous Auth] Created anonymous session for visitor:', anonId);
+  }
+  
+  next();
+};
+
 export const optionalAuth: RequestHandler = async (req: any, res, next) => {
   // If user is authenticated via Replit Auth, proceed normally
   if (req.isAuthenticated?.() && req.user) {
