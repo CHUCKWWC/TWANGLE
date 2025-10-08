@@ -1,6 +1,7 @@
 // Reference: blueprint:javascript_log_in_with_replit
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Heart, Brain, Users, Map, BookOpen, Shield, Sparkles, CheckCircle2 } from "lucide-react";
 
 export default function Landing() {
@@ -23,20 +24,29 @@ export default function Landing() {
             Two Tangled Together
           </p>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Strengthen your relationship with AI-powered coaching, personalized retreats, and science-backed tools. 
             Understand your patterns. Deepen your connection.
           </p>
+
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8 max-w-md mx-auto">
+            <p className="text-sm font-medium text-foreground">
+              ✨ Try it free - no login required
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Explore assessments, exercises, and date night planning without creating an account
+            </p>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Button
               asChild
               size="lg"
               className="text-lg px-8 py-6 rounded-xl"
-              data-testid="button-login"
+              data-testid="button-try-free"
             >
-              <a href="/api/login">
-                Start Your Journey
+              <a href="/assessment">
+                Try Free Assessment
               </a>
             </Button>
             
@@ -45,10 +55,10 @@ export default function Landing() {
               size="lg"
               variant="outline"
               className="text-lg px-8 py-6 rounded-xl"
-              data-testid="button-learn-more"
+              data-testid="button-login"
             >
-              <a href="#how-it-works">
-                Learn More
+              <a href="/api/login">
+                Sign In
               </a>
             </Button>
           </div>
@@ -83,8 +93,11 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="hover-elevate">
               <CardContent className="p-6">
-                <div className="w-12 h-12 mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Brain className="w-6 h-6 text-primary" />
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Brain className="w-6 h-6 text-primary" />
+                  </div>
+                  <Badge variant="secondary" className="text-xs">FREE</Badge>
                 </div>
                 <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Attachment Assessment</h3>
                 <p className="text-muted-foreground">
@@ -96,8 +109,11 @@ export default function Landing() {
 
             <Card className="hover-elevate">
               <CardContent className="p-6">
-                <div className="w-12 h-12 mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Users className="w-6 h-6 text-primary" />
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Users className="w-6 h-6 text-primary" />
+                  </div>
+                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
                 </div>
                 <h3 className="text-xl font-semibold mb-3 font-[Poppins]">AI Coach Charles</h3>
                 <p className="text-muted-foreground">
@@ -109,8 +125,11 @@ export default function Landing() {
 
             <Card className="hover-elevate">
               <CardContent className="p-6">
-                <div className="w-12 h-12 mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Map className="w-6 h-6 text-primary" />
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Map className="w-6 h-6 text-primary" />
+                  </div>
+                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
                 </div>
                 <h3 className="text-xl font-semibold mb-3 font-[Poppins]">DIY Couples Retreats</h3>
                 <p className="text-muted-foreground">
@@ -122,8 +141,11 @@ export default function Landing() {
 
             <Card className="hover-elevate">
               <CardContent className="p-6">
-                <div className="w-12 h-12 mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-primary" />
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <BookOpen className="w-6 h-6 text-primary" />
+                  </div>
+                  <Badge variant="secondary" className="text-xs">FREE</Badge>
                 </div>
                 <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Science-Based Exercises</h3>
                 <p className="text-muted-foreground">
@@ -135,8 +157,11 @@ export default function Landing() {
 
             <Card className="hover-elevate">
               <CardContent className="p-6">
-                <div className="w-12 h-12 mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-primary" />
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-primary" />
+                  </div>
+                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
                 </div>
                 <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Weekly Summaries</h3>
                 <p className="text-muted-foreground">
