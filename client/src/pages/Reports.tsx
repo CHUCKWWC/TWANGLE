@@ -3,8 +3,10 @@ import { AppHeader } from "@/components/AppHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { Users, Globe, Activity } from "lucide-react";
+import { Users, Globe, Activity, Lock } from "lucide-react";
 import { format } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
+import { isAdminUser } from "@shared/adminAccess";
 
 interface AccessSummary {
   totalAccess: number;
@@ -41,23 +43,53 @@ interface AccessLog {
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export default function Reports() {
+  const { user } = useAuth();
+  const hasAccess = isAdminUser(user?.email);
+
   const { data: summary } = useQuery<AccessSummary>({
     queryKey: ['/api/reports/access-summary'],
+    enabled: hasAccess,
   });
 
   const { data: countryStats = [] } = useQuery<CountryStats[]>({
     queryKey: ['/api/reports/access-stats-country'],
+    enabled: hasAccess,
   });
 
   const { data: userStats = [] } = useQuery<UserStats[]>({
     queryKey: ['/api/reports/access-stats-user'],
+    enabled: hasAccess,
   });
 
   const { data: recentLogs = [] } = useQuery<AccessLog[]>({
     queryKey: ['/api/reports/access-logs'],
+    enabled: hasAccess,
   });
 
   const topCountries = countryStats.slice(0, 10);
+
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <main className="container mx-auto p-6">
+          <Card className="max-w-md mx-auto mt-20">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="rounded-full bg-destructive/10 p-3">
+                  <Lock className="w-8 h-8 text-destructive" />
+                </div>
+              </div>
+              <CardTitle data-testid="text-access-denied">Access Denied</CardTitle>
+              <CardDescription data-testid="text-access-denied-message">
+                You don't have permission to view this page. Reports are only available to authorized administrators.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
