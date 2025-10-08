@@ -238,3 +238,28 @@ export const insertDateNightSchema = createInsertSchema(dateNights).omit({
 
 export type InsertDateNight = z.infer<typeof insertDateNightSchema>;
 export type DateNight = typeof dateNights.$inferSelect;
+
+export const accessLogs = pgTable("access_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id"),
+  email: varchar("email"),
+  displayName: varchar("display_name"),
+  ipAddress: varchar("ip_address").notNull(),
+  country: varchar("country"),
+  countryCode: varchar("country_code"),
+  city: varchar("city"),
+  region: varchar("region"),
+  location: text("location"),
+  userAgent: text("user_agent"),
+  path: varchar("path"),
+  accessType: varchar("access_type").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertAccessLogSchema = createInsertSchema(accessLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAccessLog = z.infer<typeof insertAccessLogSchema>;
+export type AccessLog = typeof accessLogs.$inferSelect;

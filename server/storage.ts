@@ -21,6 +21,8 @@ import {
   type AttachmentStyleResult,
   type DateNight,
   type InsertDateNight,
+  type AccessLog,
+  type InsertAccessLog,
   users,
   subscriptions,
   chatSessions,
@@ -30,7 +32,8 @@ import {
   generalFeedback,
   retreatItineraries,
   assessments,
-  dateNights
+  dateNights,
+  accessLogs
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -94,6 +97,14 @@ export interface IStorage {
   getDateNights(userId?: string): Promise<DateNight[]>;
   getDateNightsByAnonId(anonId: string): Promise<DateNight[]>;
   getAssessmentsByAnonId(anonId: string): Promise<Assessment[]>;
+  
+  createAccessLog(log: InsertAccessLog): Promise<AccessLog>;
+  getAccessLogs(limit?: number): Promise<AccessLog[]>;
+  getAccessLogsByUser(userId: string): Promise<AccessLog[]>;
+  getAccessStatsByCountry(): Promise<Array<{ country: string; countryCode: string; count: number }>>;
+  getAccessStatsByUser(): Promise<Array<{ userId: string; email: string; displayName: string; count: number; lastAccess: Date }>>;
+  getTotalAccessCount(): Promise<number>;
+  getUniqueUserAccessCount(): Promise<number>;
 }
 
 export class MemStorage implements IStorage {
@@ -799,6 +810,69 @@ export class DbStorage implements IStorage {
   
   async getAssessmentsByAnonId(anonId: string): Promise<Assessment[]> {
     return await this.db.select().from(assessments).where(eq(assessments.anonId, anonId)).orderBy(desc(assessments.createdAt));
+  }
+
+  async createAccessLog(insertLog: InsertAccessLog): Promise<AccessLog> {
+    const result = await this.db.insert(accessLogs).values(insertLog).returning();
+    return result[0];
+  }
+
+  async getAccessLogs(limit: number = 100): Promise<AccessLog[]> {
+    return await this.db.select().from(accessLogs).orderBy(desc(accessLogs.createdAt)).limit(limit);
+  }
+
+  async getAccessLogsByUser(userId: string): Promise<AccessLog[]> {
+    return await this.db.select().from(accessLogs).where(eq(accessLogs.userId, userId)).orderBy(desc(accessLogs.createdAt));
+  }
+
+  async getAccessStatsByCountry(): Promise<Array<{ country: string; countryCode: string; count: number }>> {
+    const result = await this.db.select({
+      country: accessLogs.country,
+      countryCode: accessLogs.countryCode,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(accessLogs)
+    .where(sql`${accessLogs.country} IS NOT NULL`)
+    .groupBy(accessLogs.country, accessLogs.countryCode)
+    .orderBy(desc(sql`count(*)`));
+    
+    return result.map(r => ({
+      country: r.country || 'Unknown',
+      countryCode: r.countryCode || 'UNKNOWN',
+      count: Number(r.count),
+    }));
+  }
+
+  async getAccessStatsByUser(): Promise<Array<{ userId: string; email: string; displayName: string; count: number; lastAccess: Date }>> {
+    const result = await this.db.select({
+      userId: accessLogs.userId,
+      email: accessLogs.email,
+      displayName: accessLogs.displayName,
+      count: sql<number>`count(*)::int`,
+      lastAccess: sql<Date>`max(${accessLogs.createdAt})`,
+    })
+    .from(accessLogs)
+    .where(sql`${accessLogs.userId} IS NOT NULL`)
+    .groupBy(accessLogs.userId, accessLogs.email, accessLogs.displayName)
+    .orderBy(desc(sql`max(${accessLogs.createdAt})`));
+    
+    return result.map(r => ({
+      userId: r.userId || '',
+      email: r.email || '',
+      displayName: r.displayName || '',
+      count: Number(r.count),
+      lastAccess: r.lastAccess,
+    }));
+  }
+
+  async getTotalAccessCount(): Promise<number> {
+    const result = await this.db.select({ count: sql<number>`count(*)` }).from(accessLogs);
+    return Number(result[0]?.count || 0);
+  }
+
+  async getUniqueUserAccessCount(): Promise<number> {
+    const result = await this.db.select({ count: sql<number>`count(DISTINCT ${accessLogs.userId})` }).from(accessLogs);
+    return Number(result[0]?.count || 0);
   }
 }
 
