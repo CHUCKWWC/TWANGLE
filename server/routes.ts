@@ -18,6 +18,7 @@ import {
   insertDateNightSchema
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
+import { isAdminUser } from "@shared/adminAccess";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -60,6 +61,20 @@ Format your responses for mobile readability:
 - Break up long content with bullet points or numbered lists
 - Include practical exercises when appropriate
 - End with a reflection question or next step`;
+
+// Admin authorization middleware
+const isAdmin = (req: any, res: Response, next: NextFunction) => {
+  if (!req.isAuthenticated?.() || !req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  const userEmail = req.user.claims.email;
+  if (!isAdminUser(userEmail)) {
+    return res.status(403).json({ message: "Access denied. Admin privileges required." });
+  }
+  
+  next();
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth (Reference: blueprint:javascript_log_in_with_replit)
@@ -1448,7 +1463,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   });
 
   // Access reporting endpoints
-  app.get("/api/reports/access-logs", isAuthenticated, async (req: any, res) => {
+  app.get("/api/reports/access-logs", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 100;
       const logs = await storage.getAccessLogs(limit);
@@ -1462,7 +1477,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.get("/api/reports/access-stats-country", isAuthenticated, async (req: any, res) => {
+  app.get("/api/reports/access-stats-country", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const stats = await storage.getAccessStatsByCountry();
       res.json(stats);
@@ -1475,7 +1490,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.get("/api/reports/access-stats-user", isAuthenticated, async (req: any, res) => {
+  app.get("/api/reports/access-stats-user", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const stats = await storage.getAccessStatsByUser();
       res.json(stats);
@@ -1488,7 +1503,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.get("/api/reports/access-summary", isAuthenticated, async (req: any, res) => {
+  app.get("/api/reports/access-summary", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const [totalAccess, uniqueUsers] = await Promise.all([
         storage.getTotalAccessCount(),
