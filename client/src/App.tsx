@@ -39,32 +39,22 @@ function Router() {
   return (
     <Switch>
       <Route path="/shared/:token" component={SharedAssessment} />
-      {!isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/terms" component={TermsOfService} />
-          <Route path="/privacy" component={PrivacyPolicy} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-          <Route path="/assessment" component={Assessment} />
-          <Route path="/results" component={Results} />
-          <Route path="/coach" component={Coach} />
-          <Route path="/retreat" component={Retreat} />
-          <Route path="/datenight" component={DateNight} />
-          <Route path="/exercises" component={Exercises} />
-          <Route path="/summaries" component={Summaries} />
-          <Route path="/profile" component={Profile} />
-          <Route path="/retreat/:id" component={RetreatItinerary} />
-          <Route path="/paywall" component={PaywallCustom} />
-          <Route path="/pay/success" component={PaySuccess} />
-          <Route path="/pay/cancel" component={PayCancel} />
-          <Route path="/reports" component={Reports} />
-          <Route path="/terms" component={TermsOfService} />
-          <Route path="/privacy" component={PrivacyPolicy} />
-        </>
-      )}
+      <Route path="/" component={isAuthenticated ? Home : Landing} />
+      <Route path="/assessment" component={Assessment} />
+      <Route path="/results" component={Results} />
+      <Route path="/coach" component={Coach} />
+      <Route path="/retreat" component={Retreat} />
+      <Route path="/datenight" component={DateNight} />
+      <Route path="/exercises" component={Exercises} />
+      <Route path="/summaries" component={Summaries} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/retreat/:id" component={RetreatItinerary} />
+      <Route path="/paywall" component={PaywallCustom} />
+      <Route path="/pay/success" component={PaySuccess} />
+      <Route path="/pay/cancel" component={PayCancel} />
+      <Route path="/reports" component={Reports} />
+      <Route path="/terms" component={TermsOfService} />
+      <Route path="/privacy" component={PrivacyPolicy} />
       <Route component={NotFound} />
     </Switch>
   );
