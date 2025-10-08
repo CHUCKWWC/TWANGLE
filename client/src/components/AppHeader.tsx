@@ -1,8 +1,9 @@
 import { useLocation, Link } from "wouter";
-import { FileText, BookOpen, BarChart3 } from "lucide-react";
+import { FileText, BookOpen, BarChart3, LogIn } from "lucide-react";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdminUser } from "@shared/adminAccess";
 
@@ -10,6 +11,7 @@ export function AppHeader() {
   const [location] = useLocation();
   const { user } = useAuth();
   const isWelcome = location === "/";
+  const isAnonymous = (user as any)?.isAnonymous;
   const showReports = isAdminUser(user?.email);
 
   return (
@@ -25,14 +27,6 @@ export function AppHeader() {
               Twangle
             </Link>
             <Link 
-              href="/summaries" 
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-              data-testid="link-summaries"
-            >
-              <FileText className="w-4 h-4" />
-              Summaries
-            </Link>
-            <Link 
               href="/exercises" 
               className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
               data-testid="link-exercises"
@@ -40,6 +34,16 @@ export function AppHeader() {
               <BookOpen className="w-4 h-4" />
               Exercises
             </Link>
+            {!isAnonymous && (
+              <Link 
+                href="/summaries" 
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
+                data-testid="link-summaries"
+              >
+                <FileText className="w-4 h-4" />
+                Summaries
+              </Link>
+            )}
             {showReports && (
               <Link 
                 href="/reports" 
@@ -56,7 +60,16 @@ export function AppHeader() {
         <div className="flex items-center gap-3">
           <FeedbackButton />
           <ThemeToggle />
-          <UserMenu />
+          {isAnonymous ? (
+            <Button asChild variant="default" size="sm" data-testid="button-login">
+              <a href="/api/login">
+                <LogIn className="w-4 h-4 mr-2" />
+                Sign In
+              </a>
+            </Button>
+          ) : (
+            <UserMenu />
+          )}
         </div>
       </div>
     </header>
