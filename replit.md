@@ -53,6 +53,7 @@ Preferred communication style: Simple, everyday language.
 - FeedbackForm: User feedback collection.
 - RequirePlan: Premium feature gate component with upgrade prompts.
 - Paywall: Stripe hosted pricing table for subscription purchases.
+- SubscriptionCheckout: Custom payment form with individual card input fields for card number, expiration, and CVC. Supports browser autofill with proper spacing to prevent overlap.
 - Reports: Comprehensive access and usage analytics with charts and geographic distribution.
 
 ### Backend Architecture

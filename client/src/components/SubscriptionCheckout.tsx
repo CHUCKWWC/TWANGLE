@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, Check, AlertCircle } from "lucide-react";
-import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -43,14 +43,14 @@ export function SubscriptionCheckout({ prices, onSuccess }: SubscriptionCheckout
     setError(null);
 
     try {
-      const cardElement = elements.getElement(CardElement);
-      if (!cardElement) {
+      const cardNumberElement = elements.getElement(CardNumberElement);
+      if (!cardNumberElement) {
         throw new Error("Card element not found");
       }
 
       const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({
         type: "card",
-        card: cardElement,
+        card: cardNumberElement,
       });
 
       if (pmError) {
@@ -106,6 +106,7 @@ export function SubscriptionCheckout({ prices, onSuccess }: SubscriptionCheckout
       base: {
         fontSize: "16px",
         color: "hsl(var(--foreground))",
+        fontFamily: "system-ui, -apple-system, sans-serif",
         "::placeholder": {
           color: "hsl(var(--muted-foreground))",
         },
@@ -115,6 +116,8 @@ export function SubscriptionCheckout({ prices, onSuccess }: SubscriptionCheckout
       },
     },
   };
+
+  const cardElementClasses = "p-3 border rounded-md bg-background transition-colors focus-within:ring-2 focus-within:ring-primary focus-within:border-primary";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -179,9 +182,34 @@ export function SubscriptionCheckout({ prices, onSuccess }: SubscriptionCheckout
             Your card will be charged after the 7-day trial
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="p-4 border rounded-lg">
-            <CardElement options={CARD_ELEMENT_OPTIONS} />
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="cardNumber" className="text-sm font-medium">
+              Card Number
+            </label>
+            <div className={cardElementClasses} id="cardNumber" data-testid="input-card-number">
+              <CardNumberElement options={CARD_ELEMENT_OPTIONS} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="cardExpiry" className="text-sm font-medium">
+                Expiration Date
+              </label>
+              <div className={cardElementClasses} id="cardExpiry" data-testid="input-card-expiry">
+                <CardExpiryElement options={CARD_ELEMENT_OPTIONS} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="cardCvc" className="text-sm font-medium">
+                CVC
+              </label>
+              <div className={cardElementClasses} id="cardCvc" data-testid="input-card-cvc">
+                <CardCvcElement options={CARD_ELEMENT_OPTIONS} />
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
