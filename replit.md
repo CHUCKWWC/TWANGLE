@@ -12,6 +12,7 @@ The application provides:
 - AI-powered Date Night planner with personalized recommendations.
 - Weekly coaching session summaries.
 - User feedback system with lifetime access incentive.
+- Comprehensive access and usage reporting with geographic tracking.
 
 ## User Preferences
 
@@ -52,6 +53,7 @@ Preferred communication style: Simple, everyday language.
 - FeedbackForm: User feedback collection.
 - RequirePlan: Premium feature gate component with upgrade prompts.
 - Paywall: Stripe hosted pricing table for subscription purchases.
+- Reports: Comprehensive access and usage analytics with charts and geographic distribution.
 
 ### Backend Architecture
 
@@ -63,10 +65,12 @@ Preferred communication style: Simple, everyday language.
 - RESTful endpoints under `/api` prefix.
 - Endpoints for chat, retreat itinerary generation/retrieval, date night plan generation/retrieval, user eligibility, feedback, and attachment assessments (create, analyze, share, view shared).
 - Billing endpoints: `/api/billing/status` (subscription status), `/api/billing/checkout` (create Stripe session), `/api/billing/portal` (customer portal).
+- Reporting endpoints: `/api/reports/access-logs`, `/api/reports/access-stats-country`, `/api/reports/access-stats-user`, `/api/reports/access-summary` (all authenticated).
 - Webhook handler: `/webhooks/stripe` for subscription events (checkout completed, subscription created/updated/deleted).
 - Session management for chat continuity.
 - JSON request/response format with validation and error handling.
 - Ownership verification on protected resources.
+- Access logging middleware captures user access with IP geolocation on authenticated endpoints.
 
 **AI Integration:**
 - OpenAI GPT integration for relationship coaching, retreat planning, date night planning, and attachment analysis.
@@ -92,6 +96,7 @@ Preferred communication style: Simple, everyday language.
 - RetreatItineraries: Stored retreat configurations and AI-generated itineraries.
 - DateNights: AI-generated date night plans with user preferences (budget, vibe, duration, location, interests, dietary restrictions, transportation, special occasion).
 - Assessments: Attachment style assessments with user responses (JSONB), AI-generated results, share tokens, and ownership tracking.
+- AccessLogs: User access tracking with IP address, geolocation data (country, city, region), user agent, path, and access type (authenticated/anonymous).
 
 **Storage Pattern:**
 - Interface-based storage abstraction.
