@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import AssessmentQuestion from "@/components/AssessmentQuestion";
 import { AppHeader } from "@/components/AppHeader";
@@ -14,14 +14,27 @@ export default function Assessment() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  
+  // Preserve state on mount by checking if we have answers
+  useEffect(() => {
+    if (Object.keys(answers).length > 0) {
+      console.log(`[Assessment] State preserved: ${Object.keys(answers).length} answers, question ${currentQuestionIndex + 1}`);
+    }
+  }, [answers, currentQuestionIndex]);
 
   const handleNextQuestion = async () => {
-    if (!selectedOption) return;
+    if (!selectedOption) {
+      console.warn("[Assessment] handleNextQuestion called with no selectedOption");
+      return;
+    }
     
     const currentQuestion = ASSESSMENT_QUESTIONS[currentQuestionIndex];
     const selectedAnswer = currentQuestion.options.find(opt => opt.id === selectedOption);
     
-    if (!selectedAnswer) return;
+    if (!selectedAnswer) {
+      console.warn("[Assessment] selectedAnswer not found for option:", selectedOption);
+      return;
+    }
     
     const newAnswers = {
       ...answers,
@@ -29,28 +42,46 @@ export default function Assessment() {
     };
     
     setAnswers(newAnswers);
+    console.log(`[Assessment] Answered question ${currentQuestionIndex + 1}/${ASSESSMENT_QUESTIONS.length}`);
     
     if (currentQuestionIndex < ASSESSMENT_QUESTIONS.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedOption(null);
     } else {
+      console.log("[Assessment] Submitting final assessment...");
       setIsAnalyzing(true);
       
       try {
+        console.log("[Assessment] Creating assessment...");
         const createResponse = await apiRequest("POST", "/api/assessments", {
           responses: newAnswers
         });
-        const { assessmentId: id } = await createResponse.json();
         
+        if (!createResponse.ok) {
+          const errorData = await createResponse.json();
+          throw new Error(errorData.error || `HTTP ${createResponse.status}`);
+        }
+        
+        const { assessmentId: id } = await createResponse.json();
+        console.log("[Assessment] Assessment created:", id);
+        
+        console.log("[Assessment] Analyzing assessment...");
         const analyzeResponse = await apiRequest("POST", `/api/assessments/${id}/analyze`, {});
+        
+        if (!analyzeResponse.ok) {
+          const errorData = await analyzeResponse.json();
+          throw new Error(errorData.error || `HTTP ${analyzeResponse.status}`);
+        }
+        
         const { result } = await analyzeResponse.json();
+        console.log("[Assessment] Analysis complete, navigating to results");
         
         navigate(`/results?id=${id}`);
       } catch (error: any) {
-        console.error("Assessment error:", error);
+        console.error("[Assessment] Submission error:", error);
         toast({
           title: "Analysis Failed",
-          description: "We couldn't analyze your assessment. Please try again.",
+          description: error.message || "We couldn't analyze your assessment. Please try again.",
           variant: "destructive",
         });
         setIsAnalyzing(false);
