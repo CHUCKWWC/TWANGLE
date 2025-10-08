@@ -119,6 +119,12 @@ Preferred communication style: Simple, everyday language.
 - Premium pages: Coach (AI coaching), Retreat (DIY retreat builder), Summaries (weekly summaries).
 - `usePlan` hook provides subscription status to frontend components.
 
+**Admin Access Control:**
+- Reports feature restricted to specific admin emails only.
+- Admin whitelist includes: charle.watson@wholewellness-coaching.org, charles.watson@wholewellness-coaching.org, charles.watsn@gmail.com.
+- Frontend: Reports link conditionally shown in AppHeader, access denied UI on Reports page for non-admins.
+- Backend: isAdmin middleware protects all /api/reports/* endpoints with 403 responses for unauthorized users.
+
 **Security Considerations:**
 - HTTPS-only cookies planned.
 - Session store using `connect-pg-simple`.
