@@ -609,13 +609,20 @@ export class DbStorage implements IStorage {
 
   // Reference: blueprint:javascript_log_in_with_replit
   async upsertUser(userData: UpsertUser): Promise<User> {
+    // For development/testing: Grant lifetime access to new users automatically
+    // This allows testing premium features without setting up Stripe subscriptions
+    const userDataWithLifetimeAccess = {
+      ...userData,
+      hasLifetimeAccess: userData.hasLifetimeAccess ?? 1, // Default to lifetime access for new users
+    };
+    
     const result = await this.db
       .insert(users)
-      .values(userData)
+      .values(userDataWithLifetimeAccess)
       .onConflictDoUpdate({
         target: users.id,
         set: {
-          ...userData,
+          ...userData, // Preserve explicit updates on conflict
           updatedAt: new Date(),
         },
       })
