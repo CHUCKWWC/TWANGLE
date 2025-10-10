@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Heart, Sparkles, DollarSign, Calendar as CalendarIcon, Target, Smile, MapPin, BookOpen, Loader2 } from "lucide-react";
+import { Heart, Sparkles, DollarSign, Calendar as CalendarIcon, Target, Smile, MapPin, BookOpen, Loader2, Briefcase, Users } from "lucide-react";
 import { format, startOfDay } from "date-fns";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -48,6 +48,7 @@ const GOAL_OPTIONS = [
   { value: 'communicate', label: 'Communicate Better', description: 'Improve how you talk and listen' },
   { value: 'heal', label: 'Heal & Repair', description: 'Address hurts and rebuild trust' },
   { value: 'celebrate', label: 'Celebrate Us', description: 'Honor your relationship journey' },
+  { value: 'future', label: 'Plan for the Future', description: 'Align on goals and dreams together' },
 ];
 
 const START_TIME_OPTIONS = [
@@ -75,6 +76,18 @@ const FOCUS_OPTIONS = [
     icon: BookOpen,
     description: 'Quiet connection and renewal' 
   },
+  { 
+    value: 'work', 
+    label: 'Work & Life Balance', 
+    icon: Briefcase,
+    description: 'Navigate careers and shared responsibilities' 
+  },
+  { 
+    value: 'partnership', 
+    label: 'Partnership & Team', 
+    icon: Users,
+    description: 'Build your relationship as a team' 
+  },
 ];
 
 
@@ -86,7 +99,6 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
   const [goal, setGoal] = useState('reconnect');
   const [startTime, setStartTime] = useState('9:00');
   const [focuses, setFocuses] = useState<string[]>(['growth']);
-  const [currentCity, setCurrentCity] = useState('');
   const [retreatDestination, setRetreatDestination] = useState('');
   const [streetAddress, setStreetAddress] = useState('');
   const [travelDistance, setTravelDistance] = useState('');
@@ -106,7 +118,6 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
       location: string;
       budget: string;
       focuses: string[];
-      currentCity: string;
       retreatDestination: string;
       streetAddress: string;
       travelDistance: string;
@@ -177,7 +188,6 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
       location,
       budget,
       focuses,
-      currentCity: currentCity || "",
       retreatDestination,
       streetAddress: streetAddress || "",
       travelDistance: travelDistance || "",
@@ -351,33 +361,18 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
             Tell us where you'll be so we can find local restaurants, events, and attractions for your itinerary
           </p>
           <div className="space-y-6 mb-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="current-city" className="mb-2 block">
-                  Current City
-                </Label>
-                <Input
-                  id="current-city"
-                  value={currentCity}
-                  onChange={(e) => setCurrentCity(e.target.value)}
-                  placeholder="e.g., San Antonio, TX"
-                  data-testid="input-current-city"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Where you're coming from</p>
-              </div>
-              <div>
-                <Label htmlFor="retreat-destination" className="mb-2 block">
-                  Retreat Destination
-                </Label>
-                <Input
-                  id="retreat-destination"
-                  value={retreatDestination}
-                  onChange={(e) => setRetreatDestination(e.target.value)}
-                  placeholder="e.g., Surfside Beach, TX"
-                  data-testid="input-retreat-destination"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Where your retreat will be</p>
-              </div>
+            <div>
+              <Label htmlFor="retreat-destination" className="mb-2 block">
+                Retreat Destination
+              </Label>
+              <Input
+                id="retreat-destination"
+                value={retreatDestination}
+                onChange={(e) => setRetreatDestination(e.target.value)}
+                placeholder="e.g., Surfside Beach, TX"
+                data-testid="input-retreat-destination"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Where your retreat will be</p>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
