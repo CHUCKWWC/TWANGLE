@@ -175,29 +175,20 @@ export const retreatItineraries = pgTable("retreat_itineraries", {
 });
 
 export const visionPlanningSchema = z.object({
-  timelines: z.object({
-    sixMonths: z.string().optional(),
-    oneYear: z.string().optional(),
-    fiveYears: z.string().optional(),
-    tenYears: z.string().optional(),
-    custom: z.object({
-      label: z.string(),
-      vision: z.string(),
-    }).optional(),
-  }).optional(),
-  lifeDimensions: z.object({
-    financial: z.string().optional(),
-    intimacy: z.string().optional(),
-    health: z.string().optional(),
-    career: z.string().optional(),
-    business: z.string().optional(),
-    spiritual: z.string().optional(),
-    ministry: z.string().optional(),
-    family: z.string().optional(),
-    personal: z.string().optional(),
-    community: z.string().optional(),
-    legacy: z.string().optional(),
-  }).optional(),
+  focusTimelines: z.array(z.enum(['sixMonths', 'oneYear', 'fiveYears', 'tenYears'])).optional(),
+  focusDimensions: z.array(z.enum([
+    'financial', 
+    'intimacy', 
+    'health', 
+    'career', 
+    'business', 
+    'spiritual', 
+    'ministry', 
+    'family', 
+    'personal', 
+    'community', 
+    'legacy'
+  ])).optional(),
 }).optional();
 
 export type VisionPlanning = z.infer<typeof visionPlanningSchema>;
