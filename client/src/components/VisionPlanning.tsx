@@ -55,7 +55,7 @@ export default function VisionPlanning({ value, onChange }: VisionPlanningProps)
       : [...current, timeline];
     
     onChange({
-      ...value,
+      ...(value || {}),
       focusTimelines: updated.length > 0 ? updated : undefined,
     });
   };
@@ -67,7 +67,7 @@ export default function VisionPlanning({ value, onChange }: VisionPlanningProps)
       : [...current, dimension];
     
     onChange({
-      ...value,
+      ...(value || {}),
       focusDimensions: updated.length > 0 ? updated : undefined,
     });
   };

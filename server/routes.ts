@@ -1052,36 +1052,60 @@ ${conversationText}`;
 
       // Build vision planning context
       let visionContext = '';
+      let hasVisionPlanning = false;
+      const visionData = visionPlanning as VisionPlanning;
+      
       if (visionPlanning) {
-        const visionData = visionPlanning as VisionPlanning;
-        const timelines = visionData?.timelines;
-        const dimensions = visionData?.lifeDimensions;
+        const focusTimelines = visionData?.focusTimelines;
+        const focusDimensions = visionData?.focusDimensions;
         
-        if (timelines && (timelines.sixMonths || timelines.oneYear || timelines.fiveYears || timelines.tenYears || timelines.custom)) {
-          visionContext += '\n\nVision & Future Planning:\nThe couple has shared their vision for the future across these timelines:';
+        const timelineLabels: Record<string, string> = {
+          sixMonths: '6 months',
+          oneYear: '1 year',
+          fiveYears: '5 years',
+          tenYears: '10 years',
+        };
+        
+        const dimensionLabels: Record<string, string> = {
+          financial: 'Financial goals and money management',
+          intimacy: 'Intimacy, romance, and emotional connection',
+          health: 'Health, wellness, and physical fitness',
+          career: 'Career paths and professional growth',
+          business: 'Business ventures and entrepreneurship',
+          spiritual: 'Spiritual life and faith journey',
+          ministry: 'Ministry, service, and giving back',
+          family: 'Family planning and parenting',
+          personal: 'Personal growth and self-improvement',
+          community: 'Community involvement and friendships',
+          legacy: 'Long-term legacy and impact',
+        };
+        
+        if ((focusTimelines && focusTimelines.length > 0) || (focusDimensions && focusDimensions.length > 0)) {
+          hasVisionPlanning = true;
+          visionContext += '\n\nVision Planning Focus:\nThe couple wants to explore and align on their future vision in these areas:';
           
-          if (timelines.sixMonths) visionContext += `\n- 6 Months: ${timelines.sixMonths}`;
-          if (timelines.oneYear) visionContext += `\n- 1 Year: ${timelines.oneYear}`;
-          if (timelines.fiveYears) visionContext += `\n- 5 Years: ${timelines.fiveYears}`;
-          if (timelines.tenYears) visionContext += `\n- 10 Years: ${timelines.tenYears}`;
-          if (timelines.custom?.vision) visionContext += `\n- ${timelines.custom.label}: ${timelines.custom.vision}`;
-        }
-
-        if (dimensions && Object.values(dimensions).some(v => v)) {
-          visionContext += '\n\nLife Dimensions & Goals:';
-          if (dimensions.financial) visionContext += `\n- Financial: ${dimensions.financial}`;
-          if (dimensions.intimacy) visionContext += `\n- Intimacy & Romance: ${dimensions.intimacy}`;
-          if (dimensions.health) visionContext += `\n- Health & Wellness: ${dimensions.health}`;
-          if (dimensions.career) visionContext += `\n- Career: ${dimensions.career}`;
-          if (dimensions.business) visionContext += `\n- Business: ${dimensions.business}`;
-          if (dimensions.spiritual) visionContext += `\n- Spiritual Life: ${dimensions.spiritual}`;
-          if (dimensions.ministry) visionContext += `\n- Ministry & Service: ${dimensions.ministry}`;
-          if (dimensions.family) visionContext += `\n- Family: ${dimensions.family}`;
-          if (dimensions.personal) visionContext += `\n- Personal Growth: ${dimensions.personal}`;
-          if (dimensions.community) visionContext += `\n- Community: ${dimensions.community}`;
-          if (dimensions.legacy) visionContext += `\n- Legacy & Impact: ${dimensions.legacy}`;
+          if (focusTimelines && focusTimelines.length > 0) {
+            const timeframeList = focusTimelines.map(t => timelineLabels[t] || t).join(', ');
+            visionContext += `\n- Time horizons they want to discuss: ${timeframeList}`;
+          }
+          
+          if (focusDimensions && focusDimensions.length > 0) {
+            visionContext += '\n- Life dimensions they want to align on:';
+            focusDimensions.forEach(d => {
+              visionContext += `\n  • ${dimensionLabels[d] || d}`;
+            });
+          }
+          
+          visionContext += '\n\nIMPORTANT: Include specific research-backed exercises in the itinerary to help them explore these areas together. Draw from Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory frameworks, citing these by name. Include conversation starters, reflection activities, and goal-setting exercises that guide them through answering vision planning questions during the retreat.';
         }
       }
+
+      console.log('[Retreat Generation] Vision Planning Context:', {
+        hasVisionPlanning,
+        focusTimelines: visionData?.focusTimelines,
+        focusDimensions: visionData?.focusDimensions,
+        visionContextLength: visionContext.length
+      });
 
       const itineraryPrompt = `Create a personalized couples retreat itinerary for ${retreatDestination} starting ${formattedDate}.
 
@@ -1097,12 +1121,12 @@ Format the itinerary as a beautiful, actionable plan with:
 2. Day-by-day schedule with specific timing suggestions
 3. Recommended activities that match their vibe and goals
 4. Meal suggestions (breakfast, lunch, dinner) with restaurant recommendations within their travel distance preference
-5. Relationship exercises integrated into each day${visionContext ? ' - weave in discussions and activities aligned with their vision and life goals' : ''}
-6. Evening reflection prompts for deeper connection${visionContext ? ', including future planning conversations based on their shared vision' : ''}
+5. Relationship exercises integrated into each day${hasVisionPlanning ? ' - IMPORTANT: Include specific exercises that help them explore their selected vision planning areas. These should be structured activities with prompts and questions to guide their conversations.' : ''}
+6. Evening reflection prompts for deeper connection${hasVisionPlanning ? ' - Include vision planning exercises with specific questions about their future in the areas they selected' : ''}
 7. Local attraction recommendations within their preferred travel distance
-8. A closing message with encouragement${visionContext ? ' that ties back to their long-term vision' : ''}
+8. A closing message with encouragement${hasVisionPlanning ? ' that acknowledges the vision planning work they did together' : ''}
 
-Make it feel personal, romantic, and research-backed. Include practical tips like what to bring, how to prepare, and conversation starters.${travelDistance ? `\n\nIMPORTANT: When recommending restaurants and attractions, keep them within ${travelDistance} of their retreat location.` : ''}${visionContext ? '\n\nIMPORTANT: Since they have shared their future vision and goals, integrate activities and conversations throughout the retreat that help them align on their shared future. Include specific exercises for vision alignment, goal-setting conversations, and dreaming together moments.' : ''}
+Make it feel personal, romantic, and research-backed. Include practical tips like what to bring, how to prepare, and conversation starters.${travelDistance ? `\n\nIMPORTANT: When recommending restaurants and attractions, keep them within ${travelDistance} of their retreat location.` : ''}${hasVisionPlanning ? '\n\nCRITICAL: The couple has indicated they want to work on vision planning during the retreat. Throughout the itinerary, include specific exercises (with step-by-step instructions) that help them:\n- Discuss and align on their vision for the selected timeframes\n- Explore shared goals in their selected life dimensions\n- Answer vision planning questions together through guided activities\n- Create action plans based on their discussions\n\nThese exercises MUST be drawn from Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory frameworks. Cite these frameworks by name when introducing exercises (e.g., Gottman Dreams Within Conflict or EFT Attachment Conversation). Give them concrete tools to use during the retreat. Make the exercises feel natural and integrated into the flow of each day.' : ''}
 
 Use clear formatting with headers, bullet points, and emojis where appropriate to make it engaging and easy to follow.`;
 
@@ -1111,7 +1135,7 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
         messages: [
           {
             role: "system",
-            content: "You are Coach Charles, an expert relationship coach who creates personalized retreat itineraries. Your itineraries blend research-backed relationship exercises with practical travel planning.",
+            content: "You are Coach Charles, an expert relationship coach who creates personalized retreat itineraries. Your itineraries blend research-backed relationship exercises from Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory with practical travel planning. Always cite these frameworks by name when suggesting exercises.",
           },
           {
             role: "user",

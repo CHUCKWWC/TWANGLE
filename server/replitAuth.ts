@@ -66,6 +66,7 @@ async function upsertUser(
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
+    hasLifetimeAccess: process.env.NODE_ENV === 'development' ? 1 : 0,
   });
 }
 
