@@ -176,8 +176,8 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
 
     // Check if visionPlanning has any actual data
     const hasVisionData = visionPlanning && (
-      (visionPlanning.timelines && Object.values(visionPlanning.timelines).some(v => v)) ||
-      (visionPlanning.lifeDimensions && Object.values(visionPlanning.lifeDimensions).some(v => v))
+      (visionPlanning.focusTimelines && visionPlanning.focusTimelines.length > 0) ||
+      (visionPlanning.focusDimensions && visionPlanning.focusDimensions.length > 0)
     );
 
     generateItineraryMutation.mutate({
