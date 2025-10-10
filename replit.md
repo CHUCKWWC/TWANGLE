@@ -45,8 +45,9 @@ Preferred communication style: Simple, everyday language.
 - AssessmentQuestion: Multi-step questionnaire with progress tracking.
 - AttachmentResults: Visualization of attachment scores using Recharts.
 - AICoachChat: Real-time chat interface.
-- RetreatBuilder: Multi-step retreat planning wizard.
-- RetreatItinerary: Displays personalized AI-generated retreat plans.
+- RetreatBuilder: Multi-step retreat planning wizard with vision planning capabilities.
+- VisionPlanning: Comprehensive future planning component with timeline inputs (6mo, 1yr, 5yr, 10yr, custom) and life dimension goals (financial, intimacy, health, career, business, spiritual, ministry, family, personal, community, legacy).
+- RetreatItinerary: Displays personalized AI-generated retreat plans incorporating vision and goals.
 - DateNightPlanner: AI-powered date night planning form with customizable preferences.
 - ExercisesLibrary: Accordion-based exercise browser.
 - WeeklySummaries: Session summary viewer.
@@ -94,7 +95,7 @@ Preferred communication style: Simple, everyday language.
 - GeneralFeedback: User feedback.
 - SessionFeedback: Session-specific feedback ratings.
 - RelationshipProgress: Weekly relationship score tracking.
-- RetreatItineraries: Stored retreat configurations and AI-generated itineraries.
+- RetreatItineraries: Stored retreat configurations, vision planning data (timelines and life dimensions), and AI-generated itineraries.
 - DateNights: AI-generated date night plans with user preferences (budget, vibe, duration, location, interests, dietary restrictions, transportation, special occasion).
 - Assessments: Attachment style assessments with user responses (JSONB), AI-generated results, share tokens, and ownership tracking.
 - AccessLogs: User access tracking with IP address, geolocation data (country, city, region), user agent, path, and access type (authenticated/anonymous).
