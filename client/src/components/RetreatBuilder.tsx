@@ -13,6 +13,8 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import VisionPlanning from "@/components/VisionPlanning";
+import { VisionPlanning as VisionPlanningType } from "@shared/schema";
 
 interface RetreatBuilderProps {}
 
@@ -90,6 +92,7 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
   const [travelDistance, setTravelDistance] = useState('');
   const [startDate, setStartDate] = useState<Date>();
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [visionPlanning, setVisionPlanning] = useState<VisionPlanningType | undefined>({});
   
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -107,7 +110,8 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
       retreatDestination: string;
       streetAddress: string;
       travelDistance: string;
-      startDate?: Date;
+      startDate?: string;
+      visionPlanning?: VisionPlanningType;
     }) => {
       const response = await apiRequest("POST", "/api/retreat/generate-itinerary", data);
       return await response.json();
@@ -159,6 +163,12 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
       return;
     }
 
+    // Check if visionPlanning has any actual data
+    const hasVisionData = visionPlanning && (
+      (visionPlanning.timelines && Object.values(visionPlanning.timelines).some(v => v)) ||
+      (visionPlanning.lifeDimensions && Object.values(visionPlanning.lifeDimensions).some(v => v))
+    );
+
     generateItineraryMutation.mutate({
       vibe,
       goal,
@@ -172,7 +182,8 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
       streetAddress: streetAddress || "",
       travelDistance: travelDistance || "",
       startDate: startDate ? startDate.toISOString() : undefined,
-    } as any);
+      visionPlanning: hasVisionData ? visionPlanning : undefined,
+    });
   };
 
   return (
@@ -465,7 +476,9 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
           )}
         </Card>
 
-        <div className="flex gap-4">
+        <VisionPlanning value={visionPlanning} onChange={setVisionPlanning} />
+
+        <div className="flex gap-4 mt-6">
           <Button
             size="lg"
             className="flex-1 text-lg py-6"

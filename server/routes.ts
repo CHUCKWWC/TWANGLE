@@ -15,7 +15,8 @@ import {
   insertAssessmentSchema,
   attachmentStyleResultSchema,
   type AttachmentStyleResult,
-  insertDateNightSchema
+  insertDateNightSchema,
+  type VisionPlanning
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { isAdminUser } from "@shared/adminAccess";
@@ -1038,7 +1039,7 @@ ${conversationText}`;
         });
       }
 
-      const { retreatDestination, startDate, vibe, goal, duration, budget, focuses, streetAddress, travelDistance } = validationResult.data;
+      const { retreatDestination, startDate, vibe, goal, duration, budget, focuses, streetAddress, travelDistance, visionPlanning } = validationResult.data;
 
       const formattedDate = startDate ? new Date(startDate).toLocaleDateString('en-US', { 
         month: 'long', 
@@ -1049,6 +1050,39 @@ ${conversationText}`;
       const locationDetails = streetAddress ? `\n- Retreat Address: ${streetAddress}` : '';
       const travelPreferences = travelDistance ? `\n- Travel Distance Preference: They're willing to travel ${travelDistance} for dining and excursions` : '';
 
+      // Build vision planning context
+      let visionContext = '';
+      if (visionPlanning) {
+        const visionData = visionPlanning as VisionPlanning;
+        const timelines = visionData?.timelines;
+        const dimensions = visionData?.lifeDimensions;
+        
+        if (timelines && (timelines.sixMonths || timelines.oneYear || timelines.fiveYears || timelines.tenYears || timelines.custom)) {
+          visionContext += '\n\nVision & Future Planning:\nThe couple has shared their vision for the future across these timelines:';
+          
+          if (timelines.sixMonths) visionContext += `\n- 6 Months: ${timelines.sixMonths}`;
+          if (timelines.oneYear) visionContext += `\n- 1 Year: ${timelines.oneYear}`;
+          if (timelines.fiveYears) visionContext += `\n- 5 Years: ${timelines.fiveYears}`;
+          if (timelines.tenYears) visionContext += `\n- 10 Years: ${timelines.tenYears}`;
+          if (timelines.custom?.vision) visionContext += `\n- ${timelines.custom.label}: ${timelines.custom.vision}`;
+        }
+
+        if (dimensions && Object.values(dimensions).some(v => v)) {
+          visionContext += '\n\nLife Dimensions & Goals:';
+          if (dimensions.financial) visionContext += `\n- Financial: ${dimensions.financial}`;
+          if (dimensions.intimacy) visionContext += `\n- Intimacy & Romance: ${dimensions.intimacy}`;
+          if (dimensions.health) visionContext += `\n- Health & Wellness: ${dimensions.health}`;
+          if (dimensions.career) visionContext += `\n- Career: ${dimensions.career}`;
+          if (dimensions.business) visionContext += `\n- Business: ${dimensions.business}`;
+          if (dimensions.spiritual) visionContext += `\n- Spiritual Life: ${dimensions.spiritual}`;
+          if (dimensions.ministry) visionContext += `\n- Ministry & Service: ${dimensions.ministry}`;
+          if (dimensions.family) visionContext += `\n- Family: ${dimensions.family}`;
+          if (dimensions.personal) visionContext += `\n- Personal Growth: ${dimensions.personal}`;
+          if (dimensions.community) visionContext += `\n- Community: ${dimensions.community}`;
+          if (dimensions.legacy) visionContext += `\n- Legacy & Impact: ${dimensions.legacy}`;
+        }
+      }
+
       const itineraryPrompt = `Create a personalized couples retreat itinerary for ${retreatDestination} starting ${formattedDate}.
 
 Retreat Details:
@@ -1056,19 +1090,19 @@ Retreat Details:
 - Goal: ${goal}
 - Duration: ${duration}
 - Budget: ${budget}
-- Focus areas: ${focuses.join(', ')}${locationDetails}${travelPreferences}
+- Focus areas: ${focuses.join(', ')}${locationDetails}${travelPreferences}${visionContext}
 
 Format the itinerary as a beautiful, actionable plan with:
 1. A warm introduction welcoming them to their retreat
 2. Day-by-day schedule with specific timing suggestions
 3. Recommended activities that match their vibe and goals
 4. Meal suggestions (breakfast, lunch, dinner) with restaurant recommendations within their travel distance preference
-5. Relationship exercises integrated into each day
-6. Evening reflection prompts for deeper connection
+5. Relationship exercises integrated into each day${visionContext ? ' - weave in discussions and activities aligned with their vision and life goals' : ''}
+6. Evening reflection prompts for deeper connection${visionContext ? ', including future planning conversations based on their shared vision' : ''}
 7. Local attraction recommendations within their preferred travel distance
-8. A closing message with encouragement
+8. A closing message with encouragement${visionContext ? ' that ties back to their long-term vision' : ''}
 
-Make it feel personal, romantic, and research-backed. Include practical tips like what to bring, how to prepare, and conversation starters.${travelDistance ? `\n\nIMPORTANT: When recommending restaurants and attractions, keep them within ${travelDistance} of their retreat location.` : ''}
+Make it feel personal, romantic, and research-backed. Include practical tips like what to bring, how to prepare, and conversation starters.${travelDistance ? `\n\nIMPORTANT: When recommending restaurants and attractions, keep them within ${travelDistance} of their retreat location.` : ''}${visionContext ? '\n\nIMPORTANT: Since they have shared their future vision and goals, integrate activities and conversations throughout the retreat that help them align on their shared future. Include specific exercises for vision alignment, goal-setting conversations, and dreaming together moments.' : ''}
 
 Use clear formatting with headers, bullet points, and emojis where appropriate to make it engaging and easy to follow.`;
 
