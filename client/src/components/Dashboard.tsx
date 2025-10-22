@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   Brain, 
   MessageCircle, 
@@ -124,10 +125,13 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="hover-elevate cursor-pointer transition-all" onClick={() => navigate("/assessment")} data-testid="action-assessment">
               <CardContent className="p-6">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Brain className="w-6 h-6 text-primary" />
                   </div>
+                  <Badge variant="secondary" className="text-xs">FREE</Badge>
+                </div>
+                <div className="flex items-start gap-4">
                   <div className="flex-1">
                     <h3 className="font-semibold mb-1">
                       {hasCompletedAssessment ? "Retake Assessment" : "Start Assessment"}
@@ -148,10 +152,13 @@ export default function Dashboard() {
 
             <Card className="hover-elevate cursor-pointer transition-all" onClick={() => navigate("/coach")} data-testid="action-coach">
               <CardContent className="p-6">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <MessageCircle className="w-6 h-6 text-primary" />
                   </div>
+                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                </div>
+                <div className="flex items-start gap-4">
                   <div className="flex-1">
                     <h3 className="font-semibold mb-1">Talk to Coach Charles</h3>
                     <p className="text-sm text-muted-foreground">
@@ -167,10 +174,13 @@ export default function Dashboard() {
 
             <Card className="hover-elevate cursor-pointer transition-all" onClick={() => navigate("/retreat")} data-testid="action-retreat">
               <CardContent className="p-6">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Map className="w-6 h-6 text-primary" />
                   </div>
+                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                </div>
+                <div className="flex items-start gap-4">
                   <div className="flex-1">
                     <h3 className="font-semibold mb-1">Plan a Retreat</h3>
                     <p className="text-sm text-muted-foreground">
@@ -251,30 +261,33 @@ export default function Dashboard() {
             <CardContent className="space-y-3">
               <Button 
                 variant="outline" 
-                className="w-full justify-start" 
+                className="w-full justify-start gap-2" 
                 onClick={() => navigate("/exercises")}
                 data-testid="button-exercises"
               >
-                <Heart className="w-4 h-4 mr-2" />
-                Browse Relationship Exercises
+                <Heart className="w-4 h-4" />
+                <span className="flex-1 text-left">Browse Relationship Exercises</span>
+                <Badge variant="secondary" className="text-xs">FREE</Badge>
               </Button>
               <Button 
                 variant="outline" 
-                className="w-full justify-start" 
+                className="w-full justify-start gap-2" 
                 onClick={() => navigate("/datenight")}
                 data-testid="button-datenight"
               >
-                <Utensils className="w-4 h-4 mr-2" />
-                Plan Date Night
+                <Utensils className="w-4 h-4" />
+                <span className="flex-1 text-left">Plan Date Night</span>
+                <Badge variant="secondary" className="text-xs">FREE</Badge>
               </Button>
               <Button 
                 variant="outline" 
-                className="w-full justify-start" 
+                className="w-full justify-start gap-2" 
                 onClick={() => navigate("/summaries")}
                 data-testid="button-summaries"
               >
-                <TrendingUp className="w-4 h-4 mr-2" />
-                View Weekly Summaries
+                <TrendingUp className="w-4 h-4" />
+                <span className="flex-1 text-left">View Weekly Summaries</span>
+                <Badge variant="default" className="text-xs">PREMIUM</Badge>
               </Button>
               {hasCompletedAssessment && (
                 <Button 
