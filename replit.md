@@ -41,13 +41,14 @@ Preferred communication style: Simple, everyday language.
 - Progressive intimacy model.
 
 **Key UI Components:**
-- Dashboard: Shows user progress, stats, quick action cards, and next steps.
+- Dashboard: Shows user progress, stats, quick action cards with FREE/PREMIUM badges, and next steps.
+- AppHeader: Navigation with FREE/PREMIUM badges on feature links for clear subscription messaging.
 - AssessmentQuestion: Multi-step questionnaire with progress tracking.
 - AttachmentResults: Visualization of attachment scores using Recharts.
 - AICoachChat: Real-time chat interface.
 - RetreatBuilder: Multi-step retreat planning wizard with vision planning capabilities.
-- VisionPlanning: Comprehensive future planning component with timeline inputs (6mo, 1yr, 5yr, 10yr, custom) and life dimension goals (financial, intimacy, health, career, business, spiritual, ministry, family, personal, community, legacy).
-- RetreatItinerary: Displays personalized AI-generated retreat plans incorporating vision and goals.
+- VisionPlanning: Multiple-choice future planning component with timeline selections (6mo, 1yr, 5yr, 10yr) and life dimension buttons (financial, intimacy, health, career, business, spiritual, ministry, family, personal, community, legacy). Uses safe spreading pattern `...(value || {})` to prevent runtime errors on first selection.
+- RetreatItinerary: Displays personalized AI-generated retreat plans incorporating vision and goals with explicit framework citations (Gottman Method, EFT, Attachment Theory).
 - DateNightPlanner: AI-powered date night planning form with customizable preferences.
 - ExercisesLibrary: Accordion-based exercise browser.
 - WeeklySummaries: Session summary viewer.
@@ -68,6 +69,7 @@ Preferred communication style: Simple, everyday language.
 - Endpoints for chat, retreat itinerary generation/retrieval, date night plan generation/retrieval, user eligibility, feedback, and attachment assessments (create, analyze, share, view shared).
 - Billing endpoints: `/api/billing/status` (subscription status), `/api/billing/checkout` (create Stripe session), `/api/billing/portal` (customer portal).
 - Reporting endpoints: `/api/reports/access-logs`, `/api/reports/access-stats-country`, `/api/reports/access-stats-user`, `/api/reports/access-summary` (all authenticated).
+- Admin endpoints: `/api/admin/grant-access` (POST, admin-only endpoint to grant lifetime access to test accounts by email).
 - Webhook handler: `/webhooks/stripe` for subscription events (checkout completed, subscription created/updated/deleted).
 - Session management for chat continuity.
 - JSON request/response format with validation and error handling.
