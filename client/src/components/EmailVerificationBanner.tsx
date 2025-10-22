@@ -15,7 +15,7 @@ export function EmailVerificationBanner({ emailVerified }: EmailVerificationBann
   const { toast } = useToast();
 
   const sendVerificationMutation = useMutation({
-    mutationFn: () => apiRequest("/api/send-verification-email", "POST", {}),
+    mutationFn: () => apiRequest("POST", "/api/send-verification-email", {}),
     onSuccess: () => {
       toast({
         title: "Verification Email Sent",
