@@ -27,6 +27,10 @@ export const users = pgTable("users", {
   stripeCustomerId: text("stripe_customer_id"),
   hasLifetimeAccess: integer("has_lifetime_access").default(0),
   userNumber: integer("user_number"),
+  emailVerified: integer("email_verified").default(0),
+  emailVerificationToken: varchar("email_verification_token"),
+  emailVerificationExpires: timestamp("email_verification_expires"),
+  newsletterSubscribed: integer("newsletter_subscribed").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
