@@ -35,7 +35,7 @@ export default function Profile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (displayName: string) => {
-      return await apiRequest("/api/user/profile", "PUT", { displayName });
+      return await apiRequest("PUT", "/api/user/profile", { displayName });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
@@ -57,7 +57,7 @@ export default function Profile() {
   const newsletterMutation = useMutation({
     mutationFn: async (subscribe: boolean) => {
       const endpoint = subscribe ? "/api/newsletter/subscribe" : "/api/newsletter/unsubscribe";
-      return await apiRequest(endpoint, "POST", {});
+      return await apiRequest("POST", endpoint, {});
     },
     onSuccess: (_, subscribe) => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
