@@ -4,6 +4,7 @@ import { FeedbackButton } from "@/components/FeedbackButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdminUser } from "@shared/adminAccess";
 
@@ -33,6 +34,7 @@ export function AppHeader() {
             >
               <BookOpen className="w-4 h-4" />
               Exercises
+              <Badge variant="secondary" className="text-xs">FREE</Badge>
             </Link>
             {!isAnonymous && (
               <Link 
@@ -42,6 +44,7 @@ export function AppHeader() {
               >
                 <FileText className="w-4 h-4" />
                 Summaries
+                <Badge variant="default" className="text-xs">PREMIUM</Badge>
               </Link>
             )}
             {showReports && (

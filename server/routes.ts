@@ -1583,6 +1583,37 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // Admin endpoint to grant lifetime access to test accounts
+  app.post("/api/admin/grant-access", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found with that email" });
+      }
+
+      const updated = await storage.updateUser(user.id, { hasLifetimeAccess: 1 });
+      
+      res.json({ 
+        success: true, 
+        message: `Lifetime access granted to ${email}`,
+        user: updated
+      });
+    } catch (error: any) {
+      console.error("Grant access error:", error);
+      res.status(500).json({
+        error: "Failed to grant access",
+        details: error.message,
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
