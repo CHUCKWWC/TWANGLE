@@ -57,6 +57,10 @@ export interface IStorage {
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
   getTotalUserCount(): Promise<number>;
   getLifetimeAccessCount(): Promise<number>;
+  setEmailVerificationToken(userId: string, token: string, expires: Date): Promise<User | undefined>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
+  markEmailVerified(userId: string): Promise<User | undefined>;
+  updateNewsletterSubscription(userId: string, subscribed: boolean): Promise<User | undefined>;
   
   createChatSession(session: InsertChatSession): Promise<ChatSession>;
   getChatSession(id: string): Promise<ChatSession | undefined>;
@@ -336,6 +340,33 @@ export class MemStorage implements IStorage {
     const updatedUser = { ...user, ...updates };
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+
+  async setEmailVerificationToken(userId: string, token: string, expires: Date): Promise<User | undefined> {
+    return this.updateUser(userId, {
+      emailVerificationToken: token,
+      emailVerificationExpires: expires,
+    });
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.emailVerificationToken === token
+    );
+  }
+
+  async markEmailVerified(userId: string): Promise<User | undefined> {
+    return this.updateUser(userId, {
+      emailVerified: 1,
+      emailVerificationToken: null,
+      emailVerificationExpires: null,
+    });
+  }
+
+  async updateNewsletterSubscription(userId: string, subscribed: boolean): Promise<User | undefined> {
+    return this.updateUser(userId, {
+      newsletterSubscribed: subscribed ? 1 : 0,
+    });
   }
 
   async getTotalUserCount(): Promise<number> {
@@ -642,6 +673,51 @@ export class DbStorage implements IStorage {
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
     const result = await this.db.update(users).set(updates).where(eq(users.id, id)).returning();
+    return result[0];
+  }
+
+  async setEmailVerificationToken(userId: string, token: string, expires: Date): Promise<User | undefined> {
+    const result = await this.db
+      .update(users)
+      .set({
+        emailVerificationToken: token,
+        emailVerificationExpires: expires,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return result[0];
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.emailVerificationToken, token))
+      .limit(1);
+    return result[0];
+  }
+
+  async markEmailVerified(userId: string): Promise<User | undefined> {
+    const result = await this.db
+      .update(users)
+      .set({
+        emailVerified: 1,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return result[0];
+  }
+
+  async updateNewsletterSubscription(userId: string, subscribed: boolean): Promise<User | undefined> {
+    const result = await this.db
+      .update(users)
+      .set({
+        newsletterSubscribed: subscribed ? 1 : 0,
+      })
+      .where(eq(users.id, userId))
+      .returning();
     return result[0];
   }
 

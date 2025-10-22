@@ -1,15 +1,17 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { AppHeader } from "@/components/AppHeader";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { User, Calendar, Activity, MessageSquare, MapPin, ClipboardList, Settings } from "lucide-react";
+import { User, Calendar, Activity, MessageSquare, MapPin, ClipboardList, Settings, Mail, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 
@@ -25,6 +27,7 @@ export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [newDisplayName, setNewDisplayName] = useState('');
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState((user as any)?.newsletterSubscribed === 1);
   
   const { data: stats, isLoading: statsLoading } = useQuery<UserStats>({
     queryKey: ["/api/user/stats"],
@@ -32,7 +35,7 @@ export default function Profile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (displayName: string) => {
-      return await apiRequest("PUT", "/api/user/profile", { displayName });
+      return await apiRequest("/api/user/profile", "PUT", { displayName });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
@@ -46,6 +49,30 @@ export default function Profile() {
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const newsletterMutation = useMutation({
+    mutationFn: async (subscribe: boolean) => {
+      const endpoint = subscribe ? "/api/newsletter/subscribe" : "/api/newsletter/unsubscribe";
+      return await apiRequest(endpoint, "POST", {});
+    },
+    onSuccess: (_, subscribe) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: subscribe ? "Subscribed" : "Unsubscribed",
+        description: subscribe 
+          ? "You'll receive our newsletter updates." 
+          : "You won't receive newsletter updates.",
+      });
+    },
+    onError: () => {
+      setNewsletterSubscribed(!newsletterSubscribed);
+      toast({
+        title: "Error",
+        description: "Failed to update newsletter preference.",
         variant: "destructive",
       });
     },
@@ -67,6 +94,8 @@ export default function Profile() {
     return <Badge variant="secondary">Free</Badge>;
   };
 
+  const emailVerified = (user as any)?.emailVerified === 1;
+
   return (
     <>
       <AppHeader />
@@ -82,6 +111,8 @@ export default function Profile() {
                 <p className="text-muted-foreground" data-testid="text-profile-email">{user?.email}</p>
               </div>
             </div>
+
+            <EmailVerificationBanner emailVerified={emailVerified} />
 
             <Card>
               <CardHeader>
@@ -109,6 +140,23 @@ export default function Profile() {
                   ) : (
                     <span data-testid="badge-subscription">
                       {getSubscriptionBadge(stats?.subscriptionTier || 'free', stats?.subscriptionStatus || 'none')}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">Email Status</span>
+                  </div>
+                  {emailVerified ? (
+                    <div className="flex items-center gap-1" data-testid="status-email-verified">
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-600">Verified</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm font-medium text-muted-foreground" data-testid="status-email-unverified">
+                      Not Verified
                     </span>
                   )}
                 </div>
@@ -150,6 +198,35 @@ export default function Profile() {
                     </p>
                   </div>
                 </form>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Email Preferences</CardTitle>
+                <CardDescription>Manage your email notification settings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="newsletter-toggle" className="cursor-pointer">
+                      Newsletter Subscription
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Receive relationship tips, exercises, and updates
+                    </p>
+                  </div>
+                  <Switch
+                    id="newsletter-toggle"
+                    checked={newsletterSubscribed}
+                    onCheckedChange={(checked) => {
+                      setNewsletterSubscribed(checked);
+                      newsletterMutation.mutate(checked);
+                    }}
+                    disabled={newsletterMutation.isPending}
+                    data-testid="switch-newsletter"
+                  />
+                </div>
               </CardContent>
             </Card>
 

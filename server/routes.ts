@@ -6,6 +6,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { detectFacebookReferral, optionalAuth, ensureAnonymousSession } from "./anonymousAuth";
 import { logUserAccess } from "./accessLogger";
+import { sendVerificationEmail, sendWelcomeEmail } from "./sendgrid";
 import OpenAI from "openai";
 import Stripe from "stripe";
 import { trackSubscribe, trackCompleteRegistration } from "./facebookConversions";
@@ -20,6 +21,7 @@ import {
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { isAdminUser } from "@shared/adminAccess";
+import { randomUUID } from "crypto";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -1609,6 +1611,98 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       console.error("Grant access error:", error);
       res.status(500).json({
         error: "Failed to grant access",
+        details: error.message,
+      });
+    }
+  });
+
+  // Email verification endpoints
+  app.post("/api/send-verification-email", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.email) {
+        return res.status(400).json({ error: "User email not found" });
+      }
+
+      if (user.emailVerified) {
+        return res.json({ message: "Email already verified" });
+      }
+
+      const token = randomUUID();
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      
+      await storage.setEmailVerificationToken(userId, token, expires);
+      
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      await sendVerificationEmail(user.email, token, baseUrl);
+      
+      res.json({ success: true, message: "Verification email sent" });
+    } catch (error: any) {
+      console.error("Send verification email error:", error);
+      res.status(500).json({
+        error: "Failed to send verification email",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/verify-email", async (req: any, res) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token) {
+        return res.redirect('/?verified=false&reason=missing');
+      }
+
+      const user = await storage.getUserByVerificationToken(token as string);
+      
+      if (!user) {
+        return res.redirect('/?verified=false&reason=invalid');
+      }
+
+      if (user.emailVerificationExpires && user.emailVerificationExpires < new Date()) {
+        await storage.setEmailVerificationToken(user.id, '', new Date(0));
+        return res.redirect('/?verified=false&reason=expired');
+      }
+
+      await storage.markEmailVerified(user.id);
+      
+      if (user.email) {
+        await sendWelcomeEmail(user.email, user.firstName ?? undefined);
+      }
+      
+      res.redirect('/?verified=true');
+    } catch (error: any) {
+      console.error("Verify email error:", error);
+      res.redirect('/?verified=false&reason=error');
+    }
+  });
+
+  app.post("/api/newsletter/subscribe", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.updateNewsletterSubscription(userId, true);
+      res.json({ success: true, message: "Subscribed to newsletter" });
+    } catch (error: any) {
+      console.error("Newsletter subscribe error:", error);
+      res.status(500).json({
+        error: "Failed to subscribe to newsletter",
+        details: error.message,
+      });
+    }
+  });
+
+  app.post("/api/newsletter/unsubscribe", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.updateNewsletterSubscription(userId, false);
+      res.json({ success: true, message: "Unsubscribed from newsletter" });
+    } catch (error: any) {
+      console.error("Newsletter unsubscribe error:", error);
+      res.status(500).json({
+        error: "Failed to unsubscribe from newsletter",
         details: error.message,
       });
     }
