@@ -43,6 +43,8 @@ Preferred communication style: Simple, everyday language.
 **Key UI Components:**
 - Dashboard: Shows user progress, stats, quick action cards with FREE/PREMIUM badges, and next steps.
 - AppHeader: Navigation with FREE/PREMIUM badges on feature links for clear subscription messaging.
+- EmailVerificationBanner: Alert banner for unverified users with "Send Verification Email" button. Shows on Home and Profile pages for authenticated users who haven't verified their email.
+- Profile: User profile page showing email verification status, newsletter subscription toggle, account info, and activity stats.
 - AssessmentQuestion: Multi-step questionnaire with progress tracking.
 - AttachmentResults: Visualization of attachment scores using Recharts.
 - AICoachChat: Real-time chat interface.
@@ -70,6 +72,8 @@ Preferred communication style: Simple, everyday language.
 - Billing endpoints: `/api/billing/status` (subscription status), `/api/billing/checkout` (create Stripe session), `/api/billing/portal` (customer portal).
 - Reporting endpoints: `/api/reports/access-logs`, `/api/reports/access-stats-country`, `/api/reports/access-stats-user`, `/api/reports/access-summary` (all authenticated).
 - Admin endpoints: `/api/admin/grant-access` (POST, admin-only endpoint to grant lifetime access to test accounts by email).
+- Email verification endpoints: `/api/send-verification-email` (POST, authenticated - sends verification email with token), `/api/verify-email` (GET, public - verifies token and marks email as verified, redirects to home).
+- Newsletter endpoints: `/api/newsletter/subscribe` (POST, authenticated), `/api/newsletter/unsubscribe` (POST, authenticated).
 - Webhook handler: `/webhooks/stripe` for subscription events (checkout completed, subscription created/updated/deleted).
 - Session management for chat continuity.
 - JSON request/response format with validation and error handling.
@@ -90,7 +94,7 @@ Preferred communication style: Simple, everyday language.
 - Schema-first design with Zod validation.
 
 **Data Models:**
-- Users: Authentication, lifetime access, Stripe customer ID.
+- Users: Authentication, lifetime access, Stripe customer ID, email verification status (emailVerified, emailVerificationToken, emailVerificationExpires), newsletter subscription preference (newsletterSubscribed).
 - Subscriptions: Stripe subscription details (subscription ID, price ID, plan tier, status, period end, cancellation status).
 - ChatSessions: Conversation threads.
 - WeeklySummaries: AI-generated session summaries.
@@ -150,6 +154,7 @@ Preferred communication style: Simple, everyday language.
 **Third-Party Services:**
 - **OpenAI API**: GPT chat completions for AI coaching, assessment analysis, and summarization.
 - **Neon Database**: Serverless PostgreSQL hosting.
+- **SendGrid**: Transactional email service for verification emails and welcome emails. Connected via Replit integration.
 - **ip-api.com**: Free geolocation API for IP address lookups and geographic access restrictions (blocking Russia and China).
 
 **Key NPM Packages:**
