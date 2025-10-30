@@ -287,3 +287,52 @@ export const insertAccessLogSchema = createInsertSchema(accessLogs).omit({
 
 export type InsertAccessLog = z.infer<typeof insertAccessLogSchema>;
 export type AccessLog = typeof accessLogs.$inferSelect;
+
+// Conversion events for tracking user lifecycle and revenue changes
+export const conversionEvents = pgTable("conversion_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  email: varchar("email"),
+  eventType: text("event_type").notNull(), // free_signup, free_to_paid, paid_to_free, subscription_renewed, subscription_canceled, trial_started, trial_converted, trial_expired
+  fromPlan: text("from_plan"), // null, free, premium
+  toPlan: text("to_plan"), // free, premium, null
+  revenueImpact: integer("revenue_impact"), // in cents, can be negative for refunds
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  stripeCustomerId: text("stripe_customer_id"),
+  metadata: jsonb("metadata"), // additional context like cancellation reason, referral source
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertConversionEventSchema = createInsertSchema(conversionEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertConversionEvent = z.infer<typeof insertConversionEventSchema>;
+export type ConversionEvent = typeof conversionEvents.$inferSelect;
+
+// Subscription lifecycle events from Stripe
+export const subscriptionEvents = pgTable("subscription_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  stripeSubscriptionId: text("stripe_subscription_id").notNull(),
+  stripeCustomerId: text("stripe_customer_id"),
+  eventType: text("event_type").notNull(), // created, updated, deleted, payment_succeeded, payment_failed, trial_will_end, canceled
+  status: text("status"), // active, canceled, past_due, trialing, etc.
+  priceId: text("price_id"),
+  amount: integer("amount"), // in cents
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  canceledAt: timestamp("canceled_at"),
+  cancelAtPeriodEnd: integer("cancel_at_period_end").default(0),
+  metadata: jsonb("metadata"), // full Stripe event data for debugging
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertSubscriptionEventSchema = createInsertSchema(subscriptionEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertSubscriptionEvent = z.infer<typeof insertSubscriptionEventSchema>;
+export type SubscriptionEvent = typeof subscriptionEvents.$inferSelect;
