@@ -3,6 +3,9 @@ import { useLocation } from "wouter";
 import AICoachChat, { type Message } from "@/components/AICoachChat";
 import { AppHeader } from "@/components/AppHeader";
 import { RequirePlan } from "@/components/RequirePlan";
+import { SEO, SEO_CONTENT } from "@/components/SEO";
+import { StructuredData, PERSON_SCHEMA } from "@/components/StructuredData";
+import { CoachCredentials } from "@/components/CoachCredentials";
 
 export default function Coach() {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
@@ -64,16 +67,24 @@ export default function Coach() {
   };
 
   return (
-    <RequirePlan message="Access unlimited AI coaching with a premium subscription">
-      <AppHeader />
-      <div className="pt-16">
-        <AICoachChat
-          messages={chatMessages}
-          onSendMessage={handleSendMessage}
-          isLoading={isLoadingChat}
-          onViewSummaries={() => navigate("/summaries")}
-        />
+    <>
+      <SEO {...SEO_CONTENT.coach} />
+      <StructuredData data={PERSON_SCHEMA} />
+      
+      <RequirePlan message="Access unlimited AI coaching with a premium subscription">
+        <AppHeader />
+        <div className="pt-16 px-4 max-w-4xl mx-auto">
+          <div className="mt-6">
+            <CoachCredentials />
+          </div>
+          <AICoachChat
+            messages={chatMessages}
+            onSendMessage={handleSendMessage}
+            isLoading={isLoadingChat}
+            onViewSummaries={() => navigate("/summaries")}
+          />
       </div>
     </RequirePlan>
+    </>
   );
 }
