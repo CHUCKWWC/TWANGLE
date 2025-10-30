@@ -23,6 +23,10 @@ import {
   type InsertDateNight,
   type AccessLog,
   type InsertAccessLog,
+  type ConversionEvent,
+  type InsertConversionEvent,
+  type SubscriptionEvent,
+  type InsertSubscriptionEvent,
   users,
   subscriptions,
   chatSessions,
@@ -33,7 +37,9 @@ import {
   retreatItineraries,
   assessments,
   dateNights,
-  accessLogs
+  accessLogs,
+  conversionEvents,
+  subscriptionEvents
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -109,6 +115,28 @@ export interface IStorage {
   getAccessStatsByUser(): Promise<Array<{ userId: string; email: string; displayName: string; count: number; lastAccess: Date }>>;
   getTotalAccessCount(): Promise<number>;
   getUniqueUserAccessCount(): Promise<number>;
+  
+  createConversionEvent(event: InsertConversionEvent): Promise<ConversionEvent>;
+  getConversionEvents(userId?: string, limit?: number): Promise<ConversionEvent[]>;
+  getConversionEventsByType(eventType: string, limit?: number): Promise<ConversionEvent[]>;
+  
+  createSubscriptionEvent(event: InsertSubscriptionEvent): Promise<SubscriptionEvent>;
+  getSubscriptionEvents(userId?: string, stripeSubscriptionId?: string, limit?: number): Promise<SubscriptionEvent[]>;
+  getSubscriptionEventsByType(eventType: string, limit?: number): Promise<SubscriptionEvent[]>;
+  
+  getRevenueMetrics(): Promise<{
+    mrr: number;
+    arr: number;
+    totalRevenue: number;
+    activeSubscriptions: number;
+    lifetimeCustomers: number;
+  }>;
+  getConversionFunnel(): Promise<{
+    totalSignups: number;
+    freeToPaidConversions: number;
+    conversionRate: number;
+    averageTimeToConvert: number;
+  }>;
 }
 
 export class MemStorage implements IStorage {
@@ -1003,6 +1031,146 @@ export class DbStorage implements IStorage {
   async getUniqueUserAccessCount(): Promise<number> {
     const result = await this.db.select({ count: sql<number>`count(DISTINCT ${accessLogs.userId})` }).from(accessLogs);
     return Number(result[0]?.count || 0);
+  }
+
+  async createConversionEvent(event: InsertConversionEvent): Promise<ConversionEvent> {
+    const result = await this.db.insert(conversionEvents).values(event).returning();
+    return result[0];
+  }
+
+  async getConversionEvents(userId?: string, limit: number = 100): Promise<ConversionEvent[]> {
+    if (userId) {
+      return await this.db.select().from(conversionEvents)
+        .where(eq(conversionEvents.userId, userId))
+        .orderBy(desc(conversionEvents.createdAt))
+        .limit(limit);
+    }
+    return await this.db.select().from(conversionEvents)
+      .orderBy(desc(conversionEvents.createdAt))
+      .limit(limit);
+  }
+
+  async getConversionEventsByType(eventType: string, limit: number = 100): Promise<ConversionEvent[]> {
+    return await this.db.select().from(conversionEvents)
+      .where(eq(conversionEvents.eventType, eventType))
+      .orderBy(desc(conversionEvents.createdAt))
+      .limit(limit);
+  }
+
+  async createSubscriptionEvent(event: InsertSubscriptionEvent): Promise<SubscriptionEvent> {
+    const result = await this.db.insert(subscriptionEvents).values(event).returning();
+    return result[0];
+  }
+
+  async getSubscriptionEvents(userId?: string, stripeSubscriptionId?: string, limit: number = 100): Promise<SubscriptionEvent[]> {
+    const conditions = [];
+    if (userId) conditions.push(eq(subscriptionEvents.userId, userId));
+    if (stripeSubscriptionId) conditions.push(eq(subscriptionEvents.stripeSubscriptionId, stripeSubscriptionId));
+    
+    if (conditions.length > 0) {
+      return await this.db.select().from(subscriptionEvents)
+        .where(and(...conditions))
+        .orderBy(desc(subscriptionEvents.createdAt))
+        .limit(limit);
+    }
+    return await this.db.select().from(subscriptionEvents)
+      .orderBy(desc(subscriptionEvents.createdAt))
+      .limit(limit);
+  }
+
+  async getSubscriptionEventsByType(eventType: string, limit: number = 100): Promise<SubscriptionEvent[]> {
+    return await this.db.select().from(subscriptionEvents)
+      .where(eq(subscriptionEvents.eventType, eventType))
+      .orderBy(desc(subscriptionEvents.createdAt))
+      .limit(limit);
+  }
+
+  async getRevenueMetrics(): Promise<{
+    mrr: number;
+    arr: number;
+    totalRevenue: number;
+    activeSubscriptions: number;
+    lifetimeCustomers: number;
+  }> {
+    // Get active subscriptions count
+    const activeSubsResult = await this.db.select({ count: sql<number>`count(*)` })
+      .from(subscriptions)
+      .where(eq(subscriptions.status, 'active'));
+    const activeSubscriptions = Number(activeSubsResult[0]?.count || 0);
+
+    // Get lifetime access users count
+    const lifetimeResult = await this.db.select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(eq(users.hasLifetimeAccess, 1));
+    const lifetimeCustomers = Number(lifetimeResult[0]?.count || 0);
+
+    // Calculate total revenue from conversion events (sum of positive revenue impacts)
+    const revenueResult = await this.db.select({
+      total: sql<number>`COALESCE(SUM(${conversionEvents.revenueImpact}), 0)`
+    }).from(conversionEvents);
+    const totalRevenue = Number(revenueResult[0]?.total || 0);
+
+    // Calculate MRR - assuming $20/month for premium subscriptions
+    // This is a simplified calculation - in production, you'd want to query actual Stripe prices
+    const mrr = activeSubscriptions * 2000; // $20 in cents
+
+    // ARR is MRR * 12
+    const arr = mrr * 12;
+
+    return {
+      mrr,
+      arr,
+      totalRevenue,
+      activeSubscriptions,
+      lifetimeCustomers,
+    };
+  }
+
+  async getConversionFunnel(): Promise<{
+    totalSignups: number;
+    freeToPaidConversions: number;
+    conversionRate: number;
+    averageTimeToConvert: number;
+  }> {
+    // Total signups (users with email)
+    const signupsResult = await this.db.select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(sql`${users.email} IS NOT NULL`);
+    const totalSignups = Number(signupsResult[0]?.count || 0);
+
+    // Free to paid conversions
+    const conversionsResult = await this.db.select({ count: sql<number>`count(*)` })
+      .from(conversionEvents)
+      .where(eq(conversionEvents.eventType, 'free_to_paid'));
+    const freeToPaidConversions = Number(conversionsResult[0]?.count || 0);
+
+    // Conversion rate
+    const conversionRate = totalSignups > 0 ? (freeToPaidConversions / totalSignups) * 100 : 0;
+
+    // Average time to convert (in days)
+    // This requires joining users with conversion events and calculating time difference
+    const timeToConvertResult = await this.db.select({
+      avgDays: sql<number>`
+        COALESCE(
+          AVG(
+            EXTRACT(EPOCH FROM (${conversionEvents.createdAt} - ${users.createdAt})) / 86400
+          ), 
+          0
+        )
+      `
+    })
+    .from(conversionEvents)
+    .innerJoin(users, eq(conversionEvents.userId, users.id))
+    .where(eq(conversionEvents.eventType, 'free_to_paid'));
+    
+    const averageTimeToConvert = Number(timeToConvertResult[0]?.avgDays || 0);
+
+    return {
+      totalSignups,
+      freeToPaidConversions,
+      conversionRate,
+      averageTimeToConvert,
+    };
   }
 }
 
