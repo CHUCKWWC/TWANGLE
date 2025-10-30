@@ -6,7 +6,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { detectFacebookReferral, optionalAuth, ensureAnonymousSession } from "./anonymousAuth";
 import { logUserAccess } from "./accessLogger";
-import { sendVerificationEmail, sendWelcomeEmail } from "./sendgrid";
+import { sendVerificationEmail, sendWelcomeEmail } from "./gmail";
 import OpenAI from "openai";
 import Stripe from "stripe";
 import { trackSubscribe, trackCompleteRegistration } from "./facebookConversions";
