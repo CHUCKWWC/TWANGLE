@@ -26,7 +26,7 @@ export default function Landing() {
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Strengthen your relationship with AI-powered coaching, personalized retreats, and science-backed tools. 
-            Understand your patterns. Deepen your connection.
+            Understand your relationship patterns. Deepen your connection.
           </p>
 
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8 max-w-md mx-auto">
