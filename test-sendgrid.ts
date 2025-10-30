@@ -1,62 +1,39 @@
-import { getUncachableSendGridClient } from './server/sendgrid.js';
+import { sendVerificationEmail } from './server/gmail.js';
 
-async function testSendGrid() {
+async function testGmail() {
   try {
-    console.log('Testing SendGrid connection...');
-    
-    const { client, fromEmail } = await getUncachableSendGridClient();
-    
-    console.log('✅ SendGrid client initialized successfully');
-    console.log(`📧 From email: ${fromEmail}`);
+    console.log('Testing Gmail connection...');
     
     // Test email - replace with your email
     const testEmail = process.argv[2] || 'charles.watson@wholewellness-coaching.org';
     
-    console.log(`\nSending test email to: ${testEmail}`);
+    console.log(`\nSending test verification email to: ${testEmail}`);
     
-    const msg = {
-      to: testEmail,
-      from: fromEmail,
-      subject: 'Twangle SendGrid Test',
-      text: 'This is a test email from Twangle to verify SendGrid is working correctly.',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #d4718b;">SendGrid Test Successful! ✅</h2>
-          <p>This test email confirms that:</p>
-          <ul>
-            <li>SendGrid API key is valid</li>
-            <li>Connection is properly configured</li>
-            <li>Email sending is working</li>
-          </ul>
-          <p style="color: #666; margin-top: 20px;">
-            Sent from: Twangle Email Verification System
-          </p>
-        </div>
-      `,
-    };
+    const testToken = 'test-token-' + Date.now();
+    const baseUrl = 'http://localhost:5000';
     
-    await client.send(msg);
+    await sendVerificationEmail(testEmail, testToken, baseUrl);
     
-    console.log('✅ Test email sent successfully!');
-    console.log('\nCheck your inbox for the test email.');
+    console.log('✅ Test email sent successfully via Gmail!');
+    console.log('\nCheck your inbox for the verification email.');
+    console.log('Note: The verification link is just for testing and will not work.');
     
   } catch (error: any) {
-    console.error('❌ SendGrid test failed:');
+    console.error('❌ Gmail test failed:');
     console.error('Error:', error.message);
     
-    if (error.code === 401) {
-      console.error('\n🔑 API Key Issue: The SendGrid API key is invalid or unauthorized');
-      console.error('   → Check that your API key starts with "SG."');
-      console.error('   → Verify the key has "Mail Send" permissions');
-      console.error('   → Reconfigure the SendGrid connection with a valid key');
+    if (error.code === 401 || error.code === 403) {
+      console.error('\n🔑 Authentication Issue: Gmail connection is not properly authenticated');
+      console.error('   → Make sure you connected your Gmail account in Replit');
+      console.error('   → The connection should have "Send" permissions');
     }
     
     if (error.response) {
-      console.error('\nResponse details:', error.response.body);
+      console.error('\nResponse details:', JSON.stringify(error.response.data, null, 2));
     }
     
     process.exit(1);
   }
 }
 
-testSendGrid();
+testGmail();
