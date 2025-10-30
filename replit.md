@@ -114,10 +114,29 @@ Preferred communication style: Simple, everyday language.
 ### Authentication & Authorization
 
 **Current Implementation:**
-- Replit Auth (OIDC-based).
+- Replit Auth (OIDC-based) with dynamic domain strategy registration.
 - Session-based authentication with `isAuthenticated` middleware.
 - User tracking with lifetime access feature.
 - All API endpoints protected with authentication.
+
+**Multi-Domain Authentication:**
+- Dynamic OIDC strategy registration supports multiple deployment domains.
+- Strict domain allowlist prevents host-header injection attacks.
+- Allowed domains: `twangle.org`, `www.twangle.org`, and domains listed in `REPLIT_DOMAINS` environment variable.
+- Unauthorized domain login attempts return 403 with logging for security monitoring.
+- Production domain (twangle.org) hardcoded in allowlist for reliable deployment.
+
+**Email Verification System:**
+- SendGrid integration for transactional verification emails.
+- 24-hour expiring verification tokens stored in database.
+- EmailVerificationBanner prompts unverified users on Home and Profile pages.
+- Verification flow: Send email → Click link → Email verified → Welcome email sent.
+- Database fields: `emailVerified`, `emailVerificationToken`, `emailVerificationExpires`.
+
+**Newsletter Subscription:**
+- User-controlled newsletter opt-in/opt-out via Profile page toggle.
+- API endpoints: `/api/newsletter/subscribe`, `/api/newsletter/unsubscribe`.
+- Database field: `newsletterSubscribed` (0/1 integer flag).
 
 **Subscription & Access Control:**
 - Two-tier system: Free and Premium.
@@ -134,9 +153,11 @@ Preferred communication style: Simple, everyday language.
 - Backend: isAdmin middleware protects all /api/reports/* endpoints with 403 responses for unauthorized users.
 
 **Security Considerations:**
-- HTTPS-only cookies planned.
-- Session store using `connect-pg-simple`.
+- Host-header validation on all authentication endpoints.
+- HTTPS-only cookies in production.
+- Session store using `connect-pg-simple` with PostgreSQL.
 - Stripe webhook signature verification for subscription events.
+- IP-based geolocation blocking for restricted countries (Russia, China).
 
 ### Build & Deployment
 
@@ -144,10 +165,57 @@ Preferred communication style: Simple, everyday language.
 - Production: `npm run build` (Vite bundles client, esbuild bundles server).
 - Database Migrations: `npm run db:push`.
 
-**Environment Requirements:**
-- Node.js with ESM support.
-- Environment variables: `DATABASE_URL`, `OPENAI_API_KEY`, `VITE_STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
-- PostgreSQL database.
+**Production Deployment Configuration:**
+
+**Required Secrets (must be set in Deployment settings):**
+1. **OPENAI_API_KEY** - Required for AI coaching, attachment analysis, retreat planning
+   - Get from: https://platform.openai.com/api-keys
+   - Used by: Coach Charles, attachment assessments, retreat itineraries
+   
+2. **DATABASE_URL** - PostgreSQL connection string
+   - Automatically provided by Replit database integration
+   - Format: `postgresql://user:password@host:port/database`
+   
+3. **STRIPE_SECRET_KEY** - Stripe payment processing
+   - Get from: Stripe Dashboard → Developers → API Keys
+   - Used for: Subscription checkout, customer portal, webhook verification
+   
+4. **STRIPE_WEBHOOK_SECRET** - Stripe webhook signature verification
+   - Get from: Stripe Dashboard → Developers → Webhooks
+   - Used for: Secure webhook event processing
+   
+5. **VITE_STRIPE_PUBLIC_KEY** - Stripe frontend integration
+   - Get from: Stripe Dashboard → Developers → API Keys (publishable key)
+   - Used by: Frontend checkout form
+   
+6. **SENDGRID_API_KEY** - Email verification and welcome emails
+   - Automatically provided by SendGrid integration
+   - Used for: Transactional email delivery
+
+**Optional Secrets:**
+- **REPLIT_DOMAINS** - Comma-separated list of allowed authentication domains
+  - Default: `twangle.org` and `www.twangle.org` are hardcoded
+  - Add development/staging domains if needed
+  - Example: `twangle.org,staging.twangle.org`
+
+**Environment Variables (auto-provided by Replit):**
+- `REPL_ID` - Replit workspace identifier (required for OIDC)
+- `ISSUER_URL` - OIDC issuer URL (defaults to https://replit.com/oidc)
+- `SESSION_SECRET` - Session encryption key (auto-generated)
+- `NODE_ENV` - Set to `production` in deployment
+
+**Deployment Steps:**
+1. Go to Deployments pane in Replit
+2. Click "Secrets" or "Environment Variables"
+3. Add all required secrets listed above
+4. Deploy or redeploy the application
+5. Verify logs show no missing secret errors
+
+**Common Deployment Issues:**
+- **"Missing OpenAI API key"** → Add OPENAI_API_KEY secret
+- **"Unknown authentication strategy"** → REPLIT_DOMAINS not configured (should auto-resolve with hardcoded domains)
+- **Database connection error** → DATABASE_URL not set
+- **Stripe errors** → Check all three Stripe secrets are configured
 
 ## External Dependencies
 
