@@ -11,8 +11,37 @@ import { storage } from "./storage";
 import { getLocationFromIP, extractIPAddress } from "./geolocation";
 import { createAccessLogEntry, logAccessToSheet } from "./googleSheets";
 
-if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
+// Store registered strategies to avoid duplicates
+const registeredStrategies = new Set<string>();
+
+// Get allowed domains for authentication
+function getAllowedDomains(): Set<string> {
+  const domains = new Set<string>();
+  
+  // Add domains from environment variable
+  if (process.env.REPLIT_DOMAINS) {
+    process.env.REPLIT_DOMAINS.split(",").forEach(d => domains.add(d.trim()));
+  }
+  
+  // Add known production domains as fallback
+  domains.add("twangle.org");
+  domains.add("www.twangle.org");
+  
+  // Add replit.dev domains (wildcard pattern check will be done separately)
+  return domains;
+}
+
+// Validate if a domain is allowed for authentication
+function isAllowedDomain(hostname: string): boolean {
+  const allowedDomains = getAllowedDomains();
+  
+  // Strict allowlist - only exact matches allowed
+  if (allowedDomains.has(hostname)) {
+    return true;
+  }
+  
+  console.log(`[Auth] Rejected unauthorized domain: ${hostname}`);
+  return false;
 }
 
 const getOidcConfig = memoize(
@@ -70,6 +99,30 @@ async function upsertUser(
   });
 }
 
+// Helper function to register a strategy for a domain dynamically
+async function ensureStrategyExists(domain: string, verify: VerifyFunction) {
+  const strategyName = `replitauth:${domain}`;
+  
+  if (registeredStrategies.has(strategyName)) {
+    return; // Already registered
+  }
+
+  const config = await getOidcConfig();
+  const strategy = new Strategy(
+    {
+      name: strategyName,
+      config,
+      scope: "openid email profile offline_access",
+      callbackURL: `https://${domain}/api/callback`,
+    },
+    verify,
+  );
+  
+  passport.use(strategy);
+  registeredStrategies.add(strategyName);
+  console.log(`[Auth] Registered strategy for domain: ${domain}`);
+}
+
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
@@ -88,31 +141,53 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
-    const strategy = new Strategy(
-      {
-        name: `replitauth:${domain}`,
-        config,
-        scope: "openid email profile offline_access",
-        callbackURL: `https://${domain}/api/callback`,
-      },
-      verify,
-    );
-    passport.use(strategy);
+  // Register strategies for any domains specified in REPLIT_DOMAINS
+  if (process.env.REPLIT_DOMAINS) {
+    for (const domain of process.env.REPLIT_DOMAINS.split(",")) {
+      await ensureStrategyExists(domain.trim(), verify);
+    }
+  } else {
+    console.log('[Auth] REPLIT_DOMAINS not set - will register strategies dynamically');
   }
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
-  app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+  app.get("/api/login", async (req, res, next) => {
+    const domain = req.hostname;
+    
+    // Validate domain before proceeding
+    if (!isAllowedDomain(domain)) {
+      console.error(`[Auth] Login attempt from unauthorized domain: ${domain}`);
+      return res.status(403).json({ 
+        error: "Authentication not available for this domain",
+        message: "Please contact support if you believe this is an error."
+      });
+    }
+    
+    // Dynamically register strategy if it doesn't exist
+    await ensureStrategyExists(domain, verify);
+    
+    passport.authenticate(`replitauth:${domain}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", async (req, res, next) => {
+    const domain = req.hostname;
+    
+    // Validate domain before proceeding
+    if (!isAllowedDomain(domain)) {
+      console.error(`[Auth] Callback attempt from unauthorized domain: ${domain}`);
+      return res.status(403).json({ 
+        error: "Authentication callback not available for this domain"
+      });
+    }
+    
+    // Ensure strategy exists for callback as well
+    await ensureStrategyExists(domain, verify);
+    
     const ipAddress = extractIPAddress(req);
     console.log('[Auth Callback] IP Address:', ipAddress);
     const geoData = await getLocationFromIP(ipAddress);
@@ -123,7 +198,7 @@ export async function setupAuth(app: Express) {
       return res.status(403).send('Access from your country is not permitted.');
     }
     
-    passport.authenticate(`replitauth:${req.hostname}`, (err: any, user: any) => {
+    passport.authenticate(`replitauth:${domain}`, (err: any, user: any) => {
       if (err) {
         return next(err);
       }
