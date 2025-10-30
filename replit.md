@@ -188,15 +188,19 @@ Preferred communication style: Simple, everyday language.
    - Get from: Stripe Dashboard → Developers → API Keys (publishable key)
    - Used by: Frontend checkout form
    
-6. **SENDGRID_API_KEY** - Email verification and welcome emails
-   - Automatically provided by SendGrid integration
-   - Used for: Transactional email delivery
+6. **Gmail Connection** - Email verification and welcome emails
+   - Automatically provided by Gmail Replit connection
+   - Used for: Transactional email delivery via authenticated Gmail account
+   - Note: Configure FROM_EMAIL environment variable to set sender address (optional)
 
 **Optional Secrets:**
 - **REPLIT_DOMAINS** - Comma-separated list of allowed authentication domains
   - Default: `twangle.org` and `www.twangle.org` are hardcoded
   - Add development/staging domains if needed
   - Example: `twangle.org,staging.twangle.org`
+- **FROM_EMAIL** - Email address to use as sender for transactional emails
+  - Optional: Defaults to `info@wholewellness-coaching.org`
+  - Should match an authorized sender in your connected Gmail account
 
 **Environment Variables (auto-provided by Replit):**
 - `REPL_ID` - Replit workspace identifier (required for OIDC)
@@ -222,7 +226,7 @@ Preferred communication style: Simple, everyday language.
 **Third-Party Services:**
 - **OpenAI API**: GPT chat completions for AI coaching, assessment analysis, and summarization.
 - **Neon Database**: Serverless PostgreSQL hosting.
-- **SendGrid**: Transactional email service for verification emails and welcome emails. Connected via Replit integration.
+- **Gmail**: Transactional email service for verification emails and welcome emails. Connected via Replit Gmail integration using OAuth2 authentication.
 - **ip-api.com**: Free geolocation API for IP address lookups and geographic access restrictions (blocking Russia and China).
 
 **Key NPM Packages:**

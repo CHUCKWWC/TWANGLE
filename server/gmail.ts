@@ -50,11 +50,12 @@ export async function getUncachableGmailClient() {
   return google.gmail({ version: 'v1', auth: oauth2Client });
 }
 
-// Get the user's email address from Gmail
-async function getFromEmail() {
-  const gmail = await getUncachableGmailClient();
-  const profile = await gmail.users.getProfile({ userId: 'me' });
-  return profile.data.emailAddress || '';
+// Get the user's email address - since we can't access profile without additional scopes,
+// we'll use a default or environment variable
+function getFromEmail() {
+  // Gmail will automatically use the authenticated user's email as the from address
+  // when sending via the API, so we can return a placeholder or environment variable
+  return process.env.FROM_EMAIL || 'info@wholewellness-coaching.org';
 }
 
 // Create a MIME email message
@@ -87,7 +88,7 @@ function createMimeMessage(to: string, from: string, subject: string, text: stri
 export async function sendVerificationEmail(to: string, token: string, baseUrl: string) {
   try {
     const gmail = await getUncachableGmailClient();
-    const fromEmail = await getFromEmail();
+    const fromEmail = getFromEmail();
     
     const verificationUrl = `${baseUrl}/api/verify-email?token=${token}`;
     
@@ -133,7 +134,7 @@ export async function sendVerificationEmail(to: string, token: string, baseUrl: 
 export async function sendWelcomeEmail(to: string, firstName?: string) {
   try {
     const gmail = await getUncachableGmailClient();
-    const fromEmail = await getFromEmail();
+    const fromEmail = getFromEmail();
     
     const greeting = firstName ? `Hi ${firstName}` : 'Welcome';
     
