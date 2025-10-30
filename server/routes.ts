@@ -372,7 +372,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User stats endpoint
-  app.get('/api/user/stats', isAuthenticated, async (req: any, res) => {
+  app.get('/api/user/stats', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -395,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update user profile
-  app.put('/api/user/profile', isAuthenticated, async (req: any, res) => {
+  app.put('/api/user/profile', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { displayName } = req.body;
@@ -418,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Chat endpoint (protected)
-  app.post("/api/chat", isAuthenticated, async (req: any, res) => {
+  app.post("/api/chat", isAuthenticated, logUserAccess, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI chat not configured", 
@@ -463,7 +463,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/summaries/generate", isAuthenticated, async (req: any, res) => {
+  app.post("/api/summaries/generate", isAuthenticated, logUserAccess, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI summaries not configured", 
@@ -559,7 +559,7 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/summaries", isAuthenticated, async (req: any, res) => {
+  app.get("/api/summaries", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const summaries = await storage.getWeeklySummaries(userId);
@@ -573,7 +573,7 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/session", isAuthenticated, async (req: any, res) => {
+  app.post("/api/feedback/session", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { sessionId, rating, feedbackText } = req.body;
@@ -606,7 +606,7 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/session", isAuthenticated, async (req: any, res) => {
+  app.get("/api/feedback/session", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const feedback = await storage.getSessionFeedback(userId);
@@ -620,7 +620,7 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/progress", isAuthenticated, async (req: any, res) => {
+  app.post("/api/feedback/progress", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { weekStartDate, relationshipScore, improvementNotes } = req.body;
@@ -650,7 +650,7 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/progress", isAuthenticated, async (req: any, res) => {
+  app.get("/api/feedback/progress", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const progress = await storage.getRelationshipProgress(userId);
@@ -664,7 +664,7 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/user/eligibility", isAuthenticated, async (req: any, res) => {
+  app.get("/api/user/eligibility", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -692,7 +692,7 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/feedback/general", isAuthenticated, async (req: any, res) => {
+  app.post("/api/feedback/general", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -735,7 +735,7 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/feedback/general", isAuthenticated, async (req: any, res) => {
+  app.get("/api/feedback/general", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const feedbackType = req.query.feedbackType as string | undefined;
@@ -750,7 +750,7 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/billing/checkout", isAuthenticated, async (req: any, res) => {
+  app.post("/api/billing/checkout", isAuthenticated, logUserAccess, async (req: any, res) => {
     if (!stripe) {
       return res.status(501).json({ 
         error: "Billing not configured", 
@@ -802,7 +802,7 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/billing/portal", isAuthenticated, async (req: any, res) => {
+  app.post("/api/billing/portal", isAuthenticated, logUserAccess, async (req: any, res) => {
     if (!stripe) {
       return res.status(501).json({ 
         error: "Billing not configured", 
@@ -832,7 +832,7 @@ ${conversationText}`;
     }
   });
 
-  app.get("/api/billing/status", isAuthenticated, async (req: any, res) => {
+  app.get("/api/billing/status", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -913,7 +913,7 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/billing/create-subscription", isAuthenticated, async (req: any, res) => {
+  app.post("/api/billing/create-subscription", isAuthenticated, logUserAccess, async (req: any, res) => {
     if (!stripe) {
       return res.status(501).json({ 
         error: "Billing not configured" 
@@ -1011,7 +1011,7 @@ ${conversationText}`;
     }
   });
 
-  app.post("/api/retreat/generate-itinerary", isAuthenticated, async (req: any, res) => {
+  app.post("/api/retreat/generate-itinerary", isAuthenticated, logUserAccess, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI itinerary generation not configured", 
@@ -1167,7 +1167,7 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
     }
   });
 
-  app.get("/api/retreat/itineraries", isAuthenticated, async (req: any, res) => {
+  app.get("/api/retreat/itineraries", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const itineraries = await storage.getRetreatItineraries(userId);
@@ -1181,7 +1181,7 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
     }
   });
 
-  app.get("/api/retreat/itinerary/:id", isAuthenticated, async (req: any, res) => {
+  app.get("/api/retreat/itinerary/:id", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const itinerary = await storage.getRetreatItinerary(req.params.id);
@@ -1204,7 +1204,7 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
     }
   });
 
-  app.post("/api/datenight/generate", optionalAuth, async (req: any, res) => {
+  app.post("/api/datenight/generate", optionalAuth, logUserAccess, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI date night planning not configured", 
@@ -1298,7 +1298,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.get("/api/datenight/plans", optionalAuth, async (req: any, res) => {
+  app.get("/api/datenight/plans", optionalAuth, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
@@ -1320,7 +1320,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.get("/api/datenight/:id", optionalAuth, async (req: any, res) => {
+  app.get("/api/datenight/:id", optionalAuth, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
@@ -1481,7 +1481,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.post("/api/assessments/:id/share", isAuthenticated, async (req: any, res) => {
+  app.post("/api/assessments/:id/share", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const assessment = await storage.getAssessment(req.params.id);
@@ -1529,7 +1529,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   });
 
   // Access reporting endpoints
-  app.get("/api/reports/access-logs", isAuthenticated, isAdmin, async (req: any, res) => {
+  app.get("/api/reports/access-logs", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 100;
       const logs = await storage.getAccessLogs(limit);
@@ -1543,7 +1543,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.get("/api/reports/access-stats-country", isAuthenticated, isAdmin, async (req: any, res) => {
+  app.get("/api/reports/access-stats-country", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
     try {
       const stats = await storage.getAccessStatsByCountry();
       res.json(stats);
@@ -1556,7 +1556,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.get("/api/reports/access-stats-user", isAuthenticated, isAdmin, async (req: any, res) => {
+  app.get("/api/reports/access-stats-user", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
     try {
       const stats = await storage.getAccessStatsByUser();
       res.json(stats);
@@ -1569,7 +1569,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.get("/api/reports/access-summary", isAuthenticated, isAdmin, async (req: any, res) => {
+  app.get("/api/reports/access-summary", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
     try {
       const [totalAccess, uniqueUsers] = await Promise.all([
         storage.getTotalAccessCount(),
@@ -1586,7 +1586,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   });
 
   // Admin endpoint to grant lifetime access to test accounts
-  app.post("/api/admin/grant-access", isAuthenticated, isAdmin, async (req: any, res) => {
+  app.post("/api/admin/grant-access", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
     try {
       const { email } = req.body;
       
@@ -1617,7 +1617,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   });
 
   // Email verification endpoints
-  app.post("/api/send-verification-email", isAuthenticated, async (req: any, res) => {
+  app.post("/api/send-verification-email", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -1680,7 +1680,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.post("/api/newsletter/subscribe", isAuthenticated, async (req: any, res) => {
+  app.post("/api/newsletter/subscribe", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       await storage.updateNewsletterSubscription(userId, true);
@@ -1694,7 +1694,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.post("/api/newsletter/unsubscribe", isAuthenticated, async (req: any, res) => {
+  app.post("/api/newsletter/unsubscribe", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       await storage.updateNewsletterSubscription(userId, false);
