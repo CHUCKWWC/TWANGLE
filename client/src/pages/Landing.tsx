@@ -4,10 +4,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Brain, Users, Map, BookOpen, Shield, Sparkles, CheckCircle2 } from "lucide-react";
 import { FeatureCard } from "@/components/FeatureCard";
+import { SEO, SEO_CONTENT } from "@/components/SEO";
+import { StructuredData, ORGANIZATION_SCHEMA, SERVICE_SCHEMA } from "@/components/StructuredData";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
+      <SEO {...SEO_CONTENT.home} />
+      <StructuredData data={ORGANIZATION_SCHEMA} />
+      <StructuredData data={SERVICE_SCHEMA} />
+      
+      <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
       <div className="relative flex-1 flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/10 min-h-screen">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1920&h=1080&fit=crop')] bg-cover bg-center opacity-20" />
@@ -340,6 +347,9 @@ export default function Landing() {
           </div>
           
           <div className="flex gap-6 text-sm text-muted-foreground">
+            <a href="/faq" className="hover:text-foreground transition-colors" data-testid="link-faq">
+              FAQ
+            </a>
             <a href="/terms" className="hover:text-foreground transition-colors" data-testid="link-terms">
               Terms of Service
             </a>
@@ -350,5 +360,6 @@ export default function Landing() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

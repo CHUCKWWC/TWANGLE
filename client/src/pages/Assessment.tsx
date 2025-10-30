@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { ASSESSMENT_QUESTIONS } from "@/lib/questions";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { SEO, SEO_CONTENT } from "@/components/SEO";
 
 export default function Assessment() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -108,6 +109,7 @@ export default function Assessment() {
   if (isAnalyzing) {
     return (
       <>
+        <SEO {...SEO_CONTENT.assessment} />
         <AppHeader />
         <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-20">
           <div className="text-center">
@@ -122,6 +124,7 @@ export default function Assessment() {
 
   return (
     <>
+      <SEO {...SEO_CONTENT.assessment} />
       <AppHeader />
       <div className="pt-16">
         <AssessmentQuestion
