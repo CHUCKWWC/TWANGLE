@@ -668,6 +668,23 @@ export class DbStorage implements IStorage {
 
   // Reference: blueprint:javascript_log_in_with_replit
   async upsertUser(userData: UpsertUser): Promise<User> {
+    // Check if user exists by email first (since email is unique)
+    if (userData.email) {
+      const existingUser = await this.getUserByEmail(userData.email);
+      if (existingUser) {
+        // Update existing user by ID
+        const result = await this.db
+          .update(users)
+          .set({
+            ...userData,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, existingUser.id))
+          .returning();
+        return result[0];
+      }
+    }
+    
     // For development/testing: Grant lifetime access to new users automatically
     // This allows testing premium features without setting up Stripe subscriptions
     const userDataWithLifetimeAccess = {
@@ -675,6 +692,7 @@ export class DbStorage implements IStorage {
       hasLifetimeAccess: userData.hasLifetimeAccess ?? 1, // Default to lifetime access for new users
     };
     
+    // No existing user, insert new one
     const result = await this.db
       .insert(users)
       .values(userDataWithLifetimeAccess)
