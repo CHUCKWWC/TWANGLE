@@ -1528,8 +1528,8 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  // Access reporting endpoints
-  app.get("/api/reports/access-logs", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
+  // Access reporting endpoints (no logUserAccess to avoid circular logging)
+  app.get("/api/reports/access-logs", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 100;
       const logs = await storage.getAccessLogs(limit);
@@ -1543,7 +1543,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.get("/api/reports/access-stats-country", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
+  app.get("/api/reports/access-stats-country", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const stats = await storage.getAccessStatsByCountry();
       res.json(stats);
@@ -1556,7 +1556,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.get("/api/reports/access-stats-user", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
+  app.get("/api/reports/access-stats-user", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const stats = await storage.getAccessStatsByUser();
       res.json(stats);
@@ -1569,7 +1569,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  app.get("/api/reports/access-summary", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
+  app.get("/api/reports/access-summary", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const [totalAccess, uniqueUsers] = await Promise.all([
         storage.getTotalAccessCount(),
