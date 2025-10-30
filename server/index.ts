@@ -126,6 +126,38 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
             status: subscription.status,
             ...subscriptionData,
           });
+
+          // Track conversion event: free_to_paid
+          const amount = session.amount_total || 0;
+          await storage.createConversionEvent({
+            userId,
+            email: user.email,
+            eventType: 'free_to_paid',
+            fromPlan: 'free',
+            toPlan: 'premium',
+            revenueImpact: amount,
+            stripeSubscriptionId: subscription.id,
+            stripeCustomerId: customerId,
+            metadata: {
+              sessionId: session.id,
+              priceId: subscriptionData.priceId,
+            },
+          });
+
+          // Track subscription event: created
+          await storage.createSubscriptionEvent({
+            userId,
+            stripeSubscriptionId: subscription.id,
+            stripeCustomerId: customerId,
+            eventType: 'created',
+            status: subscription.status,
+            priceId: subscriptionData.priceId,
+            amount,
+            currentPeriodStart: subscription.current_period_start ? new Date(subscription.current_period_start * 1000) : undefined,
+            currentPeriodEnd: subscriptionData.currentPeriodEnd,
+            cancelAtPeriodEnd: subscriptionData.cancelAtPeriodEnd,
+            metadata: event.data.object,
+          });
         }
         break;
       }
@@ -172,17 +204,92 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
           status: subscription.status,
           ...subscriptionData,
         });
+
+        // Track subscription event
+        const amount = subscription.items?.data?.[0]?.price?.unit_amount || 0;
+        await storage.createSubscriptionEvent({
+          userId,
+          stripeSubscriptionId: subscription.id,
+          stripeCustomerId: customerId,
+          eventType: event.type === 'customer.subscription.created' ? 'created' : 'updated',
+          status: subscription.status,
+          priceId: subscriptionData.priceId,
+          amount,
+          currentPeriodStart: subscription.current_period_start ? new Date(subscription.current_period_start * 1000) : undefined,
+          currentPeriodEnd: subscriptionData.currentPeriodEnd,
+          cancelAtPeriodEnd: subscriptionData.cancelAtPeriodEnd,
+          canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : undefined,
+          metadata: event.data.object,
+        });
+
+        // Track conversion event if subscription was canceled
+        if (subscription.cancel_at_period_end && event.type === 'customer.subscription.updated') {
+          await storage.createConversionEvent({
+            userId,
+            email: user.email,
+            eventType: 'subscription_canceled',
+            fromPlan: 'premium',
+            toPlan: 'premium', // Still active until period end
+            revenueImpact: 0,
+            stripeSubscriptionId: subscription.id,
+            stripeCustomerId: customerId,
+            metadata: {
+              cancelAtPeriodEnd: true,
+              currentPeriodEnd: subscriptionData.currentPeriodEnd,
+            },
+          });
+        }
         break;
       }
 
       case 'customer.subscription.deleted': {
         const subscription: any = event.data.object as Stripe.Subscription;
+        const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
         const subscriptionData = getSubscriptionData(subscription);
+        
         await storage.updateSubscriptionStatus(
           subscription.id,
           'canceled',
           subscriptionData.currentPeriodEnd
         );
+
+        // Get subscription record to find user
+        const subRecord = await storage.getSubscriptionByStripeId(subscription.id);
+        if (subRecord) {
+          // Get user details for email
+          const user = await storage.getUser(subRecord.userId);
+          
+          // Track conversion event: paid_to_free (actual downgrade/churn)
+          await storage.createConversionEvent({
+            userId: subRecord.userId,
+            email: user?.email || null,
+            eventType: 'paid_to_free',
+            fromPlan: 'premium',
+            toPlan: 'free',
+            revenueImpact: 0,
+            stripeSubscriptionId: subscription.id,
+            stripeCustomerId: customerId,
+            metadata: {
+              reason: 'subscription_deleted',
+              canceledAt: subscription.canceled_at,
+            },
+          });
+
+          // Track subscription event: deleted
+          await storage.createSubscriptionEvent({
+            userId: subRecord.userId,
+            stripeSubscriptionId: subscription.id,
+            stripeCustomerId: customerId,
+            eventType: 'deleted',
+            status: 'canceled',
+            priceId: subscriptionData.priceId,
+            amount: 0,
+            currentPeriodStart: subscription.current_period_start ? new Date(subscription.current_period_start * 1000) : undefined,
+            currentPeriodEnd: subscriptionData.currentPeriodEnd,
+            canceledAt: new Date(),
+            metadata: event.data.object,
+          });
+        }
         break;
       }
 
@@ -194,6 +301,21 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
             subscriptionId,
             'past_due'
           );
+
+          // Track subscription event: payment failed
+          const sub = await storage.getSubscriptionByStripeId(subscriptionId);
+          if (sub) {
+            await storage.createSubscriptionEvent({
+              userId: sub.userId,
+              stripeSubscriptionId: subscriptionId,
+              stripeCustomerId: invoice.customer as string,
+              eventType: 'payment_failed',
+              status: 'past_due',
+              priceId: sub.priceId,
+              amount: invoice.amount_due || 0,
+              metadata: event.data.object,
+            });
+          }
         }
         break;
       }
@@ -208,6 +330,42 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
             subscription.status,
             subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined
           );
+
+          // Track subscription event: payment succeeded
+          const sub = await storage.getSubscriptionByStripeId(subscriptionId);
+          if (sub) {
+            await storage.createSubscriptionEvent({
+              userId: sub.userId,
+              stripeSubscriptionId: subscriptionId,
+              stripeCustomerId: invoice.customer as string,
+              eventType: 'payment_succeeded',
+              status: subscription.status,
+              priceId: sub.priceId,
+              amount: invoice.amount_paid || 0,
+              currentPeriodStart: subscription.current_period_start ? new Date(subscription.current_period_start * 1000) : undefined,
+              currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000) : undefined,
+              metadata: event.data.object,
+            });
+
+            // Track conversion event: subscription renewed (only for actual renewals, not first payment)
+            // First payment is already tracked in checkout.session.completed
+            if (invoice.billing_reason === 'subscription_cycle') {
+              await storage.createConversionEvent({
+                userId: sub.userId,
+                email: null,
+                eventType: 'subscription_renewed',
+                fromPlan: 'premium',
+                toPlan: 'premium',
+                revenueImpact: invoice.amount_paid || 0,
+                stripeSubscriptionId: subscriptionId,
+                stripeCustomerId: invoice.customer as string,
+                metadata: {
+                  invoiceId: invoice.id,
+                  billingReason: invoice.billing_reason,
+                },
+              });
+            }
+          }
         }
         break;
       }

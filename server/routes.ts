@@ -1585,6 +1585,64 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // Revenue & conversion analytics endpoints
+  app.get("/api/analytics/revenue-metrics", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const metrics = await storage.getRevenueMetrics();
+      res.json(metrics);
+    } catch (error: any) {
+      console.error("Get revenue metrics error:", error);
+      res.status(500).json({
+        error: "Failed to get revenue metrics",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/analytics/conversion-funnel", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const funnel = await storage.getConversionFunnel();
+      res.json(funnel);
+    } catch (error: any) {
+      console.error("Get conversion funnel error:", error);
+      res.status(500).json({
+        error: "Failed to get conversion funnel",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/analytics/conversion-events", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 100;
+      const userId = req.query.userId as string | undefined;
+      const events = await storage.getConversionEvents(userId, limit);
+      res.json(events);
+    } catch (error: any) {
+      console.error("Get conversion events error:", error);
+      res.status(500).json({
+        error: "Failed to get conversion events",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/analytics/subscription-events", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 100;
+      const userId = req.query.userId as string | undefined;
+      const stripeSubscriptionId = req.query.stripeSubscriptionId as string | undefined;
+      const events = await storage.getSubscriptionEvents(userId, stripeSubscriptionId, limit);
+      res.json(events);
+    } catch (error: any) {
+      console.error("Get subscription events error:", error);
+      res.status(500).json({
+        error: "Failed to get subscription events",
+        details: error.message,
+      });
+    }
+  });
+
   // Admin endpoint to grant lifetime access to test accounts
   app.post("/api/admin/grant-access", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
     try {
