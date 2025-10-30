@@ -1,0 +1,63 @@
+Stay on top of algorithm shifts.
+Modern search algorithms are increasingly complex and laser‑focused on delivering high‑quality, relevant results
+councils.forbes.com
+. They reward content that satisfies user intent, looks trustworthy and offers a great experience. Monitor Google’s Search Status Dashboard and industry news so you can adapt quickly when things change.
+
+Write like a human, not a robot.
+Google’s BERT and other AI updates mean search engines now interpret natural language and context rather than simply matching keywords
+councils.forbes.com
+. Focus on conversational, people‑first writing that answers questions in plain language. Strive for depth and originality—Google’s quality questions ask if your content provides original research or insight, if it’s comprehensive and well‑produced, and if you’d be proud to recommend it
+developers.google.com
+.
+
+Obsess over engagement, not just keywords.
+While keyword research remains important, modern algorithms weigh engagement signals such as click‑through rate, dwell time and bounce rate
+councils.forbes.com
+. Design pages that hook readers with strong headlines, clear introductions and interactive elements (images, video, infographics) so they stick around. Track these metrics in Google Analytics and adjust accordingly.
+
+Plan around topics and intent, not single phrases.
+Semantic search means Google tries to understand user intent and context
+councils.forbes.com
+. Build topic clusters with pillar pages and supporting articles that explore a subject from multiple angles. This signals authority and increases the chance you’ll be featured in AI overviews and answer boxes.
+
+Local and hyperlocal optimisation.
+If you serve a geographic area, keep your business listings accurate and consistent, encourage reviews and create locally relevant content
+councils.forbes.com
+. Hyperlocal search is becoming more personalised, so mention neighbourhoods, landmarks and events to capture searches close to home.
+
+Master keyword research in 2025 style.
+Go beyond high‑volume phrases; consider long‑tail and question‑based keywords that reveal intent
+councils.forbes.com
+. Tools like Google’s Keyword Planner, Ahrefs and SEMrush help, but always map keywords back to the user journey.
+
+Quality + E‑E‑A‑T (Experience, Expertise, Authoritativeness, Trustworthiness).
+Content is still king when it’s thorough, well‑sourced and demonstrates expertise
+councils.forbes.com
+. Google recommends adding author bios, citing primary sources, fact‑checking and regularly updating articles. Provide context about the author’s credentials and clearly mark last‑updated dates. This reassures users and search engines that you’re a credible source.
+
+Optimise for AI overviews and zero‑click searches.
+Google and other engines increasingly show AI‑generated summaries at the top of results. Structure content in a Q&A format with concise, 40–60‑word answers, bullet lists and tables. Aim to provide enough information to be featured, while teasing deeper insights for those who click through.
+
+Invest in technical SEO fundamentals.
+A fast, mobile‑friendly, accessible site is non‑negotiable
+councils.forbes.com
+. Improve Core Web Vitals by compressing images, minimising JavaScript, implementing lazy loading and ensuring stable layouts. Use responsive design and touch‑friendly navigation for mobile users.
+• Structured data & schema. Use schema markup—Product, Article, LocalBusiness, HowTo, FAQPage, etc.—to help search engines understand your content and unlock rich results.
+• Backlinks. Focus on earning links from authoritative, relevant sites
+councils.forbes.com
+; avoid buying links or participating in link schemes, which are black‑hat tactics that can lead to penalties
+councils.forbes.com
+.
+
+Expand your horizons beyond Google.
+Search is no longer confined to Google. Platforms like YouTube, TikTok, LinkedIn, Reddit and Amazon have their own search algorithms. Audit your presence on these platforms, create platform‑specific content and track performance across them. Dedicated AI search engines like Perplexity and ChatGPT search are also gaining traction; tailor content to how these systems summarise and rank information.
+
+Avoid black‑hat practices like the plague.
+Google explicitly warns against keyword stuffing, cloaking, hidden text/links, doorway pages, link schemes, duplicate content and automated content
+councils.forbes.com
+. These tactics may provide short‑term gains but risk severe ranking penalties or deindexation.
+
+Continual measurement and iteration.
+SEO isn’t a one‑time project; it’s ongoing. Use Google Analytics, Search Console and other tools to monitor traffic, rankings and engagement
+councils.forbes.com
+. Conduct regular audits, refresh outdated content, fill content gaps and experiment with new formats.
