@@ -13,6 +13,7 @@ The platform includes:
 - Weekly coaching session summaries.
 - A user feedback system.
 - Comprehensive access and usage reporting.
+- Growth intelligence platform with conversion tracking, revenue analytics, and subscription lifecycle monitoring.
 
 ## User Preferences
 
@@ -28,7 +29,7 @@ Preferred communication style: Simple, everyday language.
 
 **Design System:** Typography (Poppins, Inter, Quicksand), warm rose/mauve and terracotta color palette, warm/organic aesthetic, progressive intimacy model.
 
-**Key UI Components:** Dashboard, AppHeader with feature badges, EmailVerificationBanner, Profile, AssessmentQuestion, AttachmentResults (Recharts), AICoachChat, RetreatBuilder (multi-step wizard with vision planning), RetreatItinerary (AI-generated with framework citations), DateNightPlanner, ExercisesLibrary, WeeklySummaries, FeedbackForm, RequirePlan (premium feature gate), Paywall (Stripe hosted), SubscriptionCheckout (custom form), Reports, FeatureCard (auth-aware navigation), SEO (dynamic meta tags), StructuredData (JSON-LD schemas), CoachCredentials (E-E-A-T compliance).
+**Key UI Components:** Dashboard, AppHeader with feature badges, EmailVerificationBanner, Profile, AssessmentQuestion, AttachmentResults (Recharts), AICoachChat, RetreatBuilder (multi-step wizard with vision planning), RetreatItinerary (AI-generated with framework citations), DateNightPlanner, ExercisesLibrary, WeeklySummaries, FeedbackForm, RequirePlan (premium feature gate), Paywall (Stripe hosted), SubscriptionCheckout (custom form), Reports, Analytics (revenue dashboard with MRR/ARR, conversion funnel, customer distribution), FeatureCard (auth-aware navigation), SEO (dynamic meta tags), StructuredData (JSON-LD schemas), CoachCredentials (E-E-A-T compliance).
 
 **SEO Implementation:** Comprehensive SEO system with dynamic meta tags (title, description, keywords), Open Graph and Twitter Card support, JSON-LD structured data (Organization, Service, Person, FAQ, Breadcrumb schemas), FAQ page optimized for featured snippets, and author credentials for E-E-A-T compliance. All major pages (Landing, Coach, Assessment, Retreat, Exercises, DateNight, Summaries) include unique, keyword-optimized metadata.
 
@@ -36,7 +37,7 @@ Preferred communication style: Simple, everyday language.
 
 **Server Framework:** Express.js on Node.js with TypeScript (ESM).
 
-**API Design:** RESTful endpoints (`/api`) for chat, retreat/date night planning, user eligibility, feedback, attachment assessments, billing (Stripe), reporting, admin functions, email verification, and newsletter subscriptions. Webhook handler for Stripe events (`/webhooks/stripe`). JSON request/response with validation. Ownership verification on protected resources. Access logging with IP geolocation. Click-to-feature redirect flow.
+**API Design:** RESTful endpoints (`/api`) for chat, retreat/date night planning, user eligibility, feedback, attachment assessments, billing (Stripe), reporting, analytics (revenue metrics, conversion funnel, subscription/conversion events), admin functions, email verification, and newsletter subscriptions. Enhanced Stripe webhook handler (`/webhooks/stripe`) tracks full subscription lifecycle (checkout, renewals, cancellations, payment events) and writes conversion events (free_to_paid, paid_to_free, subscription_renewed, subscription_canceled) and subscription events (created, updated, deleted, payment_succeeded, payment_failed). JSON request/response with validation. Ownership verification on protected resources. Access logging with IP geolocation. Click-to-feature redirect flow.
 
 **AI Integration:** OpenAI GPT for coaching, retreat/date night planning, and attachment analysis. Custom system prompts for AI personas. Streaming responses for chat. Structured JSON responses with Zod validation for attachment analysis.
 
@@ -44,7 +45,7 @@ Preferred communication style: Simple, everyday language.
 
 **Database:** PostgreSQL via Neon serverless, Drizzle ORM for type-safe queries, schema-first design with Zod validation.
 
-**Data Models:** Users (authentication, lifetime access, Stripe ID, email verification, newsletter), Subscriptions (Stripe details), ChatSessions, WeeklySummaries, GeneralFeedback, SessionFeedback, RelationshipProgress, RetreatItineraries (with vision planning), DateNights, Assessments (responses, AI results, share tokens), AccessLogs (IP, geolocation).
+**Data Models:** Users (authentication, lifetime access, Stripe ID, email verification, newsletter), Subscriptions (Stripe details), ChatSessions, WeeklySummaries, GeneralFeedback, SessionFeedback, RelationshipProgress, RetreatItineraries (with vision planning), DateNights, Assessments (responses, AI results, share tokens), AccessLogs (IP, geolocation), ConversionEvents (subscription lifecycle tracking: free_to_paid, paid_to_free, subscription_renewed, subscription_canceled with revenue impact), SubscriptionEvents (full Stripe event log: created, updated, deleted, payment_succeeded, payment_failed with metadata).
 
 **Storage Pattern:** Interface-based abstraction, Drizzle with PostgreSQL connection pooling, UUID primary keys.
 
@@ -62,7 +63,7 @@ Preferred communication style: Simple, everyday language.
 
 **Subscription & Access Control:** Two-tier (Free/Premium). Premium features gated by `RequirePlan` component, requiring active subscription or lifetime access. `usePlan` hook provides status to frontend.
 
-**Admin Access Control:** Reports feature restricted to specific admin emails (e.g., charle.watson@wholewellness-coaching.org). Frontend conditional display, backend `isAdmin` middleware.
+**Admin Access Control:** Reports and Analytics features restricted to specific admin emails (e.g., charle.watson@wholewellness-coaching.org). Frontend conditional display, backend `isAdmin` middleware. Analytics dashboard provides revenue metrics (MRR, ARR, total revenue, active subscriptions), conversion funnel analysis (signups → paid conversions with conversion rate and avg time to convert), customer distribution (subscriptions vs. lifetime access), and recent conversion event history.
 
 **Security Considerations:** Host-header validation, HTTPS-only cookies, `connect-pg-simple` session store, Stripe webhook signature verification, IP-based geolocation blocking (Russia, China).
 
