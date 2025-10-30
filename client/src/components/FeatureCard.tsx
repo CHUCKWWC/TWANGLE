@@ -25,12 +25,12 @@ export function FeatureCard({
   const isAnonymous = (user as any)?.isAnonymous;
   
   const handleClick = (e: React.MouseEvent) => {
-    // If user is already authenticated, let them navigate directly
-    if (!isAnonymous) {
+    // If user is authenticated OR feature is free, let them navigate directly
+    if (!isAnonymous || !isPremium) {
       return;
     }
     
-    // If anonymous, redirect to login with returnTo parameter
+    // If anonymous AND premium feature, redirect to login with returnTo parameter
     e.preventDefault();
     window.location.href = createLoginUrl(destination);
   };
