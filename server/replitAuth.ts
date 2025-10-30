@@ -10,6 +10,7 @@ import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 import { getLocationFromIP, extractIPAddress } from "./geolocation";
 import { createAccessLogEntry, logAccessToSheet } from "./googleSheets";
+import { validateReturnToUrl } from "./redirectUtils";
 
 // Store registered strategies to avoid duplicates
 const registeredStrategies = new Set<string>();
@@ -165,6 +166,14 @@ export async function setupAuth(app: Express) {
       });
     }
     
+    // Store validated returnTo in session for use after authentication
+    const returnTo = req.query.returnTo as string | undefined;
+    const validatedReturnTo = validateReturnToUrl(returnTo);
+    if (validatedReturnTo) {
+      (req.session as any).returnTo = validatedReturnTo;
+      console.log('[Auth] Stored returnTo in session:', validatedReturnTo);
+    }
+    
     // Dynamically register strategy if it doesn't exist
     await ensureStrategyExists(domain, verify);
     
@@ -239,7 +248,17 @@ export async function setupAuth(app: Express) {
           console.log('[Auth Callback] Skipping log - IP already logged in this session');
         }
         
-        res.redirect("/");
+        // Redirect to returnTo destination if it exists, otherwise go to home
+        const returnTo = session.returnTo;
+        delete session.returnTo; // Clear it from session
+        
+        if (returnTo) {
+          console.log('[Auth Callback] Redirecting to:', returnTo);
+          res.redirect(returnTo);
+        } else {
+          console.log('[Auth Callback] No returnTo, redirecting to home');
+          res.redirect("/");
+        }
       });
     })(req, res, next);
   });

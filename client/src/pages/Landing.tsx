@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, Brain, Users, Map, BookOpen, Shield, Sparkles, CheckCircle2 } from "lucide-react";
+import { FeatureCard } from "@/components/FeatureCard";
 
 export default function Landing() {
   return (
@@ -91,85 +92,50 @@ export default function Landing() {
           </p>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="hover-elevate">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Brain className="w-6 h-6 text-primary" />
-                  </div>
-                  <Badge variant="secondary" className="text-xs">FREE</Badge>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Attachment Assessment</h3>
-                <p className="text-muted-foreground">
-                  Discover your attachment style with a research-backed 20-question assessment. 
-                  Understand how you connect and what you need to thrive.
-                </p>
-              </CardContent>
-            </Card>
+            <FeatureCard
+              icon={Brain}
+              title="Attachment Assessment"
+              description="Discover your attachment style with a research-backed 20-question assessment. Understand how you connect and what you need to thrive."
+              destination="/assessment"
+              isPremium={false}
+              testId="card-assessment"
+            />
 
-            <Card className="hover-elevate">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-primary" />
-                  </div>
-                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 font-[Poppins]">AI Coach Charles</h3>
-                <p className="text-muted-foreground">
-                  Get personalized guidance from an AI trained in Gottman Method, EFT, and Attachment Theory. 
-                  Available 24/7 for your relationship questions.
-                </p>
-              </CardContent>
-            </Card>
+            <FeatureCard
+              icon={Users}
+              title="AI Coach Charles"
+              description="Get personalized guidance from an AI trained in Gottman Method, EFT, and Attachment Theory. Available 24/7 for your relationship questions."
+              destination="/coach"
+              isPremium={true}
+              testId="card-coach"
+            />
 
-            <Card className="hover-elevate">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Map className="w-6 h-6 text-primary" />
-                  </div>
-                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 font-[Poppins]">DIY Couples Retreats</h3>
-                <p className="text-muted-foreground">
-                  Create personalized retreat itineraries tailored to your goals, vibe, and budget. 
-                  AI-powered planning for meaningful getaways.
-                </p>
-              </CardContent>
-            </Card>
+            <FeatureCard
+              icon={Map}
+              title="DIY Couples Retreats"
+              description="Create personalized retreat itineraries tailored to your goals, vibe, and budget. AI-powered planning for meaningful getaways."
+              destination="/retreat"
+              isPremium={true}
+              testId="card-retreat"
+            />
 
-            <Card className="hover-elevate">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <BookOpen className="w-6 h-6 text-primary" />
-                  </div>
-                  <Badge variant="secondary" className="text-xs">FREE</Badge>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Science-Based Exercises</h3>
-                <p className="text-muted-foreground">
-                  Access a curated library of relationship-building activities grounded in research. 
-                  Build communication, trust, and intimacy.
-                </p>
-              </CardContent>
-            </Card>
+            <FeatureCard
+              icon={BookOpen}
+              title="Science-Based Exercises"
+              description="Access a curated library of relationship-building activities grounded in research. Build communication, trust, and intimacy."
+              destination="/exercises"
+              isPremium={false}
+              testId="card-exercises"
+            />
 
-            <Card className="hover-elevate">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-primary" />
-                  </div>
-                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Weekly Summaries</h3>
-                <p className="text-muted-foreground">
-                  Get AI-generated coaching session summaries with actionable insights and next steps. 
-                  Track your progress over time.
-                </p>
-              </CardContent>
-            </Card>
+            <FeatureCard
+              icon={Sparkles}
+              title="Weekly Summaries"
+              description="Get AI-generated coaching session summaries with actionable insights and next steps. Track your progress over time."
+              destination="/summaries"
+              isPremium={true}
+              testId="card-summaries"
+            />
 
             <Card className="hover-elevate">
               <CardContent className="p-6">
