@@ -19,6 +19,7 @@ interface AICoachChatProps {
   onSendMessage: (message: string) => void;
   isLoading?: boolean;
   onViewSummaries?: () => void;
+  disabled?: boolean;
 }
 
 const SUGGESTED_PROMPTS = [
@@ -33,6 +34,7 @@ export default function AICoachChat({
   onSendMessage,
   isLoading = false,
   onViewSummaries,
+  disabled = false,
 }: AICoachChatProps) {
   const [input, setInput] = useState("");
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
@@ -143,8 +145,9 @@ export default function AICoachChat({
               {SUGGESTED_PROMPTS.map((prompt, idx) => (
                 <button
                   key={idx}
-                  onClick={() => onSendMessage(prompt)}
-                  className="text-left p-4 rounded-lg border border-border bg-card hover-elevate active-elevate-2 transition-all"
+                  onClick={() => !disabled && onSendMessage(prompt)}
+                  disabled={disabled}
+                  className="text-left p-4 rounded-lg border border-border bg-card hover-elevate active-elevate-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid={`prompt-${idx}`}
                 >
                   <p className="text-sm">{prompt}</p>
@@ -230,15 +233,15 @@ export default function AICoachChat({
               value={input}
               onChange={handleInput}
               onKeyDown={handleKeyDown}
-              placeholder="Message Coach Charles..."
+              placeholder={disabled ? "Sign in to continue chatting..." : "Message Coach Charles..."}
               className="flex-1 min-h-[52px] max-h-[200px] resize-none"
               rows={1}
-              disabled={isLoading}
+              disabled={isLoading || disabled}
               data-testid="input-message"
             />
             <Button
               onClick={handleSend}
-              disabled={!input.trim() || isLoading}
+              disabled={!input.trim() || isLoading || disabled}
               size="icon"
               className="flex-shrink-0"
               data-testid="button-send"

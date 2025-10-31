@@ -1,18 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import AICoachChat, { type Message } from "@/components/AICoachChat";
 import { AppHeader } from "@/components/AppHeader";
-import { RequirePlan } from "@/components/RequirePlan";
 import { SEO, SEO_CONTENT } from "@/components/SEO";
 import { StructuredData, PERSON_SCHEMA } from "@/components/StructuredData";
 import { CoachCredentials } from "@/components/CoachCredentials";
+import { useAuth } from "@/hooks/useAuth";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Lock, MessageCircle } from "lucide-react";
+import { usePlan } from "@/hooks/usePlan";
+
+const FREE_MESSAGE_LIMIT = 3;
 
 export default function Coach() {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
+  const [messageCount, setMessageCount] = useState(0);
   const [, navigate] = useLocation();
+  const { user } = useAuth();
+  const { hasAccess } = usePlan();
+  const isAnonymous = (user as any)?.isAnonymous;
+  
+  // Load message count from localStorage for anonymous users
+  useEffect(() => {
+    if (isAnonymous) {
+      const stored = localStorage.getItem('anonymousMessageCount');
+      setMessageCount(stored ? parseInt(stored, 10) : 0);
+    }
+  }, [isAnonymous]);
 
   const handleSendMessage = async (content: string) => {
+    // Check if anonymous user has exceeded free limit
+    if (isAnonymous && messageCount >= FREE_MESSAGE_LIMIT) {
+      return; // Prevent sending - UI will show sign-in prompt
+    }
+
     const newMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -52,6 +75,13 @@ export default function Coach() {
       };
       
       setChatMessages(prev => [...prev, assistantMessage]);
+      
+      // Increment count for anonymous users
+      if (isAnonymous) {
+        const newCount = messageCount + 1;
+        setMessageCount(newCount);
+        localStorage.setItem('anonymousMessageCount', newCount.toString());
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
@@ -65,26 +95,77 @@ export default function Coach() {
       setIsLoadingChat(false);
     }
   };
+  
+  const remainingMessages = isAnonymous ? Math.max(0, FREE_MESSAGE_LIMIT - messageCount) : Infinity;
+  const hasReachedLimit = isAnonymous && messageCount >= FREE_MESSAGE_LIMIT;
 
   return (
     <>
       <SEO {...SEO_CONTENT.coach} />
       <StructuredData data={PERSON_SCHEMA} />
-      
-      <RequirePlan message="Access unlimited AI coaching with a premium subscription">
-        <AppHeader />
-        <div className="pt-16 px-4 max-w-4xl mx-auto">
-          <div className="mt-6">
-            <CoachCredentials />
+      <AppHeader />
+      <div className="pt-16 px-4 max-w-4xl mx-auto">
+        {/* Anonymous user message counter banner */}
+        {isAnonymous && messageCount > 0 && !hasReachedLimit && (
+          <div className="mb-6">
+            <Card className="p-4 bg-primary/5 border-primary/20">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <MessageCircle className="w-5 h-5 text-primary" />
+                  <p className="text-sm" data-testid="text-message-counter">
+                    <span className="font-semibold">{remainingMessages}</span> free message{remainingMessages !== 1 ? 's' : ''} remaining
+                  </p>
+                </div>
+                <Button asChild size="sm" variant="outline" data-testid="button-signin-counter">
+                  <a href="/api/login?returnTo=/coach">
+                    Sign In for Unlimited
+                  </a>
+                </Button>
+              </div>
+            </Card>
           </div>
-          <AICoachChat
-            messages={chatMessages}
-            onSendMessage={handleSendMessage}
-            isLoading={isLoadingChat}
-            onViewSummaries={() => navigate("/summaries")}
-          />
+        )}
+
+        {/* Free messages exhausted - sign in prompt */}
+        {hasReachedLimit && (
+          <div className="mb-6">
+            <Card className="p-6 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-full bg-primary/10 p-2">
+                    <Lock className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-semibold text-lg mb-1" data-testid="text-limit-title">
+                      You've used your 3 free messages
+                    </h3>
+                    <p className="text-sm text-muted-foreground" data-testid="text-limit-description">
+                      Sign in to continue chatting with Coach Charles and unlock unlimited AI coaching
+                    </p>
+                  </div>
+                </div>
+                <Button asChild size="lg" className="flex-shrink-0" data-testid="button-signin-limit">
+                  <a href="/api/login?returnTo=/coach">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Sign In to Continue
+                  </a>
+                </Button>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        <div className="mt-6">
+          <CoachCredentials />
+        </div>
+        <AICoachChat
+          messages={chatMessages}
+          onSendMessage={handleSendMessage}
+          isLoading={isLoadingChat}
+          onViewSummaries={() => navigate("/summaries")}
+          disabled={hasReachedLimit}
+        />
       </div>
-    </RequirePlan>
     </>
   );
 }
