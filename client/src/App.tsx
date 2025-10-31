@@ -24,6 +24,7 @@ import PaySuccess from "@/pages/PaySuccess";
 import PayCancel from "@/pages/PayCancel";
 import Reports from "@/pages/Reports";
 import Analytics from "@/pages/Analytics";
+import FeedbackReport from "@/pages/FeedbackReport";
 import FAQ from "@/pages/FAQ";
 import NotFound from "@/pages/not-found";
 
@@ -56,6 +57,7 @@ function Router() {
       <Route path="/pay/cancel" component={PayCancel} />
       <Route path="/reports" component={Reports} />
       <Route path="/analytics" component={Analytics} />
+      <Route path="/feedback-report" component={FeedbackReport} />
       <Route path="/faq" component={FAQ} />
       <Route path="/terms" component={TermsOfService} />
       <Route path="/privacy" component={PrivacyPolicy} />
