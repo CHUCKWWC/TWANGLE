@@ -433,8 +433,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Messages array is required" });
       }
 
-      // Anonymous users are allowed to chat (frontend enforces 3 message limit)
-      // Authenticated users have unlimited access (or subscription limits)
+      // Backend enforcement of freemium limits for anonymous users
+      if (req.anonymousUser) {
+        // Track message count in session for anonymous users
+        if (!req.session.anonymousChatCount) {
+          req.session.anonymousChatCount = 0;
+        }
+        
+        // Enforce 3-message limit for anonymous users
+        if (req.session.anonymousChatCount >= 3) {
+          return res.status(403).json({ 
+            error: "Free message limit reached",
+            message: "You've used your 3 free messages. Sign in to continue chatting.",
+            requiresAuth: true
+          });
+        }
+        
+        // Increment anonymous message count
+        req.session.anonymousChatCount += 1;
+      }
       
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
