@@ -183,6 +183,46 @@ export async function setupAuth(app: Express) {
     })(req, res, next);
   });
 
+  // Sign-up endpoint for promotional links - works for both new and existing users
+  app.get("/api/signup", async (req, res, next) => {
+    const domain = req.hostname;
+    
+    // Validate domain before proceeding
+    if (!isAllowedDomain(domain)) {
+      console.error(`[Auth] Signup attempt from unauthorized domain: ${domain}`);
+      return res.status(403).json({ 
+        error: "Authentication not available for this domain",
+        message: "Please contact support if you believe this is an error."
+      });
+    }
+    
+    // Store promo tracking data if provided (for analytics)
+    const source = req.query.source as string | undefined;
+    const campaign = req.query.campaign as string | undefined;
+    if (source || campaign) {
+      (req.session as any).promoSource = source;
+      (req.session as any).promoCampaign = campaign;
+      console.log('[Auth] Promo tracking:', { source, campaign });
+    }
+    
+    // Store validated returnTo in session for use after authentication
+    const returnTo = req.query.returnTo as string | undefined;
+    const validatedReturnTo = validateReturnToUrl(returnTo);
+    if (validatedReturnTo) {
+      (req.session as any).returnTo = validatedReturnTo;
+      console.log('[Auth] Stored returnTo in session:', validatedReturnTo);
+    }
+    
+    // Dynamically register strategy if it doesn't exist
+    await ensureStrategyExists(domain, verify);
+    
+    // Use "consent" prompt to encourage new account creation while still allowing existing users
+    passport.authenticate(`replitauth:${domain}`, {
+      prompt: "consent",
+      scope: ["openid", "email", "profile", "offline_access"],
+    })(req, res, next);
+  });
+
   app.get("/api/callback", async (req, res, next) => {
     const domain = req.hostname;
     
