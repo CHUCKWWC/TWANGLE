@@ -51,7 +51,41 @@ Preferred communication style: Simple, everyday language.
 
 ### Authentication & Authorization
 
-**Current Implementation:** Replit Auth (OIDC) with dynamic domain registration. Session-based authentication. User tracking with lifetime access. All API endpoints protected.
+**Freemium Model (Implemented January 2025):** True freemium with "try before you sign in" approach. Anonymous users can access core features without authentication to lower barriers to entry and improve conversion from previous 0% subscription rate.
+
+**Anonymous User Support:**
+- All visitors automatically get anonymous session via `ensureAnonymousSession` middleware
+- Anonymous users tracked with `anonId` stored in PostgreSQL session store (`connect-pg-simple`)
+- Frontend detects anonymous users via `isAnonymous` flag from `/api/auth/user`
+- Anonymous session data preserved for conversion when users sign in
+
+**Free Tier Access (No Authentication Required):**
+1. **Attachment Assessment**: Complete 20-question assessment with AI-analyzed results
+2. **AI Coach Charles**: 3 free messages with backend enforcement (session-tracked)
+3. **Retreat Builder**: Generate personalized retreat itineraries
+4. **Exercises Library**: Full access to all research-based exercises
+5. **Date Night Planner**: Full access to AI date night generation
+
+**Backend Security Enforcement:**
+- `/api/chat` endpoint uses `optionalAuth` middleware to support anonymous users
+- Anonymous chat usage tracked in server-side session (`req.session.anonymousChatCount`)
+- Backend enforces 3-message limit BEFORE calling OpenAI API (prevents abuse/cost overruns)
+- Returns 403 with `{requiresAuth: true}` after limit reached
+- Frontend syncs state from 403 response and shows sign-in UI
+
+**Frontend Freemium Implementation:**
+- AI Coach: Message counter (localStorage + backend session), disabled input after limit
+- Assessment Results: "Sign in to save your results" banner for anonymous users
+- Retreat Builder: "Try Your First Retreat Free" banner with sign-in option
+- Landing page: "Try it free - no sign up required" messaging, feature badges show what's free
+
+**Premium Tier (Requires Subscription or Lifetime Access):**
+- Unlimited AI Coach messages
+- Saved assessments and retreats
+- Weekly coaching summaries
+- Priority support
+
+**Current Implementation:** Replit Auth (OIDC) with dynamic domain registration. Session-based authentication. User tracking with lifetime access.
 
 **Multi-Domain Authentication:** Dynamic OIDC supports multiple deployment domains. Strict domain allowlist (`twangle.org`, `www.twangle.org`, `REPLIT_DOMAINS`).
 
@@ -65,7 +99,7 @@ Preferred communication style: Simple, everyday language.
 
 **Admin Access Control:** Reports and Analytics features restricted to specific admin emails (e.g., charle.watson@wholewellness-coaching.org). Frontend conditional display, backend `isAdmin` middleware. Analytics dashboard provides revenue metrics (MRR, ARR, total revenue, active subscriptions), conversion funnel analysis (signups → paid conversions with conversion rate and avg time to convert), customer distribution (subscriptions vs. lifetime access), and recent conversion event history.
 
-**Security Considerations:** Host-header validation, HTTPS-only cookies, `connect-pg-simple` session store, Stripe webhook signature verification, IP-based geolocation blocking (Russia, China).
+**Security Considerations:** Host-header validation, HTTPS-only cookies, `connect-pg-simple` session store, Stripe webhook signature verification, IP-based geolocation blocking (Russia, China), server-side rate limiting for anonymous AI chat.
 
 ### Build & Deployment
 

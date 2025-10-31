@@ -62,6 +62,16 @@ export default function Coach() {
       });
 
       if (!response.ok) {
+        // Handle 403 - free message limit reached
+        if (response.status === 403) {
+          const errorData = await response.json();
+          if (errorData.requiresAuth && isAnonymous) {
+            // Backend enforced the limit - sync frontend state
+            setMessageCount(FREE_MESSAGE_LIMIT);
+            localStorage.setItem('anonymousMessageCount', FREE_MESSAGE_LIMIT.toString());
+            return; // Don't add error message, the UI will show the limit banner
+          }
+        }
         throw new Error('Failed to get response');
       }
 
