@@ -1618,6 +1618,117 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // Feedback report endpoints (admin only)
+  app.get("/api/reports/feedback-summary", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const [generalFeedback, sessionFeedback] = await Promise.all([
+        storage.getGeneralFeedback(),
+        storage.getSessionFeedback(),
+      ]);
+      
+      // Calculate stats
+      const totalGeneral = generalFeedback.length;
+      const totalSessions = sessionFeedback.length;
+      
+      // Average session rating
+      const avgSessionRating = sessionFeedback.length > 0
+        ? sessionFeedback.reduce((sum, f) => sum + f.rating, 0) / sessionFeedback.length
+        : 0;
+      
+      // General feedback by type
+      const feedbackByType = generalFeedback.reduce((acc, f) => {
+        acc[f.feedbackType] = (acc[f.feedbackType] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      // General feedback by category
+      const feedbackByCategory = generalFeedback.reduce((acc, f) => {
+        acc[f.category] = (acc[f.category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      res.json({
+        totalGeneral,
+        totalSessions,
+        avgSessionRating: parseFloat(avgSessionRating.toFixed(2)),
+        feedbackByType,
+        feedbackByCategory,
+      });
+    } catch (error: any) {
+      console.error("Get feedback summary error:", error);
+      res.status(500).json({
+        error: "Failed to get feedback summary",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/reports/general-feedback", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const feedback = await storage.getGeneralFeedback();
+      
+      // Enrich with user info
+      const enrichedFeedback = await Promise.all(
+        feedback.map(async (f) => {
+          if (f.userId) {
+            const user = await storage.getUser(f.userId);
+            return {
+              ...f,
+              userEmail: user?.email || null,
+              userName: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : null,
+            };
+          }
+          return {
+            ...f,
+            userEmail: null,
+            userName: null,
+          };
+        })
+      );
+      
+      res.json({ feedback: enrichedFeedback });
+    } catch (error: any) {
+      console.error("Get general feedback error:", error);
+      res.status(500).json({
+        error: "Failed to get general feedback",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/reports/session-feedback", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const feedback = await storage.getSessionFeedback();
+      
+      // Enrich with user info
+      const enrichedFeedback = await Promise.all(
+        feedback.map(async (f) => {
+          if (f.userId) {
+            const user = await storage.getUser(f.userId);
+            return {
+              ...f,
+              userEmail: user?.email || null,
+              userName: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : null,
+            };
+          }
+          return {
+            ...f,
+            userEmail: null,
+            userName: null,
+          };
+        })
+      );
+      
+      res.json({ feedback: enrichedFeedback });
+    } catch (error: any) {
+      console.error("Get session feedback error:", error);
+      res.status(500).json({
+        error: "Failed to get session feedback",
+        details: error.message,
+      });
+    }
+  });
+
   // Revenue & conversion analytics endpoints
   app.get("/api/analytics/revenue-metrics", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
