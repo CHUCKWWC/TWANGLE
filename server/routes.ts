@@ -417,8 +417,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chat endpoint (protected)
-  app.post("/api/chat", isAuthenticated, logUserAccess, async (req: any, res) => {
+  // Chat endpoint (supports anonymous users with freemium model)
+  app.post("/api/chat", optionalAuth, logUserAccess, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI chat not configured", 
@@ -433,6 +433,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Messages array is required" });
       }
 
+      // Anonymous users are allowed to chat (frontend enforces 3 message limit)
+      // Authenticated users have unlimited access (or subscription limits)
+      
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
