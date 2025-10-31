@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, X } from "lucide-react";
+import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, X, MessageSquare } from "lucide-react";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
@@ -71,6 +71,15 @@ export function AppHeader() {
           >
             <TrendingUp className="w-4 h-4" />
             Analytics
+          </Link>
+          <Link 
+            href="/feedback-report" 
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
+            data-testid="link-feedback-report"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <MessageSquare className="w-4 h-4" />
+            Feedback
           </Link>
         </>
       )}
