@@ -39,10 +39,10 @@ export default function Landing() {
 
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8 max-w-md mx-auto">
             <p className="text-sm font-medium text-foreground">
-              ✨ Try it free - no login required
+              ✨ Try it free - no sign up required
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Explore assessments, exercises, and date night planning without creating an account
+              Start with assessments, AI coaching (3 free messages), retreat planning, exercises, and more—all before creating an account
             </p>
           </div>
 
@@ -111,18 +111,18 @@ export default function Landing() {
             <FeatureCard
               icon={Users}
               title="AI Coach Charles"
-              description="Get personalized guidance from an AI trained in Gottman Method, EFT, and Attachment Theory. Available 24/7 for your relationship questions."
+              description="Get personalized guidance from an AI trained in Gottman Method, EFT, and Attachment Theory. Try 3 free messages before signing in."
               destination="/coach"
-              isPremium={true}
+              isPremium={false}
               testId="card-coach"
             />
 
             <FeatureCard
               icon={Map}
               title="DIY Couples Retreats"
-              description="Create personalized retreat itineraries tailored to your goals, vibe, and budget. AI-powered planning for meaningful getaways."
+              description="Create personalized retreat itineraries tailored to your goals, vibe, and budget. Try your first retreat free before signing in."
               destination="/retreat"
-              isPremium={true}
+              isPremium={false}
               testId="card-retreat"
             />
 
@@ -164,10 +164,10 @@ export default function Landing() {
       <div id="how-it-works" className="py-20 px-6 bg-background">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
-            Get Started in Minutes
+            Get Started in Minutes - No Sign Up Required
           </h2>
           <p className="text-center text-muted-foreground mb-16">
-            Our guided experience creates a personalized journey just for you
+            Try everything risk-free. Sign in when you're ready to save your progress.
           </p>
 
           <div className="space-y-12">
@@ -179,12 +179,12 @@ export default function Landing() {
                 <h3 className="text-2xl font-semibold mb-3 font-[Poppins]">Take the Assessment</h3>
                 <p className="text-muted-foreground mb-4">
                   Complete our 20-question attachment style assessment to understand your relationship patterns. 
-                  Discover whether you lean Secure, Anxious, Avoidant, or Fearful-Avoidant.
+                  Discover whether you lean Secure, Anxious, Avoidant, or Fearful-Avoidant. No sign up needed—view your results instantly.
                 </p>
                 <div className="flex flex-wrap gap-2">
+                  <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">No login required</span>
                   <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">5-7 minutes</span>
                   <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Research-backed</span>
-                  <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Private results</span>
                 </div>
               </div>
             </div>
@@ -197,12 +197,12 @@ export default function Landing() {
                 <h3 className="text-2xl font-semibold mb-3 font-[Poppins]">Talk to Coach Charles</h3>
                 <p className="text-muted-foreground mb-4">
                   Get personalized guidance from our AI relationship coach trained in proven methods: Gottman Method, 
-                  Emotionally Focused Therapy, and Attachment Theory. Ask anything, anytime.
+                  Emotionally Focused Therapy, and Attachment Theory. Try 3 free messages—no sign up needed.
                 </p>
                 <div className="flex flex-wrap gap-2">
+                  <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">3 free messages</span>
                   <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">24/7 available</span>
                   <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Evidence-based</span>
-                  <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Judgment-free</span>
                 </div>
               </div>
             </div>
@@ -214,13 +214,13 @@ export default function Landing() {
               <div className="flex-1">
                 <h3 className="text-2xl font-semibold mb-3 font-[Poppins]">Build Your Connection</h3>
                 <p className="text-muted-foreground mb-4">
-                  Plan personalized couples retreats, explore research-backed exercises, and track your progress with 
-                  weekly coaching summaries. Build the relationship you both deserve.
+                  Plan personalized couples retreats, explore research-backed exercises, and get date night ideas—all without signing in. 
+                  When you're ready, sign in to save your progress and unlock unlimited access.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Custom retreats</span>
+                  <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Try first retreat free</span>
                   <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Exercises library</span>
-                  <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Progress tracking</span>
+                  <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Date night ideas</span>
                 </div>
               </div>
             </div>
