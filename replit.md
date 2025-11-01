@@ -30,7 +30,7 @@ Preferred communication style: Simple, everyday language.
 
 **Design System:** Typography (Poppins, Inter, Quicksand), warm rose/mauve and terracotta color palette, warm/organic aesthetic, progressive intimacy model.
 
-**Key UI Components:** Dashboard, AppHeader with feature badges, EmailVerificationBanner, Profile, AssessmentQuestion, AttachmentResults (Recharts), AICoachChat, RetreatBuilder (multi-step wizard with vision planning), RetreatItinerary (AI-generated with framework citations), DateNightPlanner, ExercisesLibrary, WeeklySummaries, FeedbackForm, FeedbackReport (admin-only feedback analytics), RequirePlan (premium feature gate), Paywall (Stripe hosted), SubscriptionCheckout (custom form), Reports, Analytics (revenue dashboard with MRR/ARR, conversion funnel, customer distribution), FeatureCard (auth-aware navigation), SEO (dynamic meta tags), StructuredData (JSON-LD schemas), CoachCredentials (E-E-A-T compliance).
+**Key UI Components:** Dashboard, AppHeader with feature badges, EmailVerificationBanner, Profile, AssessmentQuestion, AttachmentResults (Recharts), AICoachChat, RetreatBuilder (multi-step wizard with vision planning), RetreatItinerary (AI-generated with framework citations), DateNightPlanner, ExercisesLibrary, WeeklySummaries, FeedbackForm, FeedbackReport (admin-only feedback analytics), RequirePlan (premium feature gate), Paywall (Stripe hosted), SubscriptionCheckout (custom form), Reports, Analytics (revenue dashboard with MRR/ARR, conversion funnel, customer distribution), FeatureCard (auth-aware navigation), SEO (dynamic meta tags), StructuredData (JSON-LD schemas), CoachCredentials (E-E-A-T compliance), **TrialCountdownBanner** (global trial timer), **TrialValueDashboard** (accumulated value display), **TrialExpiringModal** (urgency trigger at 2 days).
 
 **SEO Implementation:** Comprehensive SEO system with dynamic meta tags (title, description, keywords), Open Graph and Twitter Card support, JSON-LD structured data (Organization, Service, Person, FAQ, Breadcrumb schemas), FAQ page optimized for featured snippets, and author credentials for E-E-A-T compliance. All major pages (Landing, Coach, Assessment, Retreat, Exercises, DateNight, Summaries) include unique, keyword-optimized metadata.
 
@@ -100,6 +100,23 @@ Preferred communication style: Simple, everyday language.
 - Trial users get full premium access without Stripe subscription
 - After trial expires, paywall appears requiring payment to continue
 - Existing users with lifetime access are preserved during authentication
+
+**Trial Progress Tracker System (Conversion Optimization):**
+- **Purpose:** Maximize trial-to-paid conversion using loss aversion psychology and value accumulation
+- **Backend API** (`/api/trial/progress`): Aggregates user's accumulated value (chat sessions, assessments, retreats, date nights) during trial period
+- **Session Tracking:** Multi-message chat conversations correctly tracked as single sessions (Coach.tsx persists `sessionId` across messages)
+- **Assessment Counting:** Handles JSONB response objects correctly (`Object.keys()` instead of `.length`)
+- **UI Components:**
+  - `TrialCountdownBanner`: Global banner showing days remaining with progress bar, visible on all authenticated pages
+  - `TrialValueDashboard`: Home page widget displaying accumulated activity metrics (coaching conversations, assessments completed, retreats planned, date nights saved)
+  - `TrialExpiringModal`: Urgent conversion modal that triggers when 2 or fewer days remain, showing accumulated value and subscription CTA
+- **React Query Configuration:** All trial components use `staleTime: 0`, `refetchOnMount: true`, `refetchOnWindowFocus: true` for real-time data synchronization
+- **Conversion Psychology Flow:**
+  1. User creates activity (chat, assessment, retreat, date night)
+  2. Value accumulates and displays in real-time across all trial UI
+  3. Countdown creates urgency as trial progresses
+  4. Expiration modal triggers at 2 days with loss aversion messaging
+  5. User sees concrete value they'll lose if trial expires without subscribing
 
 **Backend Security:**
 - All API endpoints require `isAuthenticated` middleware (no anonymous access)

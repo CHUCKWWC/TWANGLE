@@ -24,6 +24,9 @@ export function TrialCountdownBanner() {
 
   const { data: progress } = useQuery<TrialProgress>({
     queryKey: ["/api/trial/progress"],
+    staleTime: 0, // Always refetch to show updated days remaining
+    refetchOnMount: true, // Refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
   });
 
   if (!progress?.onTrial || dismissed) {

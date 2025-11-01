@@ -942,8 +942,10 @@ ${conversationText}`;
       const retreats = await storage.getRetreatItineraries(userId);
       const dateNights = await storage.getDateNights(userId);
 
-      // Count only completed assessments
-      const completedAssessments = assessments.filter((a: any) => a.responses && a.responses.length > 0).length;
+      // Count only completed assessments (responses is JSONB object, not array)
+      const completedAssessments = assessments.filter((a: any) => 
+        a.responses && typeof a.responses === 'object' && Object.keys(a.responses).length > 0
+      ).length;
 
       res.json({
         onTrial: hasActiveTrial || false,

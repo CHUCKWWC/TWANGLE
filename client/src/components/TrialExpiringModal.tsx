@@ -31,6 +31,9 @@ export function TrialExpiringModal() {
 
   const { data: progress } = useQuery<TrialProgress>({
     queryKey: ["/api/trial/progress"],
+    staleTime: 0, // Always refetch to show updated metrics
+    refetchOnMount: true, // Refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when user returns to tab
   });
 
   useEffect(() => {
