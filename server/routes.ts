@@ -418,7 +418,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      const { messages } = req.body;
+      const { messages, sessionId } = req.body;
+      const userId = req.user?.claims?.sub;
 
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: "Messages array is required" });
@@ -443,6 +444,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Increment anonymous message count
         req.session.anonymousChatCount += 1;
       }
+
+      // Track chat sessions for authenticated users (for trial progress tracking)
+      let currentSessionId = sessionId;
+      if (userId && !req.anonymousUser) {
+        if (!currentSessionId) {
+          // Create a new session
+          const session = await storage.createChatSession({
+            userId,
+            messageCount: 1,
+          });
+          currentSessionId = session.id;
+        } else {
+          // Update existing session
+          const existingSession = await storage.getChatSession(currentSessionId);
+          if (existingSession && existingSession.userId === userId) {
+            await storage.updateChatSession(currentSessionId, {
+              messageCount: (existingSession.messageCount || 0) + 1,
+            });
+          }
+        }
+      }
       
       const completion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -464,6 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: "assistant",
           content: responseMessage,
         },
+        sessionId: currentSessionId,
       });
     } catch (error: any) {
       console.error("OpenAI API error:", error);

@@ -21,6 +21,8 @@ interface TrialProgress {
 export function TrialValueDashboard() {
   const { data: progress, isLoading } = useQuery<TrialProgress>({
     queryKey: ["/api/trial/progress"],
+    staleTime: 0, // Always refetch to show updated metrics
+    refetchOnMount: true, // Refetch when component mounts
   });
 
   if (isLoading || !progress?.onTrial) {
