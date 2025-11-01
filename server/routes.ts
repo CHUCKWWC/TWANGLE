@@ -4,7 +4,6 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { detectFacebookReferral, optionalAuth, ensureAnonymousSession } from "./anonymousAuth";
 import { logUserAccess } from "./accessLogger";
 import { sendVerificationEmail, sendWelcomeEmail } from "./gmail";
 import OpenAI from "openai";
@@ -95,34 +94,13 @@ const isAdmin = (req: any, res: Response, next: NextFunction) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Auth (Reference: blueprint:javascript_log_in_with_replit)
   await setupAuth(app);
-  
-  // Setup Facebook referral detection for anonymous sessions
-  app.use(detectFacebookReferral);
-  
-  // Ensure all visitors have an anonymous session (freemium model)
-  app.use(ensureAnonymousSession);
 
   // Auth routes (Reference: blueprint:javascript_log_in_with_replit)
-  app.get('/api/auth/user', optionalAuth, logUserAccess, async (req: any, res) => {
+  app.get('/api/auth/user', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      // If authenticated user, return user data
-      if (req.isAuthenticated?.() && req.user) {
-        const userId = req.user.claims.sub;
-        const user = await storage.getUser(userId);
-        return res.json(user);
-      }
-      
-      // If anonymous user, return anonymous session data
-      if (req.anonymousUser) {
-        return res.json({
-          id: req.anonymousUser.anonId,
-          isAnonymous: true,
-          source: req.anonymousUser.source,
-        });
-      }
-      
-      // No session at all
-      res.status(401).json({ message: "Unauthorized" });
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      return res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -430,8 +408,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chat endpoint (supports anonymous users with freemium model)
-  app.post("/api/chat", optionalAuth, logUserAccess, async (req: any, res) => {
+  // Chat endpoint (requires authentication)
+  app.post("/api/chat", isAuthenticated, logUserAccess, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI chat not configured", 
@@ -872,26 +850,36 @@ ${conversationText}`;
       const subscription = await storage.getSubscriptionByUserId(userId);
 
       const hasLifetimeAccess = user?.hasLifetimeAccess === 1;
+      
+      // Check if user has an active free trial
+      const now = new Date();
+      const hasActiveTrial = user?.trialEndsAt && new Date(user.trialEndsAt) > now;
+      const trialEndsAt = user?.trialEndsAt ? new Date(user.trialEndsAt) : null;
 
       if (!subscription) {
+        // User is either on trial or free tier
         return res.json({
-          tier: hasLifetimeAccess ? "premium" : "free",
-          isActive: false,
+          tier: hasLifetimeAccess || hasActiveTrial ? "premium" : "free",
+          isActive: hasActiveTrial || false,
           hasLifetimeAccess,
-          currentPeriodEnd: null,
+          currentPeriodEnd: trialEndsAt,
           cancelAtPeriodEnd: false,
+          onTrial: hasActiveTrial || false,
+          trialEndsAt: trialEndsAt,
         });
       }
 
       const isActive = subscription.status === 'active' || subscription.status === 'trialing';
-      const tier = isActive || hasLifetimeAccess ? "premium" : "free";
+      const tier = isActive || hasLifetimeAccess || hasActiveTrial ? "premium" : "free";
 
       res.json({
         tier,
         isActive,
         hasLifetimeAccess,
-        currentPeriodEnd: subscription.currentPeriodEnd,
+        currentPeriodEnd: subscription.currentPeriodEnd || trialEndsAt,
         cancelAtPeriodEnd: subscription.cancelAtPeriodEnd === 1,
+        onTrial: hasActiveTrial && !isActive,
+        trialEndsAt: trialEndsAt,
       });
     } catch (error: any) {
       console.error("Get billing status error:", error);
@@ -918,21 +906,33 @@ ${conversationText}`;
     try {
       const prices = [
         {
-          id: 'monthly',
-          priceId: process.env.STRIPE_PRICE_MONTHLY_ID,
-          name: 'Monthly Plan',
-          price: 7.99,
+          id: 'starter',
+          priceId: process.env.STRIPE_PRICE_STARTER_ID,
+          name: 'Couples Starter',
+          price: 12.00,
           interval: 'month',
           trialDays: 7,
+          features: ['Limited saved retreats (3)', 'AI Coach access', 'Basic exercises'],
+        },
+        {
+          id: 'monthly',
+          priceId: process.env.STRIPE_PRICE_MONTHLY_ID,
+          name: 'Premium Plan',
+          price: 20.00,
+          interval: 'month',
+          trialDays: 7,
+          features: ['Unlimited everything', 'Weekly summaries', 'Priority support'],
+          popular: true,
         },
         {
           id: 'annual',
           priceId: process.env.STRIPE_PRICE_ANNUAL_ID,
           name: 'Annual Plan',
-          price: 59.99,
+          price: 180.00,
           interval: 'year',
           trialDays: 7,
-          savings: '25% savings',
+          savings: 'Save $60/year',
+          features: ['All Premium features', 'Best value', '2 months free'],
         },
       ];
 
@@ -1237,7 +1237,7 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
     }
   });
 
-  app.post("/api/datenight/generate", optionalAuth, logUserAccess, async (req: any, res) => {
+  app.post("/api/datenight/generate", isAuthenticated, logUserAccess, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI date night planning not configured", 
@@ -1331,7 +1331,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.get("/api/datenight/plans", optionalAuth, logUserAccess, async (req: any, res) => {
+  app.get("/api/datenight/plans", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
@@ -1353,7 +1353,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.get("/api/datenight/:id", optionalAuth, logUserAccess, async (req: any, res) => {
+  app.get("/api/datenight/:id", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
@@ -1379,7 +1379,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.post("/api/assessments", optionalAuth, async (req: any, res) => {
+  app.post("/api/assessments", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
@@ -1412,7 +1412,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.get("/api/assessments/:id", optionalAuth, async (req: any, res) => {
+  app.get("/api/assessments/:id", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
@@ -1440,7 +1440,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
     }
   });
 
-  app.post("/api/assessments/:id/analyze", optionalAuth, async (req: any, res) => {
+  app.post("/api/assessments/:id/analyze", isAuthenticated, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI analysis not configured", 

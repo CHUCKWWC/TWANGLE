@@ -9,6 +9,8 @@ interface ApiPlanStatus {
   hasLifetimeAccess: boolean;
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
+  onTrial?: boolean;
+  trialEndsAt?: string | null;
 }
 
 export interface PlanStatus {
@@ -17,6 +19,8 @@ export interface PlanStatus {
   hasLifetimeAccess: boolean;
   currentPeriodEnd?: Date;
   cancelAtPeriodEnd: boolean;
+  onTrial?: boolean;
+  trialEndsAt?: Date;
 }
 
 export function usePlan() {
@@ -33,10 +37,12 @@ export function usePlan() {
     hasLifetimeAccess: apiData.hasLifetimeAccess,
     currentPeriodEnd: apiData.currentPeriodEnd ? new Date(apiData.currentPeriodEnd) : undefined,
     cancelAtPeriodEnd: apiData.cancelAtPeriodEnd,
+    onTrial: apiData.onTrial,
+    trialEndsAt: apiData.trialEndsAt ? new Date(apiData.trialEndsAt) : undefined,
   } : undefined;
 
   const tier: PlanTier = data?.tier || "free";
-  const hasAccess = data?.hasLifetimeAccess || data?.isActive || false;
+  const hasAccess = data?.hasLifetimeAccess || data?.isActive || data?.onTrial || false;
 
   return {
     tier,
@@ -45,6 +51,8 @@ export function usePlan() {
     hasLifetimeAccess: data?.hasLifetimeAccess || false,
     currentPeriodEnd: data?.currentPeriodEnd,
     cancelAtPeriodEnd: data?.cancelAtPeriodEnd || false,
+    onTrial: data?.onTrial || false,
+    trialEndsAt: data?.trialEndsAt,
     isLoading,
     error,
   };

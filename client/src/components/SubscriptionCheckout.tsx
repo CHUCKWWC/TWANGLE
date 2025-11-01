@@ -15,6 +15,8 @@ interface Price {
   interval: string;
   trialDays: number;
   savings?: string;
+  features?: string[];
+  popular?: boolean;
 }
 
 interface SubscriptionCheckoutProps {
@@ -125,7 +127,7 @@ export function SubscriptionCheckout({ prices, onSuccess }: SubscriptionCheckout
         {prices.map((price) => (
           <Card
             key={price.id}
-            className={`cursor-pointer transition-all ${
+            className={`cursor-pointer transition-all relative ${
               selectedPrice.id === price.id
                 ? "border-primary ring-2 ring-primary"
                 : "hover-elevate"
@@ -133,6 +135,13 @@ export function SubscriptionCheckout({ prices, onSuccess }: SubscriptionCheckout
             onClick={() => setSelectedPrice(price)}
             data-testid={`price-option-${price.id}`}
           >
+            {price.popular && (
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+                  POPULAR
+                </span>
+              </div>
+            )}
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>{price.name}</span>
@@ -152,6 +161,16 @@ export function SubscriptionCheckout({ prices, onSuccess }: SubscriptionCheckout
                 <p className="text-sm text-primary font-medium mb-2">
                   {price.savings}
                 </p>
+              )}
+              {price.features && price.features.length > 0 && (
+                <ul className="space-y-1 mb-3">
+                  {price.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Check className="w-3 h-3 text-primary" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
               )}
               <p className="text-xs text-muted-foreground">
                 {price.trialDays}-day free trial included

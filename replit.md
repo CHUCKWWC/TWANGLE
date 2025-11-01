@@ -62,55 +62,51 @@ Preferred communication style: Simple, everyday language.
 
 ### Authentication & Authorization
 
-**Freemium Model (Implemented January 2025):** True freemium with "try before you sign in" approach. Anonymous users can access core features without authentication to lower barriers to entry and improve conversion from previous 0% subscription rate.
+**Freemium Model (Updated February 2025):** Authentication-required freemium with 7-day trial. All users must create an account to access features, improving conversion tracking and lead quality. No anonymous access eliminates abuse and cost overruns while capturing user emails early in the funnel.
 
-**Anonymous User Support:**
-- All visitors automatically get anonymous session via `ensureAnonymousSession` middleware
-- Anonymous users tracked with `anonId` stored in PostgreSQL session store (`connect-pg-simple`)
-- Frontend detects anonymous users via `isAnonymous` flag from `/api/auth/user`
-- Anonymous session data preserved for conversion when users sign in
+**Authentication Flow:**
+- All visitors must sign up via Replit Auth (OIDC) to access any features
+- Signup process collects email and creates user account immediately
+- 7-day free trial begins automatically upon signup (no credit card required)
+- Session-based authentication with PostgreSQL session store (`connect-pg-simple`)
+- Multi-domain support with strict allowlist (`twangle.org`, `www.twangle.org`, `REPLIT_DOMAINS`)
 
-**Free Tier Access (No Authentication Required):**
-1. **Attachment Assessment**: Complete 20-question assessment with AI-analyzed results
-2. **AI Coach Charles**: 3 free messages with backend enforcement (session-tracked)
-3. **Retreat Builder**: Generate personalized retreat itineraries
-4. **Exercises Library**: Full access to all research-based exercises
-5. **Date Night Planner**: Full access to AI date night generation
+**Free Trial Access (7 Days, Full Access):**
+- All premium features unlocked during trial period
+- **Unlimited AI Coach Charles**: Full access to relationship coaching
+- **All Assessments**: Complete and save attachment style assessments
+- **Retreat Builder**: Create and save personalized retreat itineraries
+- **Exercises Library**: Full access to all research-based exercises
+- **Date Night Planner**: Generate and save AI date night ideas
+- **Weekly Summaries**: Get coaching session summaries and insights
 
-**Backend Security Enforcement:**
-- `/api/chat` endpoint uses `optionalAuth` middleware to support anonymous users
-- Anonymous chat usage tracked in server-side session (`req.session.anonymousChatCount`)
-- Backend enforces 3-message limit BEFORE calling OpenAI API (prevents abuse/cost overruns)
-- Returns 403 with `{requiresAuth: true}` after limit reached
-- Frontend syncs state from 403 response and shows sign-in UI
+**Pricing Tiers:**
+1. **Couples Starter** ($12/month) - Limited saved retreats (3), AI Coach access, basic exercises
+2. **Premium Plan** ($20/month) - Unlimited everything, weekly summaries, priority support (POPULAR)
+3. **Annual Plan** ($180/year) - All Premium features, save $60/year, 2 months free (BEST VALUE)
+4. **Lifetime Access** ($497 one-time) - All features forever, grandfathered pricing
 
-**Frontend Freemium Implementation:**
-- AI Coach: Message counter (localStorage + backend session), disabled input after limit
-- Assessment Results: "Sign in to save your results" banner for anonymous users
-- Retreat Builder: "Try Your First Retreat Free" banner with sign-in option
-- Landing page: "Try it free - no sign up required" messaging, feature badges show what's free
+**Landing Page Strategy:**
+- "Start your 7-day free trial" messaging replaces "try before signup"
+- Clear value propositions: unlimited coaching, saved progress, weekly insights
+- No credit card required for trial reduces friction
+- Sign-up CTA redirects to `/api/signup` for account creation
 
-**Premium Tier (Requires Subscription or Lifetime Access):**
-- Unlimited AI Coach messages
-- Saved assessments and retreats
-- Weekly coaching summaries
-- Priority support
-
-**Current Implementation:** Replit Auth (OIDC) with dynamic domain registration. Session-based authentication. User tracking with lifetime access.
-
-**Multi-Domain Authentication:** Dynamic OIDC supports multiple deployment domains. Strict domain allowlist (`twangle.org`, `www.twangle.org`, `REPLIT_DOMAINS`).
-
-**Click-to-Feature Redirect Flow:** Landing page components detect auth/feature type. Free features allow direct navigation. Premium features redirect anonymous users to `/api/login?returnTo=<destination>` which validates the `returnTo` URL.
+**Backend Security:**
+- All API endpoints require `isAuthenticated` middleware (no anonymous access)
+- No chat message limits during trial or for paid subscribers
+- Email verification with SendGrid transactional emails
+- IP-based geolocation blocking (Russia, China)
 
 **Email Verification System:** SendGrid for transactional emails, 24-hour expiring tokens. Banner prompts unverified users.
 
 **Newsletter Subscription:** User opt-in/opt-out via Profile page.
 
-**Subscription & Access Control:** Two-tier (Free/Premium). Premium features gated by `RequirePlan` component, requiring active subscription or lifetime access. `usePlan` hook provides status to frontend.
+**Subscription & Access Control:** Multi-tier pricing with trial-to-paid conversion focus. Premium features gated by `RequirePlan` component during trial expiration. `usePlan` hook provides status to frontend with trial tracking.
 
 **Admin Access Control:** Reports and Analytics features restricted to specific admin emails (e.g., charle.watson@wholewellness-coaching.org). Frontend conditional display, backend `isAdmin` middleware. Analytics dashboard provides revenue metrics (MRR, ARR, total revenue, active subscriptions), conversion funnel analysis (signups → paid conversions with conversion rate and avg time to convert), customer distribution (subscriptions vs. lifetime access), and recent conversion event history.
 
-**Security Considerations:** Host-header validation, HTTPS-only cookies, `connect-pg-simple` session store, Stripe webhook signature verification, IP-based geolocation blocking (Russia, China), server-side rate limiting for anonymous AI chat.
+**Security Considerations:** Host-header validation, HTTPS-only cookies, `connect-pg-simple` session store, Stripe webhook signature verification, IP-based geolocation blocking.
 
 ### Build & Deployment
 
