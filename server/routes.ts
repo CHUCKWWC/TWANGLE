@@ -914,13 +914,13 @@ ${conversationText}`;
       }
 
       // Get accumulated value metrics
-      const chatSessions = await storage.getChatSessionsByUserId(userId);
-      const assessments = await storage.getAssessmentsByUserId(userId);
-      const retreats = await storage.getRetreatsByUserId(userId);
-      const dateNights = await storage.getDateNightsByUserId(userId);
+      const chatSessions = await storage.getChatSessionsByUser(userId);
+      const assessments = await storage.getAssessmentsByUser(userId);
+      const retreats = await storage.getRetreatItineraries(userId);
+      const dateNights = await storage.getDateNights(userId);
 
       // Count only completed assessments
-      const completedAssessments = assessments.filter(a => a.responses && a.responses.length > 0).length;
+      const completedAssessments = assessments.filter((a: any) => a.responses && a.responses.length > 0).length;
 
       res.json({
         onTrial: hasActiveTrial || false,
