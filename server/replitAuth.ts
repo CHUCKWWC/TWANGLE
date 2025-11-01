@@ -103,7 +103,8 @@ async function upsertUser(
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
-    hasLifetimeAccess: process.env.NODE_ENV === 'development' ? 1 : 0,
+    // Preserve existing lifetime access for returning users, default to 0 for new users
+    hasLifetimeAccess: existingUser ? existingUser.hasLifetimeAccess : 0,
     // Only set trial dates for new users
     trialStartedAt: existingUser ? existingUser.trialStartedAt : now,
     trialEndsAt: existingUser ? existingUser.trialEndsAt : trialEnds,

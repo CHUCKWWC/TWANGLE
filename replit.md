@@ -92,8 +92,18 @@ Preferred communication style: Simple, everyday language.
 - No credit card required for trial reduces friction
 - Sign-up CTA redirects to `/api/signup` for account creation
 
+**Trial System Implementation:**
+- New users automatically receive 7-day trial on signup (no payment method required)
+- Trial timestamps (`trialStartedAt`, `trialEndsAt`) set in `upsertUser()` function
+- `/api/billing/status` endpoint checks trial expiration server-side
+- `usePlan` hook returns `onTrial`, `trialEndsAt`, and `hasAccess` flags
+- Trial users get full premium access without Stripe subscription
+- After trial expires, paywall appears requiring payment to continue
+- Existing users with lifetime access are preserved during authentication
+
 **Backend Security:**
 - All API endpoints require `isAuthenticated` middleware (no anonymous access)
+- Landing page accessible to unauthenticated users via custom `useAuth` queryFn
 - No chat message limits during trial or for paid subscribers
 - Email verification with SendGrid transactional emails
 - IP-based geolocation blocking (Russia, China)
