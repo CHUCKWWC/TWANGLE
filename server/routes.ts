@@ -890,6 +890,60 @@ ${conversationText}`;
     }
   });
 
+  app.get("/api/trial/progress", isAuthenticated, logUserAccess, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Check if user is on trial
+      const now = new Date();
+      const hasActiveTrial = user.trialEndsAt && new Date(user.trialEndsAt) > now;
+      const trialStartedAt = user.trialStartedAt ? new Date(user.trialStartedAt) : null;
+      const trialEndsAt = user.trialEndsAt ? new Date(user.trialEndsAt) : null;
+
+      // Calculate days remaining
+      let daysRemaining = 0;
+      let totalTrialDays = 7;
+      if (trialEndsAt && hasActiveTrial) {
+        const msRemaining = trialEndsAt.getTime() - now.getTime();
+        daysRemaining = Math.ceil(msRemaining / (1000 * 60 * 60 * 24));
+      }
+
+      // Get accumulated value metrics
+      const chatSessions = await storage.getChatSessionsByUserId(userId);
+      const assessments = await storage.getAssessmentsByUserId(userId);
+      const retreats = await storage.getRetreatsByUserId(userId);
+      const dateNights = await storage.getDateNightsByUserId(userId);
+
+      // Count only completed assessments
+      const completedAssessments = assessments.filter(a => a.responses && a.responses.length > 0).length;
+
+      res.json({
+        onTrial: hasActiveTrial || false,
+        trialStartedAt: trialStartedAt,
+        trialEndsAt: trialEndsAt,
+        daysRemaining,
+        totalTrialDays,
+        metrics: {
+          chatSessions: chatSessions.length,
+          assessments: completedAssessments,
+          retreats: retreats.length,
+          dateNights: dateNights.length,
+        },
+      });
+    } catch (error: any) {
+      console.error("Get trial progress error:", error);
+      res.status(500).json({
+        error: "Failed to get trial progress",
+        details: error.message,
+      });
+    }
+  });
+
   app.get("/api/billing/config", async (req, res) => {
     res.json({
       publishableKey: process.env.VITE_STRIPE_PUBLIC_KEY,
