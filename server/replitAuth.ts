@@ -90,14 +90,28 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
+  const userId = claims["sub"];
+  const existingUser = await storage.getUser(userId);
+  
+  // For new users, automatically start a 7-day free trial
+  const now = new Date();
+  const trialEnds = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+  
   await storage.upsertUser({
-    id: claims["sub"],
+    id: userId,
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
     hasLifetimeAccess: process.env.NODE_ENV === 'development' ? 1 : 0,
+    // Only set trial dates for new users
+    trialStartedAt: existingUser ? existingUser.trialStartedAt : now,
+    trialEndsAt: existingUser ? existingUser.trialEndsAt : trialEnds,
   });
+  
+  if (!existingUser) {
+    console.log(`[Auth] New user ${userId} - 7-day trial started, expires ${trialEnds.toISOString()}`);
+  }
 }
 
 // Helper function to register a strategy for a domain dynamically

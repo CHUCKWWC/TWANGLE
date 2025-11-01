@@ -62,16 +62,32 @@ export function RequirePlan({
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground text-center">
-              Get full access to all premium features:
-            </p>
-            <ul className="text-sm space-y-2">
-              <li>✓ Unlimited AI coaching sessions</li>
-              <li>✓ Advanced attachment assessments</li>
-              <li>✓ DIY retreat planning with AI</li>
-              <li>✓ Weekly coaching summaries</li>
-              <li>✓ Relationship progress tracking</li>
-            </ul>
+            <div className="bg-card border rounded-lg p-4 space-y-3">
+              <p className="text-sm font-medium text-center">
+                Premium unlocks everything you need:
+              </p>
+              <ul className="text-sm space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">✓</span>
+                  <span><strong>Unlimited AI Coach Charles</strong> - Get personalized guidance anytime</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">✓</span>
+                  <span><strong>Save all assessments & retreats</strong> - Track your progress over time</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">✓</span>
+                  <span><strong>Weekly coaching summaries</strong> - Never forget key insights</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5">✓</span>
+                  <span><strong>Priority support</strong> - Get help when you need it</span>
+                </li>
+              </ul>
+              <p className="text-xs text-center text-muted-foreground pt-2 border-t">
+                Starting at just $12/month • 7-day free trial
+              </p>
+            </div>
 
             <div className="flex flex-col gap-3 pt-4">
               <Button 
