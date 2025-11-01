@@ -5,6 +5,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { TrialCountdownBanner } from "@/components/TrialCountdownBanner";
+import { TrialExpiringModal } from "@/components/TrialExpiringModal";
 import Landing from "@/pages/Landing";
 import Home from "@/pages/Home";
 import Assessment from "@/pages/Assessment";
@@ -40,29 +42,33 @@ function Router() {
   }
 
   return (
-    <Switch>
-      <Route path="/shared/:token" component={SharedAssessment} />
-      <Route path="/" component={isAuthenticated ? Home : Landing} />
-      <Route path="/assessment" component={Assessment} />
-      <Route path="/results" component={Results} />
-      <Route path="/coach" component={Coach} />
-      <Route path="/retreat" component={Retreat} />
-      <Route path="/datenight" component={DateNight} />
-      <Route path="/exercises" component={Exercises} />
-      <Route path="/summaries" component={Summaries} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/retreat/:id" component={RetreatItinerary} />
-      <Route path="/paywall" component={PaywallCustom} />
-      <Route path="/pay/success" component={PaySuccess} />
-      <Route path="/pay/cancel" component={PayCancel} />
-      <Route path="/reports" component={Reports} />
-      <Route path="/analytics" component={Analytics} />
-      <Route path="/feedback-report" component={FeedbackReport} />
-      <Route path="/faq" component={FAQ} />
-      <Route path="/terms" component={TermsOfService} />
-      <Route path="/privacy" component={PrivacyPolicy} />
-      <Route component={NotFound} />
-    </Switch>
+    <>
+      {isAuthenticated && <TrialCountdownBanner />}
+      {isAuthenticated && <TrialExpiringModal />}
+      <Switch>
+        <Route path="/shared/:token" component={SharedAssessment} />
+        <Route path="/" component={isAuthenticated ? Home : Landing} />
+        <Route path="/assessment" component={Assessment} />
+        <Route path="/results" component={Results} />
+        <Route path="/coach" component={Coach} />
+        <Route path="/retreat" component={Retreat} />
+        <Route path="/datenight" component={DateNight} />
+        <Route path="/exercises" component={Exercises} />
+        <Route path="/summaries" component={Summaries} />
+        <Route path="/profile" component={Profile} />
+        <Route path="/retreat/:id" component={RetreatItinerary} />
+        <Route path="/paywall" component={PaywallCustom} />
+        <Route path="/pay/success" component={PaySuccess} />
+        <Route path="/pay/cancel" component={PayCancel} />
+        <Route path="/reports" component={Reports} />
+        <Route path="/analytics" component={Analytics} />
+        <Route path="/feedback-report" component={FeedbackReport} />
+        <Route path="/faq" component={FAQ} />
+        <Route path="/terms" component={TermsOfService} />
+        <Route path="/privacy" component={PrivacyPolicy} />
+        <Route component={NotFound} />
+      </Switch>
+    </>
   );
 }
 
