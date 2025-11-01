@@ -17,6 +17,7 @@ export default function Coach() {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [messageCount, setMessageCount] = useState(0);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [, navigate] = useLocation();
   const { user } = useAuth();
   const { hasAccess } = usePlan();
@@ -58,6 +59,7 @@ export default function Coach() {
             role: m.role,
             content: m.content,
           })),
+          sessionId: sessionId, // Include sessionId for authenticated users
         }),
       });
 
@@ -76,6 +78,11 @@ export default function Coach() {
       }
 
       const data = await response.json();
+      
+      // Store sessionId for future requests (for trial progress tracking)
+      if (data.sessionId && !isAnonymous) {
+        setSessionId(data.sessionId);
+      }
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
