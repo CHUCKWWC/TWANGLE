@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { TrialValueDashboard } from "@/components/TrialValueDashboard";
 import { 
   Brain, 
   MessageCircle, 
@@ -75,6 +76,11 @@ export default function Dashboard() {
           <p className="text-muted-foreground">
             Track your progress and continue building a stronger connection
           </p>
+        </div>
+
+        {/* Trial Value Dashboard */}
+        <div className="mb-8">
+          <TrialValueDashboard />
         </div>
 
         {/* Stats Overview */}
