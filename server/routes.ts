@@ -8,6 +8,7 @@ import { logUserAccess } from "./accessLogger";
 import { sendVerificationEmail, sendWelcomeEmail, sendTrialReminder } from "./gmail";
 import OpenAI from "openai";
 import Stripe from "stripe";
+import rateLimit from "express-rate-limit";
 import { trackSubscribe, trackCompleteRegistration } from "./facebookConversions";
 import { 
   insertGeneralFeedbackSchema, 
@@ -1989,10 +1990,27 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // Rate limiter for cron endpoints
+  // Very strict: 5 requests per 24 hours (allows for retries)
+  const cronRateLimiter = rateLimit({
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    max: 5, // limit each IP to 5 requests per windowMs
+    message: 'Too many cron requests from this IP, please try again after 24 hours',
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res) => {
+      console.warn(`Rate limit exceeded for cron endpoint from IP: ${req.ip}`);
+      res.status(429).json({
+        error: 'Too many requests',
+        message: 'Rate limit exceeded. This endpoint can only be called 5 times per day.'
+      });
+    }
+  });
+
   // Send trial expiration reminder emails
   // This endpoint should be called daily by an external cron service
-  // Security: Requires header-based secret authentication
-  app.post("/api/admin/send-trial-reminders", async (req: any, res) => {
+  // Security: Requires header-based secret authentication + rate limiting
+  app.post("/api/admin/send-trial-reminders", cronRateLimiter, async (req: any, res) => {
     try {
       // Header-based secret authentication for cron jobs
       const authHeader = req.headers.authorization;
@@ -2006,6 +2024,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const now = new Date();
       const emailsSent: { email: string; daysRemaining: number }[] = [];
+      const emailsSkipped: { email: string; daysRemaining: number; reason: string }[] = [];
       const errors: { email: string; error: string }[] = [];
 
       // Get only trial users who need reminders (database-filtered for performance)
@@ -2025,6 +2044,20 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         // Only send on days 2, 1, and 0
         if (daysRemaining !== 2 && daysRemaining !== 1 && daysRemaining !== 0) continue;
         
+        // Idempotency check: Skip if we've already sent this reminder
+        const subType = `days_${daysRemaining}`;
+        const alreadySent = await storage.hasEmailBeenSent(user.id, 'trial_reminder', subType);
+        
+        if (alreadySent) {
+          emailsSkipped.push({
+            email: user.email,
+            daysRemaining,
+            reason: 'already_sent'
+          });
+          console.log(`Skipping ${user.email} - trial reminder for ${daysRemaining} days already sent`);
+          continue;
+        }
+        
         try {
           // Get user's trial progress data
           const progress = await storage.getTrialProgress(user.id);
@@ -2038,6 +2071,22 @@ Make sure the percentages add up to 100. Base your analysis on established attac
             daysRemaining,
           }, baseUrl);
           
+          // Log successful email send
+          await storage.createEmailSendLog({
+            userId: user.id,
+            email: user.email,
+            emailType: 'trial_reminder',
+            subType,
+            status: 'success',
+            metadata: {
+              chatSessions: progress.chatSessions,
+              assessments: progress.assessments,
+              retreats: progress.retreats,
+              dateNights: progress.dateNights,
+              daysRemaining,
+            },
+          });
+          
           emailsSent.push({ 
             email: user.email, 
             daysRemaining 
@@ -2046,6 +2095,17 @@ Make sure the percentages add up to 100. Base your analysis on established attac
           console.log(`Trial reminder sent to ${user.email} (${daysRemaining} days remaining)`);
         } catch (error: any) {
           console.error(`Error sending trial reminder to ${user.email}:`, error);
+          
+          // Log failed email send attempt
+          await storage.createEmailSendLog({
+            userId: user.id,
+            email: user.email,
+            emailType: 'trial_reminder',
+            subType,
+            status: 'failed',
+            errorMessage: error.message,
+          });
+          
           errors.push({ 
             email: user.email, 
             error: error.message 
@@ -2056,7 +2116,9 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       res.json({ 
         success: true, 
         emailsSent: emailsSent.length,
+        emailsSkipped: emailsSkipped.length,
         emails: emailsSent,
+        skipped: emailsSkipped.length > 0 ? emailsSkipped : undefined,
         errors: errors.length > 0 ? errors : undefined
       });
     } catch (error: any) {
