@@ -13,8 +13,32 @@ import { usePlan } from "@/hooks/usePlan";
 
 const FREE_MESSAGE_LIMIT = 3;
 
+const WELCOME_MESSAGE: Message = {
+  id: 'welcome',
+  role: 'assistant',
+  content: `Hi there! I'm Coach Charles, your relationship wellness guide.
+
+I'm here to help you and your partner build a stronger, healthier relationship. I draw from evidence-based approaches like the Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory.
+
+**I can help you with:**
+• Understanding communication patterns and improving how you talk to each other
+• Working through conflicts in constructive ways
+• Deepening emotional intimacy and connection
+• Navigating attachment styles and building secure bonds
+• Processing difficult emotions and relationship challenges
+
+**What I can't help with:**
+I focus specifically on relationship coaching. For medical, legal, financial, or mental health therapy needs, I'll recommend you speak with the appropriate professional.
+
+**How to get the most from our conversation:**
+Be open and honest about what's happening in your relationship. The more context you share, the more personalized guidance I can provide.
+
+What's bringing you here today? What would you like to work on together?`,
+  timestamp: new Date(),
+};
+
 export default function Coach() {
-  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [chatMessages, setChatMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
   const [messageCount, setMessageCount] = useState(0);
   const [sessionId, setSessionId] = useState<string | null>(null);
