@@ -29,6 +29,14 @@ import {
   type InsertSubscriptionEvent,
   type EmailSendLog,
   type InsertEmailSendLog,
+  type HealthScore,
+  type InsertHealthScore,
+  type Partnership,
+  type InsertPartnership,
+  type JournalEntry,
+  type InsertJournalEntry,
+  type AnalyticsSnapshot,
+  type InsertAnalyticsSnapshot,
   users,
   subscriptions,
   chatSessions,
@@ -42,7 +50,11 @@ import {
   accessLogs,
   conversionEvents,
   subscriptionEvents,
-  emailSendLogs
+  emailSendLogs,
+  healthScores,
+  partnerships,
+  journalEntries,
+  analyticsSnapshots
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -159,6 +171,31 @@ export interface IStorage {
     totalFailed: number;
     byType: Record<string, { sent: number; success: number; failed: number }>;
   }>;
+
+  // Health score tracking
+  calculateHealthScore(userId: string): Promise<HealthScore>;
+  getHealthScores(userId: string, limit?: number): Promise<HealthScore[]>;
+  getLatestHealthScore(userId: string): Promise<HealthScore | undefined>;
+
+  // Partnership/connection management
+  createPartnership(partnership: InsertPartnership): Promise<Partnership>;
+  getPartnership(id: string): Promise<Partnership | undefined>;
+  getPartnershipByToken(token: string): Promise<Partnership | undefined>;
+  getActivePartnership(userId: string): Promise<Partnership | undefined>;
+  getPendingInvites(userId: string): Promise<Partnership[]>;
+  updatePartnership(id: string, updates: Partial<Partnership>): Promise<Partnership | undefined>;
+  acceptPartnership(token: string, userId: string): Promise<Partnership | undefined>;
+
+  // Journal entries
+  createJournalEntry(entry: InsertJournalEntry): Promise<JournalEntry>;
+  getJournalEntries(userId: string, limit?: number): Promise<JournalEntry[]>;
+  getJournalEntry(id: string): Promise<JournalEntry | undefined>;
+  updateJournalEntry(id: string, updates: Partial<JournalEntry>): Promise<JournalEntry | undefined>;
+
+  // Analytics snapshots
+  createAnalyticsSnapshot(snapshot: InsertAnalyticsSnapshot): Promise<AnalyticsSnapshot>;
+  getAnalyticsSnapshots(userId: string, periodType?: string): Promise<AnalyticsSnapshot[]>;
+  getLatestAnalyticsSnapshot(userId: string, periodType: string): Promise<AnalyticsSnapshot | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -819,6 +856,120 @@ export class MemStorage implements IStorage {
       totalFailed: 0,
       byType: {},
     };
+  }
+
+  // Health score tracking (stub implementation)
+  async calculateHealthScore(userId: string): Promise<HealthScore> {
+    const id = randomUUID();
+    return {
+      id,
+      userId,
+      overallScore: 75,
+      breakdown: { communication: 80, intimacy: 70, conflict: 75, growth: 80 },
+      metrics: { chatSessions: 0, assessments: 0, exercisesCompleted: 0 },
+      calculatedAt: new Date(),
+    };
+  }
+
+  async getHealthScores(userId: string, limit: number = 30): Promise<HealthScore[]> {
+    return [];
+  }
+
+  async getLatestHealthScore(userId: string): Promise<HealthScore | undefined> {
+    return undefined;
+  }
+
+  // Partnership management (stub implementation)
+  async createPartnership(partnership: InsertPartnership): Promise<Partnership> {
+    const id = randomUUID();
+    return {
+      id,
+      user1Id: partnership.user1Id,
+      user2Id: partnership.user2Id ?? null,
+      user2Email: partnership.user2Email ?? null,
+      status: partnership.status ?? 'pending',
+      inviteToken: partnership.inviteToken ?? null,
+      inviteExpiresAt: partnership.inviteExpiresAt ?? null,
+      sharedAssessments: partnership.sharedAssessments ?? 1,
+      sharedProgress: partnership.sharedProgress ?? 1,
+      sharedJournal: partnership.sharedJournal ?? 0,
+      connectedAt: partnership.connectedAt ?? null,
+      createdAt: new Date(),
+    };
+  }
+
+  async getPartnership(id: string): Promise<Partnership | undefined> {
+    return undefined;
+  }
+
+  async getPartnershipByToken(token: string): Promise<Partnership | undefined> {
+    return undefined;
+  }
+
+  async getActivePartnership(userId: string): Promise<Partnership | undefined> {
+    return undefined;
+  }
+
+  async getPendingInvites(userId: string): Promise<Partnership[]> {
+    return [];
+  }
+
+  async updatePartnership(id: string, updates: Partial<Partnership>): Promise<Partnership | undefined> {
+    return undefined;
+  }
+
+  async acceptPartnership(token: string, userId: string): Promise<Partnership | undefined> {
+    return undefined;
+  }
+
+  // Journal entries (stub implementation)
+  async createJournalEntry(entry: InsertJournalEntry): Promise<JournalEntry> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: entry.userId,
+      entry: entry.entry,
+      mood: entry.mood ?? null,
+      tags: entry.tags ?? null,
+      aiInsights: entry.aiInsights ?? null,
+      isPrivate: entry.isPrivate ?? 1,
+      createdAt: new Date(),
+    };
+  }
+
+  async getJournalEntries(userId: string, limit: number = 50): Promise<JournalEntry[]> {
+    return [];
+  }
+
+  async getJournalEntry(id: string): Promise<JournalEntry | undefined> {
+    return undefined;
+  }
+
+  async updateJournalEntry(id: string, updates: Partial<JournalEntry>): Promise<JournalEntry | undefined> {
+    return undefined;
+  }
+
+  // Analytics snapshots (stub implementation)
+  async createAnalyticsSnapshot(snapshot: InsertAnalyticsSnapshot): Promise<AnalyticsSnapshot> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: snapshot.userId,
+      period: snapshot.period,
+      periodType: snapshot.periodType,
+      metrics: snapshot.metrics,
+      insights: snapshot.insights ?? null,
+      benchmarks: snapshot.benchmarks ?? null,
+      createdAt: new Date(),
+    };
+  }
+
+  async getAnalyticsSnapshots(userId: string, periodType?: string): Promise<AnalyticsSnapshot[]> {
+    return [];
+  }
+
+  async getLatestAnalyticsSnapshot(userId: string, periodType: string): Promise<AnalyticsSnapshot | undefined> {
+    return undefined;
   }
 }
 
@@ -1504,6 +1655,197 @@ export class DbStorage implements IStorage {
       totalFailed,
       byType,
     };
+  }
+
+  // Health score tracking implementations
+  async calculateHealthScore(userId: string): Promise<HealthScore> {
+    // Get user activity metrics
+    const progress = await this.getTrialProgress(userId);
+    const sessionFeedbackList = await this.getSessionFeedback(userId);
+    const avgRating = sessionFeedbackList.length > 0
+      ? sessionFeedbackList.reduce((sum, f) => sum + f.rating, 0) / sessionFeedbackList.length
+      : 0;
+
+    // Calculate component scores (0-100 scale)
+    const communicationScore = Math.min(100, (progress.chatSessions * 10) + (avgRating * 10));
+    const intimacyScore = Math.min(100, progress.assessments * 25);
+    const conflictScore = Math.min(100, 50 + (avgRating * 10));
+    const growthScore = Math.min(100, (progress.retreats * 20) + (progress.dateNights * 10));
+
+    // Overall score is weighted average
+    const overallScore = Math.round(
+      (communicationScore * 0.3) +
+      (intimacyScore * 0.25) +
+      (conflictScore * 0.25) +
+      (growthScore * 0.2)
+    );
+
+    const healthScore: InsertHealthScore = {
+      userId,
+      overallScore,
+      breakdown: {
+        communication: Math.round(communicationScore),
+        intimacy: Math.round(intimacyScore),
+        conflict: Math.round(conflictScore),
+        growth: Math.round(growthScore),
+      },
+      metrics: {
+        chatSessions: progress.chatSessions,
+        assessments: progress.assessments,
+        retreats: progress.retreats,
+        dateNights: progress.dateNights,
+        avgSessionRating: Math.round(avgRating * 10) / 10,
+      },
+    };
+
+    const result = await this.db.insert(healthScores).values(healthScore).returning();
+    return result[0];
+  }
+
+  async getHealthScores(userId: string, limit: number = 30): Promise<HealthScore[]> {
+    return await this.db.select().from(healthScores)
+      .where(eq(healthScores.userId, userId))
+      .orderBy(desc(healthScores.calculatedAt))
+      .limit(limit);
+  }
+
+  async getLatestHealthScore(userId: string): Promise<HealthScore | undefined> {
+    const result = await this.db.select().from(healthScores)
+      .where(eq(healthScores.userId, userId))
+      .orderBy(desc(healthScores.calculatedAt))
+      .limit(1);
+    return result[0];
+  }
+
+  // Partnership management implementations
+  async createPartnership(partnership: InsertPartnership): Promise<Partnership> {
+    const result = await this.db.insert(partnerships).values(partnership).returning();
+    return result[0];
+  }
+
+  async getPartnership(id: string): Promise<Partnership | undefined> {
+    const result = await this.db.select().from(partnerships).where(eq(partnerships.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getPartnershipByToken(token: string): Promise<Partnership | undefined> {
+    const result = await this.db.select().from(partnerships)
+      .where(eq(partnerships.inviteToken, token))
+      .limit(1);
+    return result[0];
+  }
+
+  async getActivePartnership(userId: string): Promise<Partnership | undefined> {
+    const result = await this.db.select().from(partnerships)
+      .where(
+        and(
+          or(
+            eq(partnerships.user1Id, userId),
+            eq(partnerships.user2Id, userId)
+          ),
+          eq(partnerships.status, 'active')
+        )
+      )
+      .limit(1);
+    return result[0];
+  }
+
+  async getPendingInvites(userId: string): Promise<Partnership[]> {
+    // Get invites sent to this user's email
+    const user = await this.getUser(userId);
+    if (!user?.email) return [];
+
+    return await this.db.select().from(partnerships)
+      .where(
+        and(
+          eq(partnerships.user2Email, user.email),
+          eq(partnerships.status, 'pending')
+        )
+      )
+      .orderBy(desc(partnerships.createdAt));
+  }
+
+  async updatePartnership(id: string, updates: Partial<Partnership>): Promise<Partnership | undefined> {
+    const result = await this.db.update(partnerships)
+      .set(updates)
+      .where(eq(partnerships.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async acceptPartnership(token: string, userId: string): Promise<Partnership | undefined> {
+    const result = await this.db.update(partnerships)
+      .set({
+        user2Id: userId,
+        status: 'active',
+        connectedAt: new Date(),
+      })
+      .where(eq(partnerships.inviteToken, token))
+      .returning();
+    return result[0];
+  }
+
+  // Journal entries implementations
+  async createJournalEntry(entry: InsertJournalEntry): Promise<JournalEntry> {
+    const result = await this.db.insert(journalEntries).values(entry).returning();
+    return result[0];
+  }
+
+  async getJournalEntries(userId: string, limit: number = 50): Promise<JournalEntry[]> {
+    return await this.db.select().from(journalEntries)
+      .where(eq(journalEntries.userId, userId))
+      .orderBy(desc(journalEntries.createdAt))
+      .limit(limit);
+  }
+
+  async getJournalEntry(id: string): Promise<JournalEntry | undefined> {
+    const result = await this.db.select().from(journalEntries)
+      .where(eq(journalEntries.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async updateJournalEntry(id: string, updates: Partial<JournalEntry>): Promise<JournalEntry | undefined> {
+    const result = await this.db.update(journalEntries)
+      .set(updates)
+      .where(eq(journalEntries.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Analytics snapshots implementations
+  async createAnalyticsSnapshot(snapshot: InsertAnalyticsSnapshot): Promise<AnalyticsSnapshot> {
+    const result = await this.db.insert(analyticsSnapshots).values(snapshot).returning();
+    return result[0];
+  }
+
+  async getAnalyticsSnapshots(userId: string, periodType?: string): Promise<AnalyticsSnapshot[]> {
+    if (periodType) {
+      return await this.db.select().from(analyticsSnapshots)
+        .where(
+          and(
+            eq(analyticsSnapshots.userId, userId),
+            eq(analyticsSnapshots.periodType, periodType)
+          )
+        )
+        .orderBy(desc(analyticsSnapshots.period));
+    }
+    return await this.db.select().from(analyticsSnapshots)
+      .where(eq(analyticsSnapshots.userId, userId))
+      .orderBy(desc(analyticsSnapshots.period));
+  }
+
+  async getLatestAnalyticsSnapshot(userId: string, periodType: string): Promise<AnalyticsSnapshot | undefined> {
+    const result = await this.db.select().from(analyticsSnapshots)
+      .where(
+        and(
+          eq(analyticsSnapshots.userId, userId),
+          eq(analyticsSnapshots.periodType, periodType)
+        )
+      )
+      .orderBy(desc(analyticsSnapshots.period))
+      .limit(1);
+    return result[0];
   }
 }
 

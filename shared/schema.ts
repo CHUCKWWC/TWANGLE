@@ -362,3 +362,94 @@ export const insertEmailSendLogSchema = createInsertSchema(emailSendLogs).omit({
 
 export type InsertEmailSendLog = z.infer<typeof insertEmailSendLogSchema>;
 export type EmailSendLog = typeof emailSendLogs.$inferSelect;
+
+// Relationship health scores tracking
+export const healthScores = pgTable("health_scores", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  overallScore: integer("overall_score").notNull(), // 0-100
+  breakdown: jsonb("breakdown").notNull(), // { communication: 80, intimacy: 70, conflict: 60, ... }
+  metrics: jsonb("metrics").notNull(), // { chatSessions: 5, assessments: 2, exercisesCompleted: 10, ... }
+  calculatedAt: timestamp("calculated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_health_scores_user").on(table.userId, table.calculatedAt),
+]);
+
+export const insertHealthScoreSchema = createInsertSchema(healthScores).omit({
+  id: true,
+  calculatedAt: true,
+});
+
+export type InsertHealthScore = z.infer<typeof insertHealthScoreSchema>;
+export type HealthScore = typeof healthScores.$inferSelect;
+
+// Partner connections for shared experiences
+export const partnerships = pgTable("partnerships", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  user1Id: varchar("user1_id").notNull(), // User who sent invite
+  user2Id: varchar("user2_id"), // User who received invite (null until accepted)
+  user2Email: varchar("user2_email"), // Email for pending invites
+  status: varchar("status").notNull().default('pending'), // pending, active, declined, disconnected
+  inviteToken: varchar("invite_token").unique(),
+  inviteExpiresAt: timestamp("invite_expires_at"),
+  sharedAssessments: integer("shared_assessments").default(1), // Allow sharing assessments
+  sharedProgress: integer("shared_progress").default(1), // Allow sharing progress metrics
+  sharedJournal: integer("shared_journal").default(0), // Allow partner to see journal (default private)
+  connectedAt: timestamp("connected_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_partnerships_users").on(table.user1Id, table.user2Id),
+  index("idx_partnerships_token").on(table.inviteToken),
+]);
+
+export const insertPartnershipSchema = createInsertSchema(partnerships).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPartnership = z.infer<typeof insertPartnershipSchema>;
+export type Partnership = typeof partnerships.$inferSelect;
+
+// Relationship journaling with AI insights
+export const journalEntries = pgTable("journal_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  entry: text("entry").notNull(),
+  mood: varchar("mood"), // happy, sad, frustrated, anxious, peaceful, excited, etc.
+  tags: text("tags").array(), // communication, intimacy, conflict, growth, gratitude
+  aiInsights: jsonb("ai_insights"), // { patterns: [], suggestions: [], sentimentScore: 0.8 }
+  isPrivate: integer("is_private").default(1), // Private by default
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_journal_user_date").on(table.userId, table.createdAt),
+]);
+
+export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
+export type JournalEntry = typeof journalEntries.$inferSelect;
+
+// Progress analytics snapshots for monthly reports
+export const analyticsSnapshots = pgTable("analytics_snapshots", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  period: varchar("period").notNull(), // YYYY-MM for monthly, YYYY-WW for weekly
+  periodType: varchar("period_type").notNull(), // monthly, weekly
+  metrics: jsonb("metrics").notNull(), // Comprehensive metrics snapshot
+  insights: jsonb("insights"), // AI-generated insights and patterns
+  benchmarks: jsonb("benchmarks"), // Comparison to anonymized benchmarks
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_analytics_user_period").on(table.userId, table.period),
+]);
+
+export const insertAnalyticsSnapshotSchema = createInsertSchema(analyticsSnapshots).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAnalyticsSnapshot = z.infer<typeof insertAnalyticsSnapshotSchema>;
+export type AnalyticsSnapshot = typeof analyticsSnapshots.$inferSelect;
