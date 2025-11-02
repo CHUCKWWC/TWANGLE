@@ -30,6 +30,10 @@ import Analytics from "@/pages/Analytics";
 import EmailMonitoring from "@/pages/EmailMonitoring";
 import FeedbackReport from "@/pages/FeedbackReport";
 import FAQ from "@/pages/FAQ";
+import HealthScore from "@/pages/HealthScore";
+import PartnerConnection from "@/pages/PartnerConnection";
+import Journal from "@/pages/Journal";
+import Insights from "@/pages/Insights";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -58,6 +62,10 @@ function Router() {
         <Route path="/exercises" component={Exercises} />
         <Route path="/exercises/nervous-system" component={NervousSystemRegulation} />
         <Route path="/summaries" component={Summaries} />
+        <Route path="/health-score" component={HealthScore} />
+        <Route path="/partner-connection" component={PartnerConnection} />
+        <Route path="/journal" component={Journal} />
+        <Route path="/insights" component={Insights} />
         <Route path="/profile" component={Profile} />
         <Route path="/retreat/:id" component={RetreatItinerary} />
         <Route path="/paywall" component={PaywallCustom} />

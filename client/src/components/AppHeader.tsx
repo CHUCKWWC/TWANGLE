@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, X, MessageSquare } from "lucide-react";
+import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, X, MessageSquare, Heart, Users } from "lucide-react";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
@@ -41,16 +41,58 @@ export function AppHeader() {
         <Badge variant="secondary" className="text-xs">FREE</Badge>
       </Link>
       {!isAnonymous && (
-        <Link 
-          href="/summaries" 
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-          data-testid="link-summaries"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          <FileText className="w-4 h-4" />
-          Summaries
-          <Badge variant="default" className="text-xs">PREMIUM</Badge>
-        </Link>
+        <>
+          <Link 
+            href="/summaries" 
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
+            data-testid="link-summaries"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <FileText className="w-4 h-4" />
+            Summaries
+            <Badge variant="default" className="text-xs">PREMIUM</Badge>
+          </Link>
+          <Link 
+            href="/health-score" 
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
+            data-testid="link-health-score"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <Heart className="w-4 h-4" />
+            Health Score
+            <Badge variant="default" className="text-xs">PREMIUM</Badge>
+          </Link>
+          <Link 
+            href="/partner-connection" 
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
+            data-testid="link-partner-connection"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <Users className="w-4 h-4" />
+            Partner
+            <Badge variant="default" className="text-xs">PREMIUM</Badge>
+          </Link>
+          <Link 
+            href="/journal" 
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
+            data-testid="link-journal"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <BookOpen className="w-4 h-4" />
+            Journal
+            <Badge variant="default" className="text-xs">PREMIUM</Badge>
+          </Link>
+          <Link 
+            href="/insights" 
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
+            data-testid="link-insights"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <TrendingUp className="w-4 h-4" />
+            Insights
+            <Badge variant="default" className="text-xs">PREMIUM</Badge>
+          </Link>
+        </>
       )}
       {showReports && (
         <>
