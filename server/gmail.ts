@@ -177,3 +177,131 @@ export async function sendWelcomeEmail(to: string, firstName?: string) {
     throw error;
   }
 }
+
+interface TrialReminderData {
+  firstName?: string;
+  chatSessions: number;
+  assessments: number;
+  retreats: number;
+  dateNights: number;
+  daysRemaining: number;
+}
+
+export async function sendTrialReminder(to: string, data: TrialReminderData, baseUrl: string) {
+  try {
+    const gmail = await getUncachableGmailClient();
+    const fromEmail = getFromEmail();
+    const { firstName, chatSessions, assessments, retreats, dateNights, daysRemaining } = data;
+    
+    const greeting = firstName ? `Hi ${firstName}` : 'Hi there';
+    const totalActivities = chatSessions + assessments + retreats + dateNights;
+    
+    let subject: string;
+    let urgencyMessage: string;
+    let ctaText: string;
+    
+    // Adjust messaging based on user activity level
+    const hasActivity = totalActivities > 0;
+    
+    if (daysRemaining === 2) {
+      subject = 'Your Twangle Trial - 2 Days Left';
+      urgencyMessage = hasActivity 
+        ? 'Your free trial ends in 2 days. Don\'t lose access to everything you\'ve created!'
+        : 'Your free trial ends in 2 days. There\'s still time to explore all that Twangle offers!';
+      ctaText = hasActivity ? 'Continue Your Journey' : 'Start Your Journey';
+    } else if (daysRemaining === 1) {
+      subject = 'Tomorrow is Your Last Day - Keep Your Progress';
+      urgencyMessage = hasActivity
+        ? 'Your trial expires tomorrow! Keep building on the progress you\'ve made.'
+        : 'Your trial expires tomorrow! There\'s still time to try our AI coach and assessments.';
+      ctaText = hasActivity ? 'Save My Progress' : 'Get Started Now';
+    } else {
+      subject = 'Final Hours - Your Trial Expires Today';
+      urgencyMessage = hasActivity
+        ? 'Your trial ends today! Choose a plan now to keep all your relationship insights and progress.'
+        : 'Your trial ends today! Subscribe now to unlock unlimited coaching and relationship tools.';
+      ctaText = hasActivity ? 'Keep Everything I Built' : 'Subscribe Now';
+    }
+    
+    const valueItems: string[] = [];
+    if (chatSessions > 0) {
+      valueItems.push(`<li><strong>${chatSessions} coaching conversation${chatSessions > 1 ? 's' : ''}</strong> with Coach Charles</li>`);
+    }
+    if (assessments > 0) {
+      valueItems.push(`<li><strong>${assessments} attachment assessment${assessments > 1 ? 's' : ''}</strong> completed</li>`);
+    }
+    if (retreats > 0) {
+      valueItems.push(`<li><strong>${retreats} personalized retreat${retreats > 1 ? 's' : ''}</strong> planned</li>`);
+    }
+    if (dateNights > 0) {
+      valueItems.push(`<li><strong>${dateNights} date night idea${dateNights > 1 ? 's' : ''}</strong> saved</li>`);
+    }
+    
+    const hasActivities = valueItems.length > 0;
+    
+    const text = `${greeting}, ${urgencyMessage} Subscribe now to continue using Twangle.`;
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #d4718b;">${greeting},</h2>
+        <p style="font-size: 16px; color: #333; margin-bottom: 20px;">
+          ${urgencyMessage}
+        </p>
+        
+        ${hasActivities ? `
+        <div style="background: #f8f9fa; border-left: 4px solid #d4718b; padding: 20px; margin: 25px 0;">
+          <h3 style="margin-top: 0; color: #333;">What You've Built So Far:</h3>
+          <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+            ${valueItems.join('\n            ')}
+          </ul>
+        </div>
+        ` : `
+        <div style="background: #f8f9fa; border-left: 4px solid #d4718b; padding: 20px; margin: 25px 0;">
+          <p style="margin: 0; color: #666;">
+            There's still time to explore all that Twangle offers! Talk to Coach Charles, take the attachment assessment, or plan your first retreat.
+          </p>
+        </div>
+        `}
+        
+        <h3 style="color: #333; margin-top: 30px;">Continue With Premium:</h3>
+        <ul style="line-height: 1.8;">
+          <li>Unlimited AI coaching with Coach Charles</li>
+          <li>Save all your assessments and progress</li>
+          <li>Create unlimited retreat itineraries</li>
+          <li>Weekly coaching summaries delivered to your inbox</li>
+          <li>Priority support when you need help</li>
+        </ul>
+        
+        <div style="text-align: center; margin: 35px 0;">
+          <a href="${baseUrl}/pricing" 
+             style="background-color: #d4718b; color: white; padding: 14px 35px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; font-size: 16px;">
+            ${ctaText}
+          </a>
+        </div>
+        
+        <p style="color: #666; font-size: 14px; text-align: center;">
+          Plans start at just $12/month
+        </p>
+        
+        <p style="color: #666; font-size: 14px; margin-top: 30px;">
+          Questions? We're here to help.<br>
+          The Twangle Team
+        </p>
+      </div>
+    `;
+    
+    const encodedMessage = createMimeMessage(to, fromEmail, subject, text, html);
+    
+    await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: {
+        raw: encodedMessage
+      }
+    });
+    
+    console.log(`Trial reminder email sent to: ${to} (${daysRemaining} days remaining)`);
+  } catch (error) {
+    console.error('Error sending trial reminder email:', error);
+    throw error;
+  }
+}

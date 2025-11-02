@@ -57,6 +57,8 @@ export interface IStorage {
   // User operations (Reference: blueprint:javascript_log_in_with_replit)
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
+  getTrialUsersNeedingReminders(): Promise<User[]>;
   upsertUser(user: UpsertUser): Promise<User>;
   getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
@@ -67,6 +69,12 @@ export interface IStorage {
   getUserByVerificationToken(token: string): Promise<User | undefined>;
   markEmailVerified(userId: string): Promise<User | undefined>;
   updateNewsletterSubscription(userId: string, subscribed: boolean): Promise<User | undefined>;
+  getTrialProgress(userId: string): Promise<{
+    chatSessions: number;
+    assessments: number;
+    retreats: number;
+    dateNights: number;
+  }>;
   
   createChatSession(session: InsertChatSession): Promise<ChatSession>;
   getChatSession(id: string): Promise<ChatSession | undefined>;
@@ -172,6 +180,41 @@ export class MemStorage implements IStorage {
     return Array.from(this.users.values()).find(
       (user) => user.email === email,
     );
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async getTrialUsersNeedingReminders(): Promise<User[]> {
+    const now = new Date();
+    return Array.from(this.users.values()).filter(user => {
+      // Must have email and be verified
+      if (!user.email || !user.emailVerified) return false;
+      // Must be on trial
+      if (!user.trialStartedAt || !user.trialEndsAt) return false;
+      // Trial must not have ended
+      if (new Date(user.trialEndsAt) < now) return false;
+      return true;
+    });
+  }
+
+  async getTrialProgress(userId: string): Promise<{
+    chatSessions: number;
+    assessments: number;
+    retreats: number;
+    dateNights: number;
+  }> {
+    const chatSessions = Array.from(this.chatSessions.values())
+      .filter(session => session.userId === userId).length;
+    const assessments = Array.from(this.assessments.values())
+      .filter(assessment => assessment.userId === userId).length;
+    const retreats = Array.from(this.retreatItineraries.values())
+      .filter(retreat => retreat.userId === userId).length;
+    const dateNights = Array.from(this.dateNights.values())
+      .filter(dateNight => dateNight.userId === userId).length;
+
+    return { chatSessions, assessments, retreats, dateNights };
   }
 
   // Reference: blueprint:javascript_log_in_with_replit
@@ -664,6 +707,57 @@ export class DbStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     const result = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
     return result[0];
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const result = await this.db.select().from(users);
+    return result;
+  }
+
+  async getTrialUsersNeedingReminders(): Promise<User[]> {
+    const now = new Date();
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(
+        and(
+          sql`${users.email} IS NOT NULL`,
+          eq(users.emailVerified, true),
+          sql`${users.trialStartedAt} IS NOT NULL`,
+          sql`${users.trialEndsAt} IS NOT NULL`,
+          sql`${users.trialEndsAt} > ${now.toISOString()}`
+        )
+      );
+    return result;
+  }
+
+  async getTrialProgress(userId: string): Promise<{
+    chatSessions: number;
+    assessments: number;
+    retreats: number;
+    dateNights: number;
+  }> {
+    const [chatSessionsCount, assessmentsCount, retreatsCount, dateNightsCount] = await Promise.all([
+      this.db.select({ count: sql<number>`count(DISTINCT ${chatSessions.id})` })
+        .from(chatSessions)
+        .where(eq(chatSessions.userId, userId)),
+      this.db.select({ count: sql<number>`count(*)` })
+        .from(assessments)
+        .where(eq(assessments.userId, userId)),
+      this.db.select({ count: sql<number>`count(*)` })
+        .from(retreatItineraries)
+        .where(eq(retreatItineraries.userId, userId)),
+      this.db.select({ count: sql<number>`count(*)` })
+        .from(dateNights)
+        .where(eq(dateNights.userId, userId)),
+    ]);
+
+    return {
+      chatSessions: Number(chatSessionsCount[0]?.count ?? 0),
+      assessments: Number(assessmentsCount[0]?.count ?? 0),
+      retreats: Number(retreatsCount[0]?.count ?? 0),
+      dateNights: Number(dateNightsCount[0]?.count ?? 0),
+    };
   }
 
   // Reference: blueprint:javascript_log_in_with_replit

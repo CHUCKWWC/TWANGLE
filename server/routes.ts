@@ -5,7 +5,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { logUserAccess } from "./accessLogger";
-import { sendVerificationEmail, sendWelcomeEmail } from "./gmail";
+import { sendVerificationEmail, sendWelcomeEmail, sendTrialReminder } from "./gmail";
 import OpenAI from "openai";
 import Stripe from "stripe";
 import { trackSubscribe, trackCompleteRegistration } from "./facebookConversions";
@@ -1984,6 +1984,85 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       console.error("Newsletter unsubscribe error:", error);
       res.status(500).json({
         error: "Failed to unsubscribe from newsletter",
+        details: error.message,
+      });
+    }
+  });
+
+  // Send trial expiration reminder emails
+  // This endpoint should be called daily by an external cron service
+  // Security: Requires header-based secret authentication
+  app.post("/api/admin/send-trial-reminders", async (req: any, res) => {
+    try {
+      // Header-based secret authentication for cron jobs
+      const authHeader = req.headers.authorization;
+      const CRON_SECRET = process.env.CRON_SECRET || "dev-secret-change-in-production";
+      
+      if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
+        console.warn(`Unauthorized trial reminder attempt from ${req.ip}`);
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const now = new Date();
+      const emailsSent: { email: string; daysRemaining: number }[] = [];
+      const errors: { email: string; error: string }[] = [];
+
+      // Get only trial users who need reminders (database-filtered for performance)
+      const trialUsers = await storage.getTrialUsersNeedingReminders();
+      
+      console.log(`Processing ${trialUsers.length} trial users for reminders`);
+      
+      for (const user of trialUsers) {
+        // Skip if no email or email not verified
+        if (!user.email || !user.emailVerified) continue;
+        
+        // Calculate days remaining
+        const trialEnd = new Date(user.trialEndsAt!);
+        const diffTime = trialEnd.getTime() - now.getTime();
+        const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        // Only send on days 2, 1, and 0
+        if (daysRemaining !== 2 && daysRemaining !== 1 && daysRemaining !== 0) continue;
+        
+        try {
+          // Get user's trial progress data
+          const progress = await storage.getTrialProgress(user.id);
+          
+          await sendTrialReminder(user.email, {
+            firstName: user.firstName ?? undefined,
+            chatSessions: progress.chatSessions,
+            assessments: progress.assessments,
+            retreats: progress.retreats,
+            dateNights: progress.dateNights,
+            daysRemaining,
+          }, baseUrl);
+          
+          emailsSent.push({ 
+            email: user.email, 
+            daysRemaining 
+          });
+          
+          console.log(`Trial reminder sent to ${user.email} (${daysRemaining} days remaining)`);
+        } catch (error: any) {
+          console.error(`Error sending trial reminder to ${user.email}:`, error);
+          errors.push({ 
+            email: user.email, 
+            error: error.message 
+          });
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        emailsSent: emailsSent.length,
+        emails: emailsSent,
+        errors: errors.length > 0 ? errors : undefined
+      });
+    } catch (error: any) {
+      console.error("Send trial reminders error:", error);
+      res.status(500).json({
+        error: "Failed to send trial reminders",
         details: error.message,
       });
     }
