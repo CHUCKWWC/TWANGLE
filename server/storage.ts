@@ -27,6 +27,8 @@ import {
   type InsertConversionEvent,
   type SubscriptionEvent,
   type InsertSubscriptionEvent,
+  type EmailSendLog,
+  type InsertEmailSendLog,
   users,
   subscriptions,
   chatSessions,
@@ -39,7 +41,8 @@ import {
   dateNights,
   accessLogs,
   conversionEvents,
-  subscriptionEvents
+  subscriptionEvents,
+  emailSendLogs
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -144,6 +147,17 @@ export interface IStorage {
     freeToPaidConversions: number;
     conversionRate: number;
     averageTimeToConvert: number;
+  }>;
+  
+  // Email send tracking
+  createEmailSendLog(log: InsertEmailSendLog): Promise<EmailSendLog>;
+  hasEmailBeenSent(userId: string, emailType: string, subType?: string): Promise<boolean>;
+  getEmailSendLogs(filters?: { userId?: string; emailType?: string; status?: string; limit?: number }): Promise<EmailSendLog[]>;
+  getEmailDeliveryStats(startDate?: Date, endDate?: Date): Promise<{
+    totalSent: number;
+    totalSuccess: number;
+    totalFailed: number;
+    byType: Record<string, { sent: number; success: number; failed: number }>;
   }>;
 }
 
@@ -1282,6 +1296,98 @@ export class DbStorage implements IStorage {
       freeToPaidConversions,
       conversionRate,
       averageTimeToConvert,
+    };
+  }
+
+  // Email send tracking methods
+  async createEmailSendLog(log: InsertEmailSendLog): Promise<EmailSendLog> {
+    const result = await this.db.insert(emailSendLogs).values(log).returning();
+    return result[0];
+  }
+
+  async hasEmailBeenSent(userId: string, emailType: string, subType?: string): Promise<boolean> {
+    const conditions = subType
+      ? and(
+          eq(emailSendLogs.userId, userId),
+          eq(emailSendLogs.emailType, emailType),
+          eq(emailSendLogs.subType, subType),
+          eq(emailSendLogs.status, 'success')
+        )
+      : and(
+          eq(emailSendLogs.userId, userId),
+          eq(emailSendLogs.emailType, emailType),
+          eq(emailSendLogs.status, 'success')
+        );
+
+    const result = await this.db.select({ id: emailSendLogs.id })
+      .from(emailSendLogs)
+      .where(conditions)
+      .limit(1);
+    
+    return result.length > 0;
+  }
+
+  async getEmailSendLogs(filters?: { 
+    userId?: string; 
+    emailType?: string; 
+    status?: string; 
+    limit?: number 
+  }): Promise<EmailSendLog[]> {
+    let query = this.db.select().from(emailSendLogs);
+
+    const conditions = [];
+    if (filters?.userId) conditions.push(eq(emailSendLogs.userId, filters.userId));
+    if (filters?.emailType) conditions.push(eq(emailSendLogs.emailType, filters.emailType));
+    if (filters?.status) conditions.push(eq(emailSendLogs.status, filters.status));
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    return await query
+      .orderBy(desc(emailSendLogs.sentAt))
+      .limit(filters?.limit || 100);
+  }
+
+  async getEmailDeliveryStats(startDate?: Date, endDate?: Date): Promise<{
+    totalSent: number;
+    totalSuccess: number;
+    totalFailed: number;
+    byType: Record<string, { sent: number; success: number; failed: number }>;
+  }> {
+    const conditions = [];
+    if (startDate) conditions.push(sql`${emailSendLogs.sentAt} >= ${startDate.toISOString()}`);
+    if (endDate) conditions.push(sql`${emailSendLogs.sentAt} <= ${endDate.toISOString()}`);
+
+    // Get all logs within date range
+    let query = this.db.select().from(emailSendLogs);
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const logs = await query;
+
+    // Calculate aggregates
+    const totalSent = logs.length;
+    const totalSuccess = logs.filter(log => log.status === 'success').length;
+    const totalFailed = logs.filter(log => log.status === 'failed').length;
+
+    // Group by type
+    const byType: Record<string, { sent: number; success: number; failed: number }> = {};
+    for (const log of logs) {
+      if (!byType[log.emailType]) {
+        byType[log.emailType] = { sent: 0, success: 0, failed: 0 };
+      }
+      byType[log.emailType].sent++;
+      if (log.status === 'success') byType[log.emailType].success++;
+      if (log.status === 'failed') byType[log.emailType].failed++;
+    }
+
+    return {
+      totalSent,
+      totalSuccess,
+      totalFailed,
+      byType,
     };
   }
 }

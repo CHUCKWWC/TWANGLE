@@ -338,3 +338,27 @@ export const insertSubscriptionEventSchema = createInsertSchema(subscriptionEven
 
 export type InsertSubscriptionEvent = z.infer<typeof insertSubscriptionEventSchema>;
 export type SubscriptionEvent = typeof subscriptionEvents.$inferSelect;
+
+// Email send tracking for idempotency and monitoring
+export const emailSendLogs = pgTable("email_send_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  email: varchar("email").notNull(),
+  emailType: varchar("email_type").notNull(), // trial_reminder, verification, welcome, newsletter
+  subType: varchar("sub_type"), // For trial_reminder: days_2, days_1, days_0
+  status: varchar("status").notNull(), // success, failed
+  errorMessage: text("error_message"),
+  metadata: jsonb("metadata"), // Additional context like activity metrics
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_email_logs_user_type").on(table.userId, table.emailType, table.subType),
+  index("idx_email_logs_sent_at").on(table.sentAt),
+]);
+
+export const insertEmailSendLogSchema = createInsertSchema(emailSendLogs).omit({
+  id: true,
+  sentAt: true,
+});
+
+export type InsertEmailSendLog = z.infer<typeof insertEmailSendLogSchema>;
+export type EmailSendLog = typeof emailSendLogs.$inferSelect;
