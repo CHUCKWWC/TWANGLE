@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrialValueDashboard } from "@/components/TrialValueDashboard";
+import { TrialChecklist } from "@/components/TrialChecklist";
 import { 
   Brain, 
   MessageCircle, 
@@ -81,6 +82,11 @@ export default function Dashboard() {
         {/* Trial Value Dashboard */}
         <div className="mb-8">
           <TrialValueDashboard />
+        </div>
+
+        {/* Trial Onboarding Checklist */}
+        <div className="mb-8">
+          <TrialChecklist />
         </div>
 
         {/* Stats Overview */}
