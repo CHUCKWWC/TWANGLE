@@ -15,7 +15,12 @@ Preferred communication style: Simple, everyday language.
 **Framework & Tooling:** React 18 with TypeScript, Vite, Wouter for routing, TanStack Query for server state.
 **UI Component System:** Shadcn/ui with Radix UI primitives, Tailwind CSS, custom warm rose/mauve and terracotta theme, responsive mobile-first design.
 **Design System:** Focus on a warm, organic aesthetic with Poppins, Inter, and Quicksand typography.
-**Key UI Components:** Dashboard, AI Coach Chat, Retreat Builder, Date Night Planner, Exercises Library, Nervous System Regulation module, Weekly Summaries, Feedback Forms, and Admin-only Feedback & Email Monitoring Reports. Features include a global Trial Countdown Banner, Trial Value Dashboard, Trial Expiring Modal, and Trial Checklist for onboarding.
+**Key UI Components:** Dashboard, AI Coach Chat, Retreat Builder, Date Night Planner, Exercises Library, Nervous System Regulation module, Weekly Summaries, Feedback Forms, Admin-only Feedback & Email Monitoring Reports, Relationship Health Score Dashboard, Partner Connection System, AI-Powered Relationship Journal, and Progress Analytics (Insights). Features include a global Trial Countdown Banner, Trial Value Dashboard, Trial Expiring Modal, and Trial Checklist for onboarding.
+**Engagement Features:** Four major features to increase user engagement and trial-to-paid conversion:
+1. **Relationship Health Score** - Calculates a 0-100 score based on user activity (assessments 30%, coaching 25%, exercises 20%, progress 15%, journaling 10%) with category breakdowns and historical trend tracking
+2. **Partner Connection** - Email-based invitation system allowing couples to link accounts with configurable sharing permissions for assessments, progress, and journal entries
+3. **AI-Powered Journal** - Personal relationship journaling with mood tracking and optional GPT-4o generated insights, supporting private or partner-shared entries
+4. **Progress Analytics** - Periodic snapshots (daily/weekly/monthly) tracking engagement metrics with AI-generated insights and benchmarking against user history
 **SEO Implementation:** Dynamic meta tags, Open Graph, Twitter Cards, and JSON-LD structured data for E-E-A-T compliance across key pages.
 
 ### Backend Architecture
@@ -28,8 +33,9 @@ Preferred communication style: Simple, everyday language.
 ### Data Storage Solutions
 
 **Database:** PostgreSQL via Neon serverless, managed with Drizzle ORM for type-safe queries.
-**Data Models:** Comprehensive models for Users, Subscriptions, Chat Sessions, Assessments, Retreats, Date Nights, Feedback, Access Logs, Conversion Events, Subscription Events, and Email Send Logs.
+**Data Models:** Comprehensive models for Users, Subscriptions, Chat Sessions, Assessments, Retreats, Date Nights, Feedback, Access Logs, Conversion Events, Subscription Events, Email Send Logs, Health Scores, Partnerships, Journal Entries, and Analytics Snapshots.
 **Feedback Reporting:** An admin-only dashboard provides detailed analytics on user feedback, including summary statistics, distribution by type/category, and enriched user information.
+**Engagement Tracking:** Health scores track relationship wellness over time, partnerships enable couples to share progress, journals provide AI-powered insights into relationship dynamics, and analytics snapshots capture periodic engagement metrics for benchmarking.
 
 ### Authentication & Authorization
 
