@@ -703,6 +703,123 @@ export class MemStorage implements IStorage {
   async getUniqueUserAccessCount(): Promise<number> {
     return 0;
   }
+
+  // Conversion events (stub implementation for MemStorage)
+  async createConversionEvent(event: InsertConversionEvent): Promise<ConversionEvent> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: event.userId,
+      email: event.email ?? null,
+      eventType: event.eventType,
+      fromPlan: event.fromPlan ?? null,
+      toPlan: event.toPlan ?? null,
+      revenueImpact: event.revenueImpact,
+      createdAt: new Date(),
+    };
+  }
+
+  async getConversionEvents(limit: number = 50): Promise<ConversionEvent[]> {
+    return [];
+  }
+
+  async getConversionEventsByType(eventType: string): Promise<ConversionEvent[]> {
+    return [];
+  }
+
+  // Subscription events (stub implementation for MemStorage)
+  async createSubscriptionEvent(event: InsertSubscriptionEvent): Promise<SubscriptionEvent> {
+    const id = randomUUID();
+    return {
+      id,
+      subscriptionId: event.subscriptionId,
+      userId: event.userId,
+      email: event.email ?? null,
+      eventType: event.eventType,
+      priceId: event.priceId ?? null,
+      amount: event.amount ?? null,
+      status: event.status ?? null,
+      metadata: event.metadata ?? null,
+      createdAt: new Date(),
+    };
+  }
+
+  async getSubscriptionEventsByUser(userId: string): Promise<SubscriptionEvent[]> {
+    return [];
+  }
+
+  async getSubscriptionEvents(limit: number = 100): Promise<SubscriptionEvent[]> {
+    return [];
+  }
+
+  // Analytics (stub implementation for MemStorage)
+  async getRevenueMetrics(): Promise<{
+    mrr: number;
+    arr: number;
+    totalRevenue: number;
+    activeSubscriptions: number;
+    lifetimeCustomers: number;
+  }> {
+    return {
+      mrr: 0,
+      arr: 0,
+      totalRevenue: 0,
+      activeSubscriptions: 0,
+      lifetimeCustomers: 0,
+    };
+  }
+
+  async getConversionFunnel(): Promise<{
+    totalSignups: number;
+    freeToPaidConversions: number;
+    conversionRate: number;
+    averageTimeToConvert: number;
+  }> {
+    return {
+      totalSignups: 0,
+      freeToPaidConversions: 0,
+      conversionRate: 0,
+      averageTimeToConvert: 0,
+    };
+  }
+
+  // Email send tracking (stub implementation for MemStorage)
+  async createEmailSendLog(log: InsertEmailSendLog): Promise<EmailSendLog> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: log.userId,
+      email: log.email,
+      emailType: log.emailType,
+      subType: log.subType ?? null,
+      status: log.status,
+      errorMessage: log.errorMessage ?? null,
+      metadata: log.metadata ?? null,
+      sentAt: new Date(),
+    };
+  }
+
+  async hasEmailBeenSent(userId: string, emailType: string, subType?: string): Promise<boolean> {
+    return false;
+  }
+
+  async getEmailSendLogs(filters?: { userId?: string; emailType?: string; status?: string; limit?: number }): Promise<EmailSendLog[]> {
+    return [];
+  }
+
+  async getEmailDeliveryStats(startDate?: Date, endDate?: Date): Promise<{
+    totalSent: number;
+    totalSuccess: number;
+    totalFailed: number;
+    byType: Record<string, { sent: number; success: number; failed: number }>;
+  }> {
+    return {
+      totalSent: 0,
+      totalSuccess: 0,
+      totalFailed: 0,
+      byType: {},
+    };
+  }
 }
 
 export class DbStorage implements IStorage {
@@ -1333,18 +1450,19 @@ export class DbStorage implements IStorage {
     status?: string; 
     limit?: number 
   }): Promise<EmailSendLog[]> {
-    let query = this.db.select().from(emailSendLogs);
-
     const conditions = [];
     if (filters?.userId) conditions.push(eq(emailSendLogs.userId, filters.userId));
     if (filters?.emailType) conditions.push(eq(emailSendLogs.emailType, filters.emailType));
     if (filters?.status) conditions.push(eq(emailSendLogs.status, filters.status));
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      return await this.db.select().from(emailSendLogs)
+        .where(and(...conditions))
+        .orderBy(desc(emailSendLogs.sentAt))
+        .limit(filters?.limit || 100);
     }
 
-    return await query
+    return await this.db.select().from(emailSendLogs)
       .orderBy(desc(emailSendLogs.sentAt))
       .limit(filters?.limit || 100);
   }
@@ -1360,12 +1478,9 @@ export class DbStorage implements IStorage {
     if (endDate) conditions.push(sql`${emailSendLogs.sentAt} <= ${endDate.toISOString()}`);
 
     // Get all logs within date range
-    let query = this.db.select().from(emailSendLogs);
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    const logs = await query;
+    const logs = conditions.length > 0
+      ? await this.db.select().from(emailSendLogs).where(and(...conditions))
+      : await this.db.select().from(emailSendLogs);
 
     // Calculate aggregates
     const totalSent = logs.length;
