@@ -1867,6 +1867,40 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // Email delivery monitoring endpoints
+  app.get("/api/analytics/email-delivery-stats", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      const stats = await storage.getEmailDeliveryStats(startDate, endDate);
+      res.json(stats);
+    } catch (error: any) {
+      console.error("Get email delivery stats error:", error);
+      res.status(500).json({
+        error: "Failed to get email delivery stats",
+        details: error.message,
+      });
+    }
+  });
+
+  app.get("/api/analytics/email-send-logs", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const userId = req.query.userId as string | undefined;
+      const emailType = req.query.emailType as string | undefined;
+      const status = req.query.status as string | undefined;
+      const limit = parseInt(req.query.limit as string) || 100;
+      
+      const logs = await storage.getEmailSendLogs({ userId, emailType, status, limit });
+      res.json(logs);
+    } catch (error: any) {
+      console.error("Get email send logs error:", error);
+      res.status(500).json({
+        error: "Failed to get email send logs",
+        details: error.message,
+      });
+    }
+  });
+
   // Admin endpoint to grant lifetime access to test accounts
   app.post("/api/admin/grant-access", isAuthenticated, logUserAccess, isAdmin, async (req: any, res) => {
     try {

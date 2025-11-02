@@ -2,20 +2,7 @@
 
 ## Overview
 
-Twangle is a couples' relationship wellness application that offers psychological assessments, AI-powered coaching, and relationship-building tools. It helps couples understand attachment styles, identify relationship patterns, and provides personalized guidance based on frameworks like Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory.
-
-The platform includes:
-- An Attachment Style Assessment with AI analysis.
-- An AI relationship coach ("Coach Charles") with enhanced guardrails.
-- A library of research-based relationship exercises.
-- An interactive Nervous System Regulation educational module with guided timers.
-- A DIY couples retreat builder with AI-generated itineraries.
-- An AI-powered Date Night planner.
-- Weekly coaching session summaries.
-- A user feedback system with comprehensive reporting.
-- Comprehensive access and usage reporting.
-- Growth intelligence platform with conversion tracking, revenue analytics, and subscription lifecycle monitoring.
-- Feedback analytics dashboard (admin-only).
+Twangle is a couples' relationship wellness application providing psychological assessments, AI-powered coaching, and relationship-building tools. It helps couples understand attachment styles, identify relationship patterns, and offers personalized guidance based on established therapeutic frameworks. The platform features an AI relationship coach, an Attachment Style Assessment, a library of research-based exercises, a DIY couples retreat builder, and an AI-powered date night planner. Its primary goal is to foster healthier relationships through personalized, data-driven insights and interactive tools.
 
 ## User Preferences
 
@@ -26,148 +13,44 @@ Preferred communication style: Simple, everyday language.
 ### Frontend Architecture
 
 **Framework & Tooling:** React 18 with TypeScript, Vite, Wouter for routing, TanStack Query for server state.
-
-**UI Component System:** Shadcn/ui with Radix UI primitives, Tailwind CSS, custom theme (light/dark modes), responsive mobile-first design.
-
-**Design System:** Typography (Poppins, Inter, Quicksand), warm rose/mauve and terracotta color palette, warm/organic aesthetic, progressive intimacy model.
-
-**Key UI Components:** Dashboard, AppHeader with feature badges, EmailVerificationBanner, Profile, AssessmentQuestion, AttachmentResults (Recharts), AICoachChat, RetreatBuilder (multi-step wizard with vision planning), RetreatItinerary (AI-generated with framework citations), DateNightPlanner, ExercisesLibrary, NervousSystemRegulation (educational module with expandable technique cards and daily practice guide), WeeklySummaries, FeedbackForm, FeedbackReport (admin-only feedback analytics), RequirePlan (premium feature gate), Paywall (Stripe hosted), SubscriptionCheckout (custom form), Reports, Analytics (revenue dashboard with MRR/ARR, conversion funnel, customer distribution), FeatureCard (auth-aware navigation), SEO (dynamic meta tags), StructuredData (JSON-LD schemas), CoachCredentials (E-E-A-T compliance), **TrialCountdownBanner** (global trial timer), **TrialValueDashboard** (accumulated value display), **TrialExpiringModal** (urgency trigger at 2 days), **TrialChecklist** (4-item onboarding activation guide).
-
-**SEO Implementation:** Comprehensive SEO system with dynamic meta tags (title, description, keywords), Open Graph and Twitter Card support, JSON-LD structured data (Organization, Service, Person, FAQ, Breadcrumb schemas), FAQ page optimized for featured snippets, and author credentials for E-E-A-T compliance. All major pages (Landing, Coach, Assessment, Retreat, Exercises, DateNight, Summaries) include unique, keyword-optimized metadata.
+**UI Component System:** Shadcn/ui with Radix UI primitives, Tailwind CSS, custom warm rose/mauve and terracotta theme, responsive mobile-first design.
+**Design System:** Focus on a warm, organic aesthetic with Poppins, Inter, and Quicksand typography.
+**Key UI Components:** Dashboard, AI Coach Chat, Retreat Builder, Date Night Planner, Exercises Library, Nervous System Regulation module, Weekly Summaries, Feedback Forms, and Admin-only Feedback & Email Monitoring Reports. Features include a global Trial Countdown Banner, Trial Value Dashboard, Trial Expiring Modal, and Trial Checklist for onboarding.
+**SEO Implementation:** Dynamic meta tags, Open Graph, Twitter Cards, and JSON-LD structured data for E-E-A-T compliance across key pages.
 
 ### Backend Architecture
 
-**Server Framework:** Express.js on Node.js with TypeScript (ESM).
-
-**API Design:** RESTful endpoints (`/api`) for chat, retreat/date night planning, user eligibility, feedback, attachment assessments, billing (Stripe), reporting (access logs, feedback analytics), analytics (revenue metrics, conversion funnel, subscription/conversion events), admin functions, email verification, and newsletter subscriptions. Enhanced Stripe webhook handler (`/webhooks/stripe`) tracks full subscription lifecycle (checkout, renewals, cancellations, payment events) and writes conversion events (free_to_paid, paid_to_free, subscription_renewed, subscription_canceled) and subscription events (created, updated, deleted, payment_succeeded, payment_failed). JSON request/response with validation. Ownership verification on protected resources. Access logging with IP geolocation. Click-to-feature redirect flow.
-
-**AI Coach Guardrails (Updated):** Coach Charles is configured with strict boundaries to only provide relationship coaching advice. The system prompt explicitly refuses to answer questions about: medical advice, mental health therapy, legal matters, financial planning, career counseling, technical support, or any topics unrelated to relationships. When asked off-topic questions, the coach politely declines and redirects to appropriate professionals while optionally offering to discuss how the issue affects the relationship.
-
-**AI Integration:** OpenAI GPT for coaching, retreat/date night planning, and attachment analysis. Custom system prompts for AI personas. Streaming responses for chat. Structured JSON responses with Zod validation for attachment analysis.
+**Server Framework:** Express.js on Node.js with TypeScript.
+**API Design:** RESTful endpoints for core functionalities (chat, planning, assessments, billing, reporting, analytics, admin, email verification, newsletter), secured with JSON request/response validation and ownership verification. Enhanced Stripe webhook handling tracks the full subscription lifecycle and conversion events.
+**AI Coach Guardrails:** "Coach Charles" uses strict system prompts to provide relationship-only advice, explicitly refusing off-topic queries (medical, legal, financial, etc.) and redirecting users appropriately.
+**AI Integration:** OpenAI GPT for coaching, planning, and assessment analysis, utilizing streaming responses and Zod-validated structured JSON for data consistency.
 
 ### Data Storage Solutions
 
-**Database:** PostgreSQL via Neon serverless, Drizzle ORM for type-safe queries, schema-first design with Zod validation.
-
-**Data Models:** Users (authentication, lifetime access, Stripe ID, email verification, newsletter), Subscriptions (Stripe details), ChatSessions, WeeklySummaries, GeneralFeedback (type, category, description, rating), SessionFeedback (star rating, optional text), RelationshipProgress, RetreatItineraries (with vision planning), DateNights, Assessments (responses, AI results, share tokens), AccessLogs (IP, geolocation), ConversionEvents (subscription lifecycle tracking: free_to_paid, paid_to_free, subscription_renewed, subscription_canceled with revenue impact), SubscriptionEvents (full Stripe event log: created, updated, deleted, payment_succeeded, payment_failed with metadata).
-
-**Feedback Reporting (Admin Only):** Comprehensive feedback analytics dashboard at `/feedback-report` showing:
-- Summary statistics: total general feedback, total session ratings, average session rating
-- Feedback distribution: by type (general, bug, feature) and category (feature, usability, content, technical, other)
-- General feedback table: user info, type, category, rating, description, timestamp
-- Session feedback table: user info, star ratings (1-5), optional comments, timestamp
-- All data enriched with user information (name, email) for context
-- Admin access control using same authorization as Reports and Analytics pages
-
-**Storage Pattern:** Interface-based abstraction, Drizzle with PostgreSQL connection pooling, UUID primary keys.
+**Database:** PostgreSQL via Neon serverless, managed with Drizzle ORM for type-safe queries.
+**Data Models:** Comprehensive models for Users, Subscriptions, Chat Sessions, Assessments, Retreats, Date Nights, Feedback, Access Logs, Conversion Events, Subscription Events, and Email Send Logs.
+**Feedback Reporting:** An admin-only dashboard provides detailed analytics on user feedback, including summary statistics, distribution by type/category, and enriched user information.
 
 ### Authentication & Authorization
 
-**Freemium Model (Updated February 2025):** Authentication-required freemium with 7-day trial. All users must create an account to access features, improving conversion tracking and lead quality. No anonymous access eliminates abuse and cost overruns while capturing user emails early in the funnel.
-
-**Authentication Flow:**
-- All visitors must sign up via Replit Auth (OIDC) to access any features
-- Signup process collects email and creates user account immediately
-- 7-day free trial begins automatically upon signup (no credit card required)
-- Session-based authentication with PostgreSQL session store (`connect-pg-simple`)
-- Multi-domain support with strict allowlist (`twangle.org`, `www.twangle.org`, `REPLIT_DOMAINS`)
-
-**Free Trial Access (7 Days, Full Access):**
-- All premium features unlocked during trial period
-- **Unlimited AI Coach Charles**: Full access to relationship coaching
-- **All Assessments**: Complete and save attachment style assessments
-- **Retreat Builder**: Create and save personalized retreat itineraries
-- **Exercises Library**: Full access to all research-based exercises
-- **Date Night Planner**: Generate and save AI date night ideas
-- **Weekly Summaries**: Get coaching session summaries and insights
-
-**Pricing Tiers:**
-1. **Couples Starter** ($12/month) - Limited saved retreats (3), AI Coach access, basic exercises
-2. **Premium Plan** ($20/month) - Unlimited everything, weekly summaries, priority support (POPULAR)
-3. **Annual Plan** ($180/year) - All Premium features, save $60/year, 2 months free (BEST VALUE)
-4. **Lifetime Access** ($497 one-time) - All features forever, grandfathered pricing
-
-**Landing Page Strategy:**
-- "Start your 7-day free trial" messaging replaces "try before signup"
-- Clear value propositions: unlimited coaching, saved progress, weekly insights
-- No credit card required for trial reduces friction
-- Sign-up CTA redirects to `/api/signup` for account creation
-
-**Trial System Implementation:**
-- New users automatically receive 7-day trial on signup (no payment method required)
-- Trial timestamps (`trialStartedAt`, `trialEndsAt`) set in `upsertUser()` function
-- `/api/billing/status` endpoint checks trial expiration server-side
-- `usePlan` hook returns `onTrial`, `trialEndsAt`, and `hasAccess` flags
-- Trial users get full premium access without Stripe subscription
-- After trial expires, paywall appears requiring payment to continue
-- Existing users with lifetime access are preserved during authentication
-
-**Trial Progress Tracker System (Conversion Optimization):**
-- **Purpose:** Maximize trial-to-paid conversion using loss aversion psychology and value accumulation
-- **Backend API** (`/api/trial/progress`): Aggregates user's accumulated value (chat sessions, assessments, retreats, date nights) during trial period
-- **Session Tracking:** Multi-message chat conversations correctly tracked as single sessions (Coach.tsx persists `sessionId` across messages)
-- **Assessment Counting:** Handles JSONB response objects correctly (`Object.keys()` instead of `.length`)
-- **UI Components:**
-  - `TrialCountdownBanner`: Global banner showing days remaining with progress bar, visible on all authenticated pages
-  - `TrialValueDashboard`: Home page widget displaying accumulated activity metrics (coaching conversations, assessments completed, retreats planned, date nights saved)
-  - `TrialExpiringModal`: Urgent conversion modal that triggers when 2 or fewer days remain, showing accumulated value and subscription CTA
-- **React Query Configuration:** All trial components use `staleTime: 0`, `refetchOnMount: true`, `refetchOnWindowFocus: true` for real-time data synchronization
-- **Conversion Psychology Flow:**
-  1. User creates activity (chat, assessment, retreat, date night)
-  2. Value accumulates and displays in real-time across all trial UI
-  3. Countdown creates urgency as trial progresses
-  4. Expiration modal triggers at 2 days with loss aversion messaging
-  5. User sees concrete value they'll lose if trial expires without subscribing
-
-**Backend Security:**
-- All API endpoints require `isAuthenticated` middleware (no anonymous access)
-- Landing page accessible to unauthenticated users via custom `useAuth` queryFn
-- No chat message limits during trial or for paid subscribers
-- Email verification with Gmail/SendGrid transactional emails
-- IP-based geolocation blocking (Russia, China)
-- Automated trial reminder emails (Days 5, 2, 1, 0) with personalized value recaps
-
-**Email Verification System:** Gmail/SendGrid for transactional emails, 24-hour expiring tokens. Banner prompts unverified users.
-
-**Trial Reminder Email System:**
-- Automated emails sent at strategic trial milestones (Days 2, 1, 0 remaining)
-- Personalized with accumulated value metrics (chat sessions, assessments, retreats, date nights)
-- Dynamic subject lines and CTAs based on urgency and engagement level
-- Adaptive messaging for zero-activity users (encouraging vs. loss aversion psychology)
-- Endpoint: `POST /api/admin/send-trial-reminders` (Authorization header required)
-- Security: Bearer token authentication via `Authorization: Bearer ${CRON_SECRET}` header
-- Performance: Database-filtered queries for active trial users only
-- Designed for daily cron job execution (external service like cron-job.org or GitHub Actions)
-- Email templates available for both Gmail and SendGrid integration
-- Setup: Set `CRON_SECRET` environment variable for production security
-
-**Newsletter Subscription:** User opt-in/opt-out via Profile page.
-
-**Subscription & Access Control:** Multi-tier pricing with trial-to-paid conversion focus. Premium features gated by `RequirePlan` component during trial expiration. `usePlan` hook provides status to frontend with trial tracking.
-
-**Admin Access Control:** Reports and Analytics features restricted to specific admin emails (e.g., charle.watson@wholewellness-coaching.org). Frontend conditional display, backend `isAdmin` middleware. Analytics dashboard provides revenue metrics (MRR, ARR, total revenue, active subscriptions), conversion funnel analysis (signups → paid conversions with conversion rate and avg time to convert), customer distribution (subscriptions vs. lifetime access), and recent conversion event history.
-
-**Security Considerations:** Host-header validation, HTTPS-only cookies, `connect-pg-simple` session store, Stripe webhook signature verification, IP-based geolocation blocking.
-
-### Build & Deployment
-
-**Development:** `npm run dev` (TSX, Vite).
-**Production:** `npm run build` (Vite, esbuild).
-**Database Migrations:** `npm run db:push`.
-
-**Production Deployment Configuration:** Requires `OPENAI_API_KEY`, `DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `VITE_STRIPE_PUBLIC_KEY`, and Gmail connection secrets. Optional `REPLIT_DOMAINS` and `FROM_EMAIL`.
+**Freemium Model:** Authentication-required 7-day free trial, granting full access to all premium features without requiring a credit card. All users must sign up via Replit Auth (OIDC).
+**Trial System Implementation:** Trials automatically start on signup, tracked by `trialStartedAt` and `trialEndsAt` timestamps. Frontend components dynamically display trial status, accumulated value, and trigger conversion modals based on trial progress.
+**Pricing Tiers:** Offers Couples Starter, Premium, Annual, and Lifetime Access plans.
+**Backend Security:** All API endpoints require authentication, with specific admin functions protected by `isAdmin` middleware. Features include email verification, IP-based geolocation blocking (Russia, China), and automated trial reminder emails.
+**Email Verification & Reminders:** Utilizes Gmail/SendGrid for transactional emails, including 24-hour expiring tokens for verification and personalized trial reminder emails based on user activity.
+**Admin Access Control:** Reporting and analytics features are restricted to specific admin emails.
 
 ## External Dependencies
 
 **Third-Party Services:**
-- **OpenAI API**: For AI coaching, assessment analysis, and summarization.
-- **Neon Database**: Serverless PostgreSQL hosting.
-- **Gmail**: Transactional email service for verification and welcome emails (via Replit integration).
-- **ip-api.com**: Free geolocation API for IP lookups and access restrictions.
+- **OpenAI API:** AI functionalities.
+- **Neon Database:** Serverless PostgreSQL.
+- **Gmail:** Transactional email services.
+- **ip-api.com:** Geolocation services.
+- **Stripe:** Payment processing and subscription management.
 
 **Key NPM Packages:**
-- **UI/UX**: `@radix-ui/*`, `recharts`, `embla-carousel`.
-- **Forms**: `react-hook-form`, `@hookform/resolvers`.
-- **Database**: `drizzle-orm`, `drizzle-zod`, `@neondatabase/serverless`.
-- **Date Handling**: `date-fns`.
-- **Stripe Integration**: For payment processing and subscription management.
+- **UI/UX:** `@radix-ui/*`, `recharts`, `embla-carousel`.
+- **Forms:** `react-hook-form`, `@hookform/resolvers`.
+- **Database:** `drizzle-orm`, `drizzle-zod`, `@neondatabase/serverless`.
+- **Date Handling:** `date-fns`.
