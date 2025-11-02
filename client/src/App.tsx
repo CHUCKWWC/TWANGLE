@@ -15,6 +15,7 @@ import Coach from "@/pages/Coach";
 import Retreat from "@/pages/Retreat";
 import DateNight from "@/pages/DateNight";
 import Exercises from "@/pages/Exercises";
+import NervousSystemRegulation from "@/pages/NervousSystemRegulation";
 import Summaries from "@/pages/Summaries";
 import Profile from "@/pages/Profile";
 import RetreatItinerary from "@/pages/RetreatItinerary";
@@ -54,6 +55,7 @@ function Router() {
         <Route path="/retreat" component={Retreat} />
         <Route path="/datenight" component={DateNight} />
         <Route path="/exercises" component={Exercises} />
+        <Route path="/exercises/nervous-system" component={NervousSystemRegulation} />
         <Route path="/summaries" component={Summaries} />
         <Route path="/profile" component={Profile} />
         <Route path="/retreat/:id" component={RetreatItinerary} />

@@ -88,16 +88,6 @@ export function TrialChecklist() {
       color: "text-rose-500",
       bgColor: "bg-rose-500/10",
     },
-    {
-      id: "exercises",
-      title: "Browse Exercises Library",
-      description: "Explore research-based activities",
-      icon: BookOpen,
-      linkTo: "/exercises",
-      isComplete: false, // We'll track this separately if needed
-      color: "text-amber-500",
-      bgColor: "bg-amber-500/10",
-    },
   ];
 
   const completedCount = checklistItems.filter(item => item.isComplete).length;
