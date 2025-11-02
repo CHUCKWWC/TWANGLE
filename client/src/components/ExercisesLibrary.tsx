@@ -1,7 +1,8 @@
+import { Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Heart, MessageCircle, Users, Clock, CheckCircle } from "lucide-react";
+import { BookOpen, Heart, MessageCircle, Users, Clock, CheckCircle, Brain, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import {
   Accordion,
@@ -267,6 +268,34 @@ export default function ExercisesLibrary() {
             Research-backed activities to strengthen your relationship
           </p>
         </div>
+
+        {/* Featured: Nervous System Regulation */}
+        <Link href="/exercises/nervous-system">
+          <Card className="mb-8 overflow-hidden bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border-primary/20 hover-elevate active-elevate-2" data-testid="card-nervous-system-featured">
+            <div className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Brain className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-display font-semibold text-xl">
+                      Understanding Nervous System Regulation
+                    </h3>
+                    <Badge variant="default" className="text-xs">NEW</Badge>
+                  </div>
+                  <p className="text-muted-foreground mb-3">
+                    Learn evidence-based techniques to regulate your nervous system, build secure attachment, and create healthier relationships through breathing, grounding, and relaxation practices.
+                  </p>
+                  <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                    <span>Explore Module</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </Link>
 
         <div className="flex flex-wrap gap-3 mb-8">
           <Button
