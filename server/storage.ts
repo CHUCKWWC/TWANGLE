@@ -293,8 +293,15 @@ export class MemStorage implements IStorage {
       stripeCustomerId: userData.stripeCustomerId ?? null,
       hasLifetimeAccess: userData.hasLifetimeAccess ?? 0,
       userNumber: userData.userNumber ?? null,
+      emailVerified: 0,
+      emailVerificationToken: null,
+      emailVerificationExpires: null,
+      newsletterSubscribed: 0,
+      trialStartedAt: null,
+      trialEndsAt: null,
+      isAdmin: 0,
       createdAt: now,
-      updatedAt: now,
+      updatedAt: null,
     };
     this.users.set(user.id, user);
     return user;
@@ -319,8 +326,15 @@ export class MemStorage implements IStorage {
       stripeCustomerId: insertUser.stripeCustomerId ?? null,
       hasLifetimeAccess: insertUser.hasLifetimeAccess ?? 0,
       userNumber: insertUser.userNumber ?? null,
+      emailVerified: 0,
+      emailVerificationToken: null,
+      emailVerificationExpires: null,
+      newsletterSubscribed: 0,
+      trialStartedAt: null,
+      trialEndsAt: null,
+      isAdmin: 0,
       createdAt: now,
-      updatedAt: now,
+      updatedAt: null,
     };
     this.users.set(id, user);
     return user;
@@ -577,6 +591,7 @@ export class MemStorage implements IStorage {
       startDate: insertItinerary.startDate ?? null,
       streetAddress: insertItinerary.streetAddress ?? null,
       travelDistance: insertItinerary.travelDistance ?? null,
+      visionPlanning: insertItinerary.visionPlanning ?? '',
       generatedItinerary: insertItinerary.generatedItinerary,
       createdAt: new Date(),
     };
@@ -748,15 +763,18 @@ export class MemStorage implements IStorage {
       id,
       userId: event.userId,
       email: event.email ?? null,
+      stripeCustomerId: event.stripeCustomerId ?? null,
       eventType: event.eventType,
       fromPlan: event.fromPlan ?? null,
       toPlan: event.toPlan ?? null,
-      revenueImpact: event.revenueImpact,
+      revenueImpact: event.revenueImpact ?? null,
+      metadata: event.metadata ?? null,
+      stripeSubscriptionId: event.stripeSubscriptionId ?? null,
       createdAt: new Date(),
     };
   }
 
-  async getConversionEvents(limit: number = 50): Promise<ConversionEvent[]> {
+  async getConversionEvents(userId?: string, limit: number = 50): Promise<ConversionEvent[]> {
     return [];
   }
 
@@ -769,13 +787,15 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     return {
       id,
-      subscriptionId: event.subscriptionId,
       userId: event.userId,
-      email: event.email ?? null,
+      stripeSubscriptionId: event.stripeSubscriptionId,
+      stripeCustomerId: event.stripeCustomerId ?? null,
       eventType: event.eventType,
-      priceId: event.priceId ?? null,
-      amount: event.amount ?? null,
       status: event.status ?? null,
+      priceId: event.priceId ?? null,
+      currentPeriodEnd: event.currentPeriodEnd ?? null,
+      cancelAtPeriodEnd: event.cancelAtPeriodEnd ?? null,
+      canceledAt: event.canceledAt ?? null,
       metadata: event.metadata ?? null,
       createdAt: new Date(),
     };
@@ -785,7 +805,7 @@ export class MemStorage implements IStorage {
     return [];
   }
 
-  async getSubscriptionEvents(limit: number = 100): Promise<SubscriptionEvent[]> {
+  async getSubscriptionEvents(userId?: string, stripeSubscriptionId?: string, limit: number = 100): Promise<SubscriptionEvent[]> {
     return [];
   }
 

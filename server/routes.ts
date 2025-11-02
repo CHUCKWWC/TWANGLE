@@ -17,7 +17,10 @@ import {
   attachmentStyleResultSchema,
   type AttachmentStyleResult,
   insertDateNightSchema,
-  type VisionPlanning
+  type VisionPlanning,
+  insertPartnershipSchema,
+  insertJournalEntrySchema,
+  insertAnalyticsSnapshotSchema
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { isAdminUser } from "@shared/adminAccess";
@@ -2161,6 +2164,406 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         error: "Failed to send trial reminders",
         details: error.message,
       });
+    }
+  });
+
+  // ===== HEALTH SCORE ROUTES =====
+  
+  // Calculate and get latest health score
+  app.post('/api/health-score/calculate', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const healthScore = await storage.calculateHealthScore(userId);
+      res.json(healthScore);
+    } catch (error: any) {
+      console.error("Calculate health score error:", error);
+      res.status(500).json({ message: "Failed to calculate health score" });
+    }
+  });
+
+  // Get latest health score
+  app.get('/api/health-score', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const healthScore = await storage.getLatestHealthScore(userId);
+      res.json(healthScore || null);
+    } catch (error: any) {
+      console.error("Get health score error:", error);
+      res.status(500).json({ message: "Failed to get health score" });
+    }
+  });
+
+  // Get health score history
+  app.get('/api/health-score/history', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 30;
+      const scores = await storage.getHealthScores(userId, limit);
+      res.json(scores);
+    } catch (error: any) {
+      console.error("Get health score history error:", error);
+      res.status(500).json({ message: "Failed to get health score history" });
+    }
+  });
+
+  // ===== PARTNERSHIP ROUTES =====
+  
+  // Create partnership invitation
+  app.post('/api/partnerships', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Validate request
+      const validation = insertPartnershipSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid partnership data", 
+          error: fromZodError(validation.error).message 
+        });
+      }
+
+      // Check if user already has an active partnership
+      const existing = await storage.getActivePartnership(userId);
+      if (existing) {
+        return res.status(400).json({ message: "You already have an active partnership" });
+      }
+
+      // Create invite token
+      const inviteToken = randomUUID();
+      const inviteExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+      const partnership = await storage.createPartnership({
+        user1Id: userId,
+        user2Email: req.body.user2Email,
+        inviteToken,
+        inviteExpiresAt,
+        sharedAssessments: req.body.sharedAssessments ?? 1,
+        sharedProgress: req.body.sharedProgress ?? 1,
+        sharedJournal: req.body.sharedJournal ?? 0,
+      });
+
+      res.json(partnership);
+    } catch (error: any) {
+      console.error("Create partnership error:", error);
+      res.status(500).json({ message: "Failed to create partnership" });
+    }
+  });
+
+  // Get active partnership
+  app.get('/api/partnerships', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const partnership = await storage.getActivePartnership(userId);
+      res.json(partnership || null);
+    } catch (error: any) {
+      console.error("Get partnership error:", error);
+      res.status(500).json({ message: "Failed to get partnership" });
+    }
+  });
+
+  // Get pending invites
+  app.get('/api/partnerships/pending', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const invites = await storage.getPendingInvites(userId);
+      res.json(invites);
+    } catch (error: any) {
+      console.error("Get pending invites error:", error);
+      res.status(500).json({ message: "Failed to get pending invites" });
+    }
+  });
+
+  // Accept partnership invitation
+  app.post('/api/partnerships/:token/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { token } = req.params;
+
+      // Check if user already has an active partnership
+      const existing = await storage.getActivePartnership(userId);
+      if (existing) {
+        return res.status(400).json({ message: "You already have an active partnership" });
+      }
+
+      // Get partnership by token
+      const partnership = await storage.getPartnershipByToken(token);
+      if (!partnership) {
+        return res.status(404).json({ message: "Partnership invitation not found" });
+      }
+
+      // Check if token is expired
+      if (partnership.inviteExpiresAt && new Date() > partnership.inviteExpiresAt) {
+        return res.status(400).json({ message: "Partnership invitation has expired" });
+      }
+
+      // Accept partnership
+      const accepted = await storage.acceptPartnership(token, userId);
+      res.json(accepted);
+    } catch (error: any) {
+      console.error("Accept partnership error:", error);
+      res.status(500).json({ message: "Failed to accept partnership" });
+    }
+  });
+
+  // Update partnership settings
+  app.patch('/api/partnerships/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      // Get partnership and verify ownership
+      const partnership = await storage.getPartnership(id);
+      if (!partnership) {
+        return res.status(404).json({ message: "Partnership not found" });
+      }
+
+      if (partnership.user1Id !== userId && partnership.user2Id !== userId) {
+        return res.status(403).json({ message: "Not authorized to update this partnership" });
+      }
+
+      // Update only allowed fields
+      const { sharedAssessments, sharedProgress, sharedJournal } = req.body;
+      const updated = await storage.updatePartnership(id, {
+        sharedAssessments,
+        sharedProgress,
+        sharedJournal,
+      });
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Update partnership error:", error);
+      res.status(500).json({ message: "Failed to update partnership" });
+    }
+  });
+
+  // ===== JOURNAL ROUTES =====
+  
+  // Create journal entry with AI insights
+  app.post('/api/journal', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Validate request
+      const validation = insertJournalEntrySchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid journal entry", 
+          error: fromZodError(validation.error).message 
+        });
+      }
+
+      // Generate AI insights if requested
+      let aiInsights = null;
+      if (req.body.generateInsights && req.body.entry) {
+        try {
+          const insightCompletion = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              {
+                role: "system",
+                content: `You are an empathetic relationship coach analyzing a journal entry. Provide 2-3 brief, actionable insights about the relationship dynamics, patterns, or opportunities for growth you notice. Be supportive and constructive. Format as a JSON array of strings.`
+              },
+              {
+                role: "user",
+                content: req.body.entry
+              }
+            ],
+            response_format: { type: "json_object" },
+          });
+
+          const responseContent = insightCompletion.choices[0].message.content;
+          if (responseContent) {
+            const parsed = JSON.parse(responseContent);
+            aiInsights = parsed.insights || parsed.observations || null;
+          }
+        } catch (error) {
+          console.error("AI insights generation error:", error);
+          // Continue without AI insights if generation fails
+        }
+      }
+
+      // Create journal entry
+      const entry = await storage.createJournalEntry({
+        userId,
+        entry: req.body.entry,
+        mood: req.body.mood,
+        tags: req.body.tags,
+        aiInsights,
+        isPrivate: req.body.isPrivate ?? 1,
+      });
+
+      res.json(entry);
+    } catch (error: any) {
+      console.error("Create journal entry error:", error);
+      res.status(500).json({ message: "Failed to create journal entry" });
+    }
+  });
+
+  // Get journal entries
+  app.get('/api/journal', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const entries = await storage.getJournalEntries(userId, limit);
+      res.json(entries);
+    } catch (error: any) {
+      console.error("Get journal entries error:", error);
+      res.status(500).json({ message: "Failed to get journal entries" });
+    }
+  });
+
+  // Get single journal entry
+  app.get('/api/journal/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      const entry = await storage.getJournalEntry(id);
+      if (!entry) {
+        return res.status(404).json({ message: "Journal entry not found" });
+      }
+
+      // Verify ownership
+      if (entry.userId !== userId) {
+        return res.status(403).json({ message: "Not authorized to view this entry" });
+      }
+
+      res.json(entry);
+    } catch (error: any) {
+      console.error("Get journal entry error:", error);
+      res.status(500).json({ message: "Failed to get journal entry" });
+    }
+  });
+
+  // Update journal entry
+  app.patch('/api/journal/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      // Get entry and verify ownership
+      const entry = await storage.getJournalEntry(id);
+      if (!entry) {
+        return res.status(404).json({ message: "Journal entry not found" });
+      }
+
+      if (entry.userId !== userId) {
+        return res.status(403).json({ message: "Not authorized to update this entry" });
+      }
+
+      // Update only allowed fields
+      const { entry: text, mood, tags, isPrivate } = req.body;
+      const updated = await storage.updateJournalEntry(id, {
+        entry: text,
+        mood,
+        tags,
+        isPrivate,
+      });
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Update journal entry error:", error);
+      res.status(500).json({ message: "Failed to update journal entry" });
+    }
+  });
+
+  // ===== ANALYTICS ROUTES =====
+  
+  // Generate analytics snapshot
+  app.post('/api/analytics/snapshot', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { periodType = 'weekly' } = req.body;
+
+      // Get user progress data
+      const progress = await storage.getTrialProgress(userId);
+      const healthScore = await storage.getLatestHealthScore(userId);
+      const journalEntries = await storage.getJournalEntries(userId, 100);
+
+      // Calculate period dates
+      const now = new Date();
+      let periodStart: Date;
+      switch (periodType) {
+        case 'daily':
+          periodStart = new Date(now);
+          periodStart.setHours(0, 0, 0, 0);
+          break;
+        case 'weekly':
+          periodStart = new Date(now);
+          periodStart.setDate(now.getDate() - 7);
+          break;
+        case 'monthly':
+          periodStart = new Date(now);
+          periodStart.setMonth(now.getMonth() - 1);
+          break;
+        default:
+          periodStart = new Date(now);
+          periodStart.setDate(now.getDate() - 7);
+      }
+
+      // Build metrics
+      const metrics = {
+        chatSessions: progress.chatSessions,
+        assessments: progress.assessments,
+        retreats: progress.retreats,
+        dateNights: progress.dateNights,
+        journalEntries: journalEntries.length,
+        healthScore: healthScore?.overallScore || null,
+      };
+
+      // Generate insights based on metrics
+      const insights = [];
+      if (metrics.chatSessions > 5) {
+        insights.push("You're actively engaging with coaching - great commitment to growth!");
+      }
+      if (metrics.journalEntries > 10) {
+        insights.push("Consistent journaling shows dedication to self-reflection");
+      }
+      if (healthScore && healthScore.overallScore > 70) {
+        insights.push("Your relationship health score is strong");
+      }
+
+      // Create snapshot
+      const snapshot = await storage.createAnalyticsSnapshot({
+        userId,
+        period: now.toISOString(),
+        periodType,
+        metrics,
+        insights: insights.length > 0 ? insights : null,
+        benchmarks: null,
+      });
+
+      res.json(snapshot);
+    } catch (error: any) {
+      console.error("Generate analytics snapshot error:", error);
+      res.status(500).json({ message: "Failed to generate analytics snapshot" });
+    }
+  });
+
+  // Get latest analytics snapshot
+  app.get('/api/analytics/snapshot/:periodType', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { periodType } = req.params;
+
+      const snapshot = await storage.getLatestAnalyticsSnapshot(userId, periodType);
+      res.json(snapshot || null);
+    } catch (error: any) {
+      console.error("Get analytics snapshot error:", error);
+      res.status(500).json({ message: "Failed to get analytics snapshot" });
+    }
+  });
+
+  // Get analytics history
+  app.get('/api/analytics/history/:periodType', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { periodType } = req.params;
+      const snapshots = await storage.getAnalyticsSnapshots(userId, periodType);
+      res.json(snapshots);
+    } catch (error: any) {
+      console.error("Get analytics history error:", error);
+      res.status(500).json({ message: "Failed to get analytics history" });
     }
   });
 
