@@ -123,10 +123,23 @@ Preferred communication style: Simple, everyday language.
 - All API endpoints require `isAuthenticated` middleware (no anonymous access)
 - Landing page accessible to unauthenticated users via custom `useAuth` queryFn
 - No chat message limits during trial or for paid subscribers
-- Email verification with SendGrid transactional emails
+- Email verification with Gmail/SendGrid transactional emails
 - IP-based geolocation blocking (Russia, China)
+- Automated trial reminder emails (Days 5, 2, 1, 0) with personalized value recaps
 
-**Email Verification System:** SendGrid for transactional emails, 24-hour expiring tokens. Banner prompts unverified users.
+**Email Verification System:** Gmail/SendGrid for transactional emails, 24-hour expiring tokens. Banner prompts unverified users.
+
+**Trial Reminder Email System:**
+- Automated emails sent at strategic trial milestones (Days 2, 1, 0 remaining)
+- Personalized with accumulated value metrics (chat sessions, assessments, retreats, date nights)
+- Dynamic subject lines and CTAs based on urgency and engagement level
+- Adaptive messaging for zero-activity users (encouraging vs. loss aversion psychology)
+- Endpoint: `POST /api/admin/send-trial-reminders` (Authorization header required)
+- Security: Bearer token authentication via `Authorization: Bearer ${CRON_SECRET}` header
+- Performance: Database-filtered queries for active trial users only
+- Designed for daily cron job execution (external service like cron-job.org or GitHub Actions)
+- Email templates available for both Gmail and SendGrid integration
+- Setup: Set `CRON_SECRET` environment variable for production security
 
 **Newsletter Subscription:** User opt-in/opt-out via Profile page.
 
