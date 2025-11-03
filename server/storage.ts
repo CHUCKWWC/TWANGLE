@@ -43,6 +43,10 @@ import {
   type InsertConversationResponse,
   type ConversationHelpEvent,
   type InsertConversationHelpEvent,
+  type ConnectedAccount,
+  type InsertConnectedAccount,
+  type Product,
+  type InsertProduct,
   users,
   subscriptions,
   chatSessions,
@@ -63,7 +67,9 @@ import {
   analyticsSnapshots,
   conversationQuestions,
   conversationResponses,
-  conversationHelpEvents
+  conversationHelpEvents,
+  connectedAccounts,
+  products
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -218,6 +224,21 @@ export interface IStorage {
   }>>;
   createConversationHelpEvent(event: InsertConversationHelpEvent): Promise<ConversationHelpEvent>;
   incrementConversationResponseCount(userId: string): Promise<void>;
+  
+  // Stripe Connect: Connected Accounts
+  createConnectedAccount(account: InsertConnectedAccount): Promise<ConnectedAccount>;
+  getConnectedAccountByUserId(userId: string): Promise<ConnectedAccount | undefined>;
+  getConnectedAccountByStripeId(stripeAccountId: string): Promise<ConnectedAccount | undefined>;
+  getAllConnectedAccounts(): Promise<ConnectedAccount[]>;
+  updateConnectedAccount(id: string, updates: Partial<ConnectedAccount>): Promise<ConnectedAccount | undefined>;
+  
+  // Stripe Connect: Products
+  createProduct(product: InsertProduct): Promise<Product>;
+  getProduct(id: string): Promise<Product | undefined>;
+  getProductsByUserId(userId: string): Promise<Product[]>;
+  getProductsByConnectedAccount(connectedAccountId: string): Promise<Product[]>;
+  getAllProducts(): Promise<Product[]>;
+  updateProduct(id: string, updates: Partial<Product>): Promise<Product | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -2028,6 +2049,77 @@ export class DbStorage implements IStorage {
         conversationResponseCount: sql`${users.conversationResponseCount} + 1` 
       })
       .where(eq(users.id, userId));
+  }
+
+  // Stripe Connect: Connected Accounts implementations
+  async createConnectedAccount(account: InsertConnectedAccount): Promise<ConnectedAccount> {
+    const result = await this.db.insert(connectedAccounts).values(account).returning();
+    return result[0];
+  }
+
+  async getConnectedAccountByUserId(userId: string): Promise<ConnectedAccount | undefined> {
+    const result = await this.db.select().from(connectedAccounts)
+      .where(eq(connectedAccounts.userId, userId))
+      .limit(1);
+    return result[0];
+  }
+
+  async getConnectedAccountByStripeId(stripeAccountId: string): Promise<ConnectedAccount | undefined> {
+    const result = await this.db.select().from(connectedAccounts)
+      .where(eq(connectedAccounts.stripeAccountId, stripeAccountId))
+      .limit(1);
+    return result[0];
+  }
+
+  async getAllConnectedAccounts(): Promise<ConnectedAccount[]> {
+    return await this.db.select().from(connectedAccounts).orderBy(desc(connectedAccounts.createdAt));
+  }
+
+  async updateConnectedAccount(id: string, updates: Partial<ConnectedAccount>): Promise<ConnectedAccount | undefined> {
+    const result = await this.db
+      .update(connectedAccounts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(connectedAccounts.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Stripe Connect: Products implementations
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const result = await this.db.insert(products).values(product).returning();
+    return result[0];
+  }
+
+  async getProduct(id: string): Promise<Product | undefined> {
+    const result = await this.db.select().from(products)
+      .where(eq(products.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async getProductsByUserId(userId: string): Promise<Product[]> {
+    return await this.db.select().from(products)
+      .where(eq(products.userId, userId))
+      .orderBy(desc(products.createdAt));
+  }
+
+  async getProductsByConnectedAccount(connectedAccountId: string): Promise<Product[]> {
+    return await this.db.select().from(products)
+      .where(eq(products.connectedAccountId, connectedAccountId))
+      .orderBy(desc(products.createdAt));
+  }
+
+  async getAllProducts(): Promise<Product[]> {
+    return await this.db.select().from(products).orderBy(desc(products.createdAt));
+  }
+
+  async updateProduct(id: string, updates: Partial<Product>): Promise<Product | undefined> {
+    const result = await this.db
+      .update(products)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
+    return result[0];
   }
 }
 
