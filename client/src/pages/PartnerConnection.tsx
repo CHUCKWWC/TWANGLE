@@ -60,7 +60,7 @@ export default function PartnerConnection() {
 
   const createInviteMutation = useMutation({
     mutationFn: async (data: z.infer<typeof inviteSchema>) => {
-      return await apiRequest('/api/partnerships', 'POST', data);
+      return await apiRequest('POST', '/api/partnerships', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/partnerships'] });
@@ -81,7 +81,7 @@ export default function PartnerConnection() {
 
   const acceptInviteMutation = useMutation({
     mutationFn: async (token: string) => {
-      return await apiRequest(`/api/partnerships/${token}/accept`, 'POST', {});
+      return await apiRequest('POST', `/api/partnerships/${token}/accept`, {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/partnerships'] });
@@ -102,7 +102,7 @@ export default function PartnerConnection() {
 
   const updateSettingsMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Partnership> }) => {
-      return await apiRequest(`/api/partnerships/${id}`, 'PATCH', updates);
+      return await apiRequest('PATCH', `/api/partnerships/${id}`, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/partnerships'] });
