@@ -36,6 +36,10 @@ import Journal from "@/pages/Journal";
 import Insights from "@/pages/Insights";
 import PartnerInvite from "@/pages/PartnerInvite";
 import Conversations from "@/pages/Conversations";
+import MerchantOnboard from "@/pages/MerchantOnboard";
+import MerchantProducts from "@/pages/MerchantProducts";
+import Storefront from "@/pages/Storefront";
+import StorefrontSuccess from "@/pages/StorefrontSuccess";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -82,6 +86,10 @@ function Router() {
         <Route path="/faq" component={FAQ} />
         <Route path="/terms" component={TermsOfService} />
         <Route path="/privacy" component={PrivacyPolicy} />
+        <Route path="/merchant/onboard" component={MerchantOnboard} />
+        <Route path="/merchant/products" component={MerchantProducts} />
+        <Route path="/storefront" component={Storefront} />
+        <Route path="/storefront/success" component={StorefrontSuccess} />
         <Route component={NotFound} />
       </Switch>
     </>
