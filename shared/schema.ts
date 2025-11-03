@@ -530,3 +530,56 @@ export const insertConversationHelpEventSchema = createInsertSchema(conversation
 
 export type InsertConversationHelpEvent = z.infer<typeof insertConversationHelpEventSchema>;
 export type ConversationHelpEvent = typeof conversationHelpEvents.$inferSelect;
+
+// Stripe Connect: Connected Accounts
+// Tracks merchants/sellers who can receive payments through the platform
+export const connectedAccounts = pgTable("connected_accounts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  stripeAccountId: varchar("stripe_account_id").unique().notNull(),
+  chargesEnabled: integer("charges_enabled").default(0),
+  detailsSubmitted: integer("details_submitted").default(0),
+  payoutsEnabled: integer("payouts_enabled").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_connected_accounts_user").on(table.userId),
+]);
+
+export const insertConnectedAccountSchema = createInsertSchema(connectedAccounts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertConnectedAccount = z.infer<typeof insertConnectedAccountSchema>;
+export type ConnectedAccount = typeof connectedAccounts.$inferSelect;
+
+// Stripe Connect: Products
+// Platform-level products mapped to connected accounts
+export const products = pgTable("products", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  connectedAccountId: varchar("connected_account_id").notNull(),
+  stripeProductId: varchar("stripe_product_id").unique().notNull(),
+  stripePriceId: varchar("stripe_price_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  priceInCents: integer("price_in_cents").notNull(),
+  currency: varchar("currency").default('usd').notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_products_user").on(table.userId),
+  index("idx_products_connected_account").on(table.connectedAccountId),
+]);
+
+export const insertProductSchema = createInsertSchema(products).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type Product = typeof products.$inferSelect;
