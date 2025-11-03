@@ -404,6 +404,12 @@ export const partnerships = pgTable("partnerships", {
 
 export const insertPartnershipSchema = createInsertSchema(partnerships).omit({
   id: true,
+  user1Id: true,
+  user2Id: true,
+  status: true,
+  inviteToken: true,
+  inviteExpiresAt: true,
+  connectedAt: true,
   createdAt: true,
 });
 
@@ -426,6 +432,7 @@ export const journalEntries = pgTable("journal_entries", {
 
 export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit({
   id: true,
+  userId: true,
   createdAt: true,
 });
 
@@ -448,6 +455,11 @@ export const analyticsSnapshots = pgTable("analytics_snapshots", {
 
 export const insertAnalyticsSnapshotSchema = createInsertSchema(analyticsSnapshots).omit({
   id: true,
+  userId: true,
+  period: true,
+  metrics: true,
+  insights: true,
+  benchmarks: true,
   createdAt: true,
 });
 

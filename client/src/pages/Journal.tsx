@@ -61,7 +61,7 @@ export default function Journal() {
 
   const createMutation = useMutation({
     mutationFn: async (data: z.infer<typeof entrySchema>) => {
-      return await apiRequest('/api/journal', 'POST', data);
+      return await apiRequest('POST', '/api/journal', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/journal'] });

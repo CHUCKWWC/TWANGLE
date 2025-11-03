@@ -39,7 +39,7 @@ export default function HealthScore() {
 
   const calculateMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/health-score/calculate', 'POST', {});
+      return await apiRequest('POST', '/api/health-score/calculate', {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/health-score'] });

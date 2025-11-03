@@ -40,7 +40,7 @@ export default function Insights() {
 
   const generateMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/analytics/snapshot', 'POST', { periodType });
+      return await apiRequest('POST', '/api/analytics/snapshot', { periodType });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/analytics/snapshot', periodType] });
