@@ -29,11 +29,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const productSchema = z.object({
   name: z.string().min(3, "Product name must be at least 3 characters"),
   description: z.string().optional(),
-  priceInCents: z.number().min(50, "Price must be at least $0.50"),
+  priceInCents: z.coerce.number().min(50, "Price must be at least $0.50"),
   currency: z.string().default("usd"),
   productType: z.enum(["one_time", "subscription"]).default("one_time"),
   billingInterval: z.enum(["month", "year"]).optional(),
-  trialDays: z.number().min(0).default(0),
+  trialDays: z.coerce.number().min(0).default(0),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
