@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { AppHeader } from "@/components/AppHeader";
 
 interface Partnership {
   id: string;
@@ -127,24 +128,29 @@ export default function PartnerConnection() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container max-w-4xl mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container max-w-4xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold" data-testid="text-page-title">Partner Connection</h1>
-        <p className="text-muted-foreground mt-1">
-          Connect with your partner to share progress and grow together
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+      <div className="container max-w-4xl mx-auto p-6 pt-20 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold" data-testid="text-page-title">Partner Connection</h1>
+          <p className="text-muted-foreground mt-1">
+            Connect with your partner to share progress and grow together
+          </p>
+        </div>
 
-      {partnership?.status === 'active' ? (
+        {partnership?.status === 'active' ? (
         <>
           <Card data-testid="card-active-partnership">
             <CardHeader>
@@ -465,6 +471,7 @@ export default function PartnerConnection() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, TrendingUp, Calendar, Sparkles, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AppHeader } from "@/components/AppHeader";
 
 interface AnalyticsSnapshot {
   id: string;
@@ -72,16 +73,21 @@ export default function Insights() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-6xl mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container max-w-6xl mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container max-w-6xl mx-auto p-6 space-y-6">
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+      <div className="container max-w-6xl mx-auto p-6 pt-20 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" data-testid="text-page-title">Progress Insights</h1>
@@ -281,6 +287,7 @@ export default function Insights() {
           )}
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
