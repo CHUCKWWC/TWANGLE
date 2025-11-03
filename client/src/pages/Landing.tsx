@@ -6,8 +6,24 @@ import { Heart, Brain, Users, Map, BookOpen, Shield, Sparkles, CheckCircle2 } fr
 import { FeatureCard } from "@/components/FeatureCard";
 import { SEO, SEO_CONTENT } from "@/components/SEO";
 import { StructuredData, ORGANIZATION_SCHEMA, SERVICE_SCHEMA } from "@/components/StructuredData";
+import { useQuery } from "@tanstack/react-query";
+import { ExitIntentPopup } from "@/components/ExitIntentPopup";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { CoachDemo } from "@/components/CoachDemo";
+
+interface SocialProofStats {
+  userCount: number;
+  messageCount: number;
+  avgRating: number;
+  feedbackCount: number;
+}
 
 export default function Landing() {
+  const { data: stats } = useQuery<SocialProofStats>({
+    queryKey: ['/api/social-proof'],
+    staleTime: 300000, // Cache for 5 minutes
+  });
+
   return (
     <>
       <SEO {...SEO_CONTENT.home} />
@@ -85,6 +101,35 @@ export default function Landing() {
               <span>Research-Backed</span>
             </div>
           </div>
+
+          {stats && (
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto" data-testid="social-proof-stats">
+              <div className="bg-card/80 backdrop-blur border border-border rounded-lg p-6 text-center">
+                <div className="text-3xl font-bold text-primary mb-1" data-testid="stat-user-count">
+                  {stats.userCount.toLocaleString()}+
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Couples Growing Together
+                </div>
+              </div>
+              <div className="bg-card/80 backdrop-blur border border-border rounded-lg p-6 text-center">
+                <div className="text-3xl font-bold text-primary mb-1" data-testid="stat-message-count">
+                  {stats.messageCount.toLocaleString()}+
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Coaching Conversations
+                </div>
+              </div>
+              <div className="bg-card/80 backdrop-blur border border-border rounded-lg p-6 text-center">
+                <div className="text-3xl font-bold text-primary mb-1" data-testid="stat-avg-rating">
+                  {stats.avgRating}/5
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Average User Rating
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -157,6 +202,93 @@ export default function Landing() {
               </CardContent>
             </Card>
           </div>
+        </div>
+      </div>
+
+      {/* Comparison Table Section */}
+      <div className="py-20 px-6 bg-background">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
+            Why Couples Choose Twangle
+          </h2>
+          <p className="text-center text-muted-foreground mb-12">
+            Get professional relationship guidance at a fraction of the cost
+          </p>
+
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse" data-testid="comparison-table">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="py-4 px-6 text-left font-semibold">Feature</th>
+                  <th className="py-4 px-6 text-center font-semibold">Traditional Therapy</th>
+                  <th className="py-4 px-6 text-center font-semibold text-primary">Twangle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border hover-elevate">
+                  <td className="py-4 px-6 font-medium">Cost</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">$150-300/session</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">$19.99/month</td>
+                </tr>
+                <tr className="border-b border-border hover-elevate">
+                  <td className="py-4 px-6 font-medium">Availability</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">Weekly appointments</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">24/7 instant access</td>
+                </tr>
+                <tr className="border-b border-border hover-elevate">
+                  <td className="py-4 px-6 font-medium">Wait Time</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">2-4 weeks</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">Instant</td>
+                </tr>
+                <tr className="border-b border-border hover-elevate">
+                  <td className="py-4 px-6 font-medium">Focus</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">Individual or couples</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">Couples-specific</td>
+                </tr>
+                <tr className="border-b border-border hover-elevate">
+                  <td className="py-4 px-6 font-medium">Progress Tracking</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">Manual notes</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">Automated insights</td>
+                </tr>
+                <tr className="hover-elevate">
+                  <td className="py-4 px-6 font-medium">Exercises & Tools</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">Limited homework</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">Full library + AI coach</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-sm text-muted-foreground mb-4">
+              Note: Twangle complements but does not replace clinical therapy for serious mental health concerns
+            </p>
+            <Button
+              asChild
+              size="lg"
+              className="px-8 py-6"
+              data-testid="button-start-trial-comparison"
+            >
+              <a href="/api/signup">
+                Start Your Free Trial
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Coach Demo Section */}
+      <div className="py-20 px-6 bg-card">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
+              Experience Coach Charles
+            </h2>
+            <p className="text-muted-foreground">
+              See how AI-powered relationship coaching works. Try 3 free messages - no signup required.
+            </p>
+          </div>
+          <CoachDemo />
         </div>
       </div>
 
@@ -238,6 +370,13 @@ export default function Landing() {
               </a>
             </Button>
           </div>
+        </div>
+      </div>
+
+      {/* Newsletter Section */}
+      <div className="py-20 px-6 bg-background">
+        <div className="max-w-2xl mx-auto">
+          <NewsletterSignup />
         </div>
       </div>
 
@@ -360,6 +499,7 @@ export default function Landing() {
         </div>
       </footer>
     </div>
+    <ExitIntentPopup />
     </>
   );
 }

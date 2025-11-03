@@ -34,6 +34,7 @@ import HealthScore from "@/pages/HealthScore";
 import PartnerConnection from "@/pages/PartnerConnection";
 import Journal from "@/pages/Journal";
 import Insights from "@/pages/Insights";
+import PartnerInvite from "@/pages/PartnerInvite";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -53,6 +54,7 @@ function Router() {
       {isAuthenticated && <TrialExpiringModal />}
       <Switch>
         <Route path="/shared/:token" component={SharedAssessment} />
+        <Route path="/invite/:token" component={PartnerInvite} />
         <Route path="/" component={isAuthenticated ? Home : Landing} />
         <Route path="/assessment" component={Assessment} />
         <Route path="/results" component={Results} />
