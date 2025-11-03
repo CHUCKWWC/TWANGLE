@@ -1,5 +1,4 @@
 import express, { type Request, Response, NextFunction } from "express";
-import session from "express-session";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import Stripe from "stripe";
@@ -380,25 +379,6 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// Require SESSION_SECRET in production
-if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
-  throw new Error('SESSION_SECRET is required in production');
-}
-
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "twangle-dev-secret-change-this",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24 * 30,
-    },
-  })
-);
 
 app.use((req, res, next) => {
   const start = Date.now();
