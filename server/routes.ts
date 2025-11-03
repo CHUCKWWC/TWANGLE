@@ -31,9 +31,10 @@ const openai = new OpenAI({
 });
 
 // Stripe is optional for development/testing
+// IMPORTANT: API key must be provided in environment variables
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2025-09-30.clover",
+      apiVersion: "2025-10-29.clover", // Using latest Stripe API version
     })
   : null;
 
@@ -2949,6 +2950,433 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     } catch (error: any) {
       console.error("Get analytics history error:", error);
       res.status(500).json({ message: "Failed to get analytics history" });
+    }
+  });
+
+  // ========================================
+  // STRIPE CONNECT: PLATFORM MARKETPLACE
+  // ========================================
+  // These endpoints enable a marketplace where users can:
+  // 1. Onboard as sellers (create connected accounts)
+  // 2. Create products for sale
+  // 3. Process payments with application fees
+
+  /**
+   * POST /api/stripe-connect/account
+   * Create a connected account for a merchant
+   * 
+   * This creates a Stripe connected account where:
+   * - Platform is responsible for pricing and fee collection
+   * - Platform is responsible for losses/refunds/chargebacks
+   * - Merchant gets access to Express dashboard for management
+   */
+  app.post('/api/stripe-connect/account', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      // Validate Stripe is configured
+      if (!stripe) {
+        return res.status(500).json({ 
+          error: "Stripe not configured",
+          message: "STRIPE_SECRET_KEY environment variable is missing. Please configure Stripe API keys."
+        });
+      }
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if user already has a connected account
+      const existingAccount = await storage.getConnectedAccountByUserId(userId);
+      if (existingAccount) {
+        return res.status(400).json({ 
+          message: "User already has a connected account",
+          accountId: existingAccount.stripeAccountId
+        });
+      }
+
+      // Step 1: Create the connected account
+      // Using controller properties as specified (NOT top-level type)
+      const account = await stripe.accounts.create({
+        controller: {
+          // Platform is responsible for pricing and fee collection
+          fees: {
+            payer: 'application' as const
+          },
+          // Platform is responsible for losses / refunds / chargebacks
+          losses: {
+            payments: 'application' as const
+          },
+          // Give them access to the express dashboard for management
+          stripe_dashboard: {
+            type: 'express' as const
+          }
+        }
+      });
+
+      // Step 2: Store the connected account in database
+      const connectedAccount = await storage.createConnectedAccount({
+        userId,
+        stripeAccountId: account.id,
+        chargesEnabled: account.charges_enabled ? 1 : 0,
+        detailsSubmitted: account.details_submitted ? 1 : 0,
+        payoutsEnabled: account.payouts_enabled ? 1 : 0,
+      });
+
+      res.json({
+        success: true,
+        account: connectedAccount,
+        message: "Connected account created successfully"
+      });
+    } catch (error: any) {
+      console.error("Create connected account error:", error);
+      res.status(500).json({ 
+        error: "Failed to create connected account",
+        details: error.message 
+      });
+    }
+  });
+
+  /**
+   * POST /api/stripe-connect/account-link
+   * Create an account link for onboarding
+   * 
+   * This generates a URL that redirects the merchant to Stripe's onboarding flow
+   * where they can submit required information to start accepting payments
+   */
+  app.post('/api/stripe-connect/account-link', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      if (!stripe) {
+        return res.status(500).json({ 
+          error: "Stripe not configured",
+          message: "STRIPE_SECRET_KEY environment variable is missing"
+        });
+      }
+
+      // Step 1: Get the user's connected account
+      const connectedAccount = await storage.getConnectedAccountByUserId(userId);
+      if (!connectedAccount) {
+        return res.status(404).json({ message: "No connected account found" });
+      }
+
+      // Step 2: Create the account link
+      // This link expires after the user completes the flow or after a timeout
+      const accountLink = await stripe.accountLinks.create({
+        account: connectedAccount.stripeAccountId,
+        refresh_url: `${process.env.VITE_ROOT_URL || 'http://localhost:5000'}/merchant/onboard`,
+        return_url: `${process.env.VITE_ROOT_URL || 'http://localhost:5000'}/merchant/onboard`,
+        type: 'account_onboarding',
+      });
+
+      res.json({
+        url: accountLink.url,
+        expiresAt: accountLink.expires_at
+      });
+    } catch (error: any) {
+      console.error("Create account link error:", error);
+      res.status(500).json({ 
+        error: "Failed to create account link",
+        details: error.message 
+      });
+    }
+  });
+
+  /**
+   * GET /api/stripe-connect/account-status
+   * Get the current status of the user's connected account
+   * 
+   * Returns the current account state directly from Stripe API
+   * Including charges_enabled, payouts_enabled, details_submitted
+   */
+  app.get('/api/stripe-connect/account-status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+
+      if (!stripe) {
+        return res.status(500).json({ 
+          error: "Stripe not configured",
+          message: "STRIPE_SECRET_KEY environment variable is missing"
+        });
+      }
+
+      // Step 1: Get the user's connected account from database
+      const connectedAccount = await storage.getConnectedAccountByUserId(userId);
+      if (!connectedAccount) {
+        return res.json({ hasAccount: false });
+      }
+
+      // Step 2: Fetch latest account status directly from Stripe
+      const account = await stripe.accounts.retrieve(connectedAccount.stripeAccountId);
+
+      // Step 3: Update local database with latest status
+      await storage.updateConnectedAccount(connectedAccount.id, {
+        chargesEnabled: account.charges_enabled ? 1 : 0,
+        detailsSubmitted: account.details_submitted ? 1 : 0,
+        payoutsEnabled: account.payouts_enabled ? 1 : 0,
+      });
+
+      res.json({
+        hasAccount: true,
+        accountId: account.id,
+        chargesEnabled: account.charges_enabled,
+        detailsSubmitted: account.details_submitted,
+        payoutsEnabled: account.payouts_enabled,
+        requirementsCurrentlyDue: account.requirements?.currently_due || [],
+        requirementsEventuallyDue: account.requirements?.eventually_due || [],
+      });
+    } catch (error: any) {
+      console.error("Get account status error:", error);
+      res.status(500).json({ 
+        error: "Failed to get account status",
+        details: error.message 
+      });
+    }
+  });
+
+  /**
+   * POST /api/stripe-connect/product
+   * Create a product at the platform level
+   * 
+   * Products are created on the platform account, not the connected account
+   * The mapping to the connected account is stored in the database
+   */
+  app.post('/api/stripe-connect/product', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { name, description, priceInCents, currency = 'usd' } = req.body;
+
+      if (!stripe) {
+        return res.status(500).json({ 
+          error: "Stripe not configured",
+          message: "STRIPE_SECRET_KEY environment variable is missing"
+        });
+      }
+
+      // Validation
+      if (!name || !priceInCents) {
+        return res.status(400).json({ message: "Name and price are required" });
+      }
+
+      if (priceInCents < 50) {
+        return res.status(400).json({ message: "Price must be at least $0.50 (50 cents)" });
+      }
+
+      // Step 1: Verify user has a connected account
+      const connectedAccount = await storage.getConnectedAccountByUserId(userId);
+      if (!connectedAccount) {
+        return res.status(400).json({ 
+          message: "You must create and onboard a connected account first" 
+        });
+      }
+
+      // Step 2: Create product on the platform (not on the connected account)
+      const product = await stripe.products.create({
+        name: name,
+        description: description,
+        default_price_data: {
+          unit_amount: priceInCents,
+          currency: currency,
+        },
+      });
+
+      // Step 3: Store product in database with connected account mapping
+      // This mapping is critical for knowing which account receives payment
+      const dbProduct = await storage.createProduct({
+        userId,
+        connectedAccountId: connectedAccount.id,
+        stripeProductId: product.id,
+        stripePriceId: product.default_price as string,
+        name,
+        description: description || null,
+        priceInCents,
+        currency,
+      });
+
+      res.json({
+        success: true,
+        product: dbProduct,
+        message: "Product created successfully"
+      });
+    } catch (error: any) {
+      console.error("Create product error:", error);
+      res.status(500).json({ 
+        error: "Failed to create product",
+        details: error.message 
+      });
+    }
+  });
+
+  /**
+   * GET /api/stripe-connect/products
+   * Get all products across all connected accounts (storefront view)
+   * 
+   * Returns all products with their associated merchant information
+   * This powers the public storefront where customers can browse and purchase
+   */
+  app.get('/api/stripe-connect/products', async (req: any, res) => {
+    try {
+      // Step 1: Get all products from database
+      const products = await storage.getAllProducts();
+
+      // Step 2: Enrich products with connected account information
+      const enrichedProducts = await Promise.all(
+        products.map(async (product) => {
+          const connectedAccount = await storage.getConnectedAccountByStripeId(
+            product.connectedAccountId
+          );
+          const user = connectedAccount 
+            ? await storage.getUser(connectedAccount.userId)
+            : null;
+
+          return {
+            ...product,
+            merchantName: user?.displayName || user?.email || 'Unknown Merchant',
+            merchantId: connectedAccount?.stripeAccountId,
+          };
+        })
+      );
+
+      res.json(enrichedProducts);
+    } catch (error: any) {
+      console.error("Get products error:", error);
+      res.status(500).json({ 
+        error: "Failed to get products",
+        details: error.message 
+      });
+    }
+  });
+
+  /**
+   * GET /api/stripe-connect/my-products
+   * Get products created by the current user
+   */
+  app.get('/api/stripe-connect/my-products', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const products = await storage.getProductsByUserId(userId);
+      res.json(products);
+    } catch (error: any) {
+      console.error("Get my products error:", error);
+      res.status(500).json({ 
+        error: "Failed to get products",
+        details: error.message 
+      });
+    }
+  });
+
+  /**
+   * POST /api/stripe-connect/checkout
+   * Create a checkout session for a product with destination charge
+   * 
+   * Uses destination charges to:
+   * 1. Charge the customer on the platform account
+   * 2. Collect an application fee (platform's cut)
+   * 3. Transfer remaining funds to the connected account
+   */
+  app.post('/api/stripe-connect/checkout', async (req: any, res) => {
+    try {
+      const { productId, quantity = 1 } = req.body;
+
+      if (!stripe) {
+        return res.status(500).json({ 
+          error: "Stripe not configured",
+          message: "STRIPE_SECRET_KEY environment variable is missing"
+        });
+      }
+
+      if (!productId) {
+        return res.status(400).json({ message: "Product ID is required" });
+      }
+
+      // Step 1: Get product from database
+      const product = await storage.getProduct(productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      // Step 2: Get connected account to determine destination
+      const connectedAccount = await storage.getConnectedAccountByUserId(product.userId);
+      if (!connectedAccount) {
+        return res.status(400).json({ message: "Product merchant account not found" });
+      }
+
+      // Step 3: Calculate application fee (platform takes 10%)
+      const totalAmount = product.priceInCents * quantity;
+      const applicationFeeAmount = Math.round(totalAmount * 0.10);
+
+      // Step 4: Create checkout session with destination charge
+      // The payment is processed on the platform account
+      // The application fee stays with the platform
+      // The rest is transferred to the connected account
+      const session = await stripe.checkout.sessions.create({
+        line_items: [
+          {
+            price_data: {
+              currency: product.currency,
+              unit_amount: product.priceInCents,
+              product_data: {
+                name: product.name,
+                description: product.description || undefined,
+              },
+            },
+            quantity: quantity,
+          },
+        ],
+        payment_intent_data: {
+          application_fee_amount: applicationFeeAmount,
+          transfer_data: {
+            destination: connectedAccount.stripeAccountId,
+          },
+        },
+        mode: 'payment',
+        success_url: `${process.env.VITE_ROOT_URL || 'http://localhost:5000'}/storefront/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.VITE_ROOT_URL || 'http://localhost:5000'}/storefront`,
+      });
+
+      res.json({
+        sessionId: session.id,
+        url: session.url,
+      });
+    } catch (error: any) {
+      console.error("Create checkout session error:", error);
+      res.status(500).json({ 
+        error: "Failed to create checkout session",
+        details: error.message 
+      });
+    }
+  });
+
+  /**
+   * GET /api/stripe-connect/checkout-session/:sessionId
+   * Retrieve checkout session details for success page
+   */
+  app.get('/api/stripe-connect/checkout-session/:sessionId', async (req: any, res) => {
+    try {
+      const { sessionId } = req.params;
+
+      if (!stripe) {
+        return res.status(500).json({ 
+          error: "Stripe not configured"
+        });
+      }
+
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+      
+      res.json({
+        status: session.status,
+        customerEmail: session.customer_details?.email,
+        amountTotal: session.amount_total,
+        currency: session.currency,
+      });
+    } catch (error: any) {
+      console.error("Get checkout session error:", error);
+      res.status(500).json({ 
+        error: "Failed to retrieve checkout session",
+        details: error.message 
+      });
     }
   });
 
