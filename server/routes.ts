@@ -2596,6 +2596,221 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // ===== CONVERSATION ROUTES =====
+  
+  // Get daily question for partnership
+  app.get('/api/conversations/daily', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user's active partnership
+      const partnership = await storage.getActivePartnership(userId);
+      if (!partnership) {
+        return res.status(404).json({ 
+          message: "No active partnership found. Connect with your partner to access this feature." 
+        });
+      }
+
+      if (partnership.status !== 'active') {
+        return res.status(403).json({ 
+          message: "Partnership must be active to access conversations." 
+        });
+      }
+
+      // Get daily question
+      const question = await storage.getDailyQuestion(partnership.id);
+      if (!question) {
+        return res.status(404).json({ message: "No question available" });
+      }
+
+      // Get existing responses for this question
+      const responses = await storage.getConversationResponses(partnership.id, question.id);
+      const userResponse = responses.find(r => r.userId === userId);
+      const partnerResponse = responses.find(r => r.userId !== userId);
+
+      // Double-blind: only show partner response if both have answered
+      const bothAnswered = responses.length >= 2;
+
+      res.json({
+        question,
+        userResponse,
+        partnerResponse: bothAnswered ? partnerResponse : null,
+        hasUserAnswered: !!userResponse,
+        hasPartnerAnswered: !!partnerResponse,
+        bothAnswered,
+      });
+    } catch (error: any) {
+      console.error("Get daily question error:", error);
+      res.status(500).json({ message: "Failed to get daily question" });
+    }
+  });
+
+  // Submit response to conversation question
+  app.post('/api/conversations/respond', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { questionId, responseText, partnershipId } = req.body;
+
+      if (!questionId || !responseText || !partnershipId) {
+        return res.status(400).json({ 
+          message: "Missing required fields: questionId, responseText, partnershipId" 
+        });
+      }
+
+      // Verify partnership
+      const partnership = await storage.getPartnership(partnershipId);
+      if (!partnership) {
+        return res.status(404).json({ message: "Partnership not found" });
+      }
+
+      if (partnership.user1Id !== userId && partnership.user2Id !== userId) {
+        return res.status(403).json({ message: "Not authorized for this partnership" });
+      }
+
+      // Check if user already responded
+      const existingResponses = await storage.getConversationResponses(partnershipId, questionId);
+      if (existingResponses.some(r => r.userId === userId)) {
+        return res.status(400).json({ message: "You have already responded to this question" });
+      }
+
+      // Create response
+      const response = await storage.createConversationResponse({
+        partnershipId,
+        questionId,
+        responseText,
+      });
+
+      // Check if both partners have now answered
+      const allResponses = await storage.getConversationResponses(partnershipId, questionId);
+      const bothAnswered = allResponses.length >= 2;
+
+      res.json({
+        response,
+        bothAnswered,
+        partnerResponse: bothAnswered ? allResponses.find(r => r.userId !== userId) : null,
+      });
+    } catch (error: any) {
+      console.error("Create response error:", error);
+      res.status(500).json({ message: "Failed to create response" });
+    }
+  });
+
+  // Get conversation history
+  app.get('/api/conversations/history', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 20;
+
+      // Get user's active partnership
+      const partnership = await storage.getActivePartnership(userId);
+      if (!partnership) {
+        return res.status(404).json({ 
+          message: "No active partnership found" 
+        });
+      }
+
+      const history = await storage.getConversationHistory(partnership.id, limit);
+      res.json(history);
+    } catch (error: any) {
+      console.error("Get conversation history error:", error);
+      res.status(500).json({ message: "Failed to get conversation history" });
+    }
+  });
+
+  // Request help with a question (AI coaching, alternative question, or think time)
+  app.post('/api/conversations/help', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { questionId, actionType } = req.body;
+
+      if (!questionId || !actionType) {
+        return res.status(400).json({ 
+          message: "Missing required fields: questionId, actionType" 
+        });
+      }
+
+      if (!['guidance', 'think_time', 'alternative'].includes(actionType)) {
+        return res.status(400).json({ 
+          message: "Invalid actionType. Must be: guidance, think_time, or alternative" 
+        });
+      }
+
+      // Get the question
+      const question = await storage.getRandomQuestion();
+      const targetQuestion = question?.id === questionId ? question : await storage.getRandomQuestion();
+      
+      if (!targetQuestion) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+
+      let aiResponse: any = null;
+
+      if (actionType === 'guidance') {
+        // Generate AI coaching guidance
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: `You are a warm, concise relationship coach. Offer 2 framing tips and 2 example answer starters to help someone thoughtfully respond to a relationship question. Be safe, neutral, and nonjudgmental. Keep your response under 150 words.`
+            },
+            {
+              role: "user",
+              content: `Category: ${targetQuestion.category}\nQuestion: ${targetQuestion.questionText}\nTherapy Prompt: ${targetQuestion.therapyPrompt || ''}\n\nHelp the user form a thoughtful answer with kind, helpful guidance.`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 300,
+        });
+
+        aiResponse = {
+          type: 'guidance',
+          content: completion.choices[0].message.content,
+        };
+      } else if (actionType === 'alternative') {
+        // Generate alternative easier questions
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: `Return two easier questions from the same category as the original: (1) a feelings-first question and (2) an action-first question. Keep each question under 20 words. Format as JSON: {"question1": "...", "question2": "..."}`
+            },
+            {
+              role: "user",
+              content: `Original Category: ${targetQuestion.category}\nOriginal Question: ${targetQuestion.questionText}\n\nProvide two gentler alternatives.`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 150,
+          response_format: { type: "json_object" },
+        });
+
+        aiResponse = {
+          type: 'alternative',
+          content: JSON.parse(completion.choices[0].message.content || '{}'),
+        };
+      } else if (actionType === 'think_time') {
+        aiResponse = {
+          type: 'think_time',
+          content: "Take the time you need. It's okay to need a moment to gather your thoughts. Your feelings matter, and thoughtful reflection leads to deeper connection.",
+        };
+      }
+
+      // Log the help event
+      await storage.createConversationHelpEvent({
+        questionId,
+        actionType,
+        aiResponse,
+      });
+
+      res.json(aiResponse);
+    } catch (error: any) {
+      console.error("Conversation help error:", error);
+      res.status(500).json({ message: "Failed to get help" });
+    }
+  });
+
   // ===== ANALYTICS ROUTES =====
   
   // Generate analytics snapshot
