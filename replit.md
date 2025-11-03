@@ -70,6 +70,42 @@ Preferred communication style: Simple, everyday language.
 
 **Usage Limits:** Free users get 3 conversation responses total (tracked in `users.conversationResponseCount`). Paid users get unlimited access. API endpoints enforce limits and return `remainingResponses` and `isLimitReached` flags for UI display.
 
+### Stripe Connect Marketplace
+
+**Platform Model:** Twangle now supports a marketplace model enabling users to become merchants and sell products through the platform using Stripe Connect with destination charges.
+
+**Architecture Pattern:** 
+- **Destination Charges:** Payments are processed on the platform account, with funds transferred to connected merchant accounts
+- **Application Fee:** Platform collects 10% of each sale as an application fee
+- **Express Accounts:** Merchants use Stripe Express accounts with platform-controlled pricing and fees
+
+**Database Schema:**
+- `connected_accounts` table: Stores Stripe connected account IDs linked to users with status flags (chargesEnabled, detailsSubmitted, payoutsEnabled)
+- `products` table: Platform-level products mapped to connected accounts, storing Stripe product/price IDs, pricing, and merchant associations
+
+**API Endpoints:**
+- `POST /api/stripe-connect/account` - Create connected account with controller properties (requires auth)
+- `POST /api/stripe-connect/account-link` - Generate Stripe onboarding URL (requires auth)
+- `GET /api/stripe-connect/account-status` - Fetch and sync account status from Stripe (requires auth)
+- `POST /api/stripe-connect/product` - Create platform-level products (requires auth)
+- `GET /api/stripe-connect/products` - List all products across merchants (public)
+- `GET /api/stripe-connect/my-products` - Get user's products (requires auth)
+- `POST /api/stripe-connect/checkout` - Create checkout session with destination charge (public)
+- `GET /api/stripe-connect/checkout-session/:sessionId` - Retrieve session details (public)
+
+**Frontend Pages:**
+- `/merchant/onboard` - Merchant account creation and Stripe onboarding status tracking
+- `/merchant/products` - Product creation and management with fee breakdown display
+- `/storefront` - Public marketplace for browsing and purchasing products
+- `/storefront/success` - Checkout confirmation page
+
+**Key Features:**
+- Real-time account status syncing with Stripe API
+- Clear fee breakdown showing merchant earnings (90%) vs platform fee (10%)
+- Secure authentication for all merchant endpoints
+- Public storefront for customer browsing and purchasing
+- Comprehensive error handling and validation
+
 ### Authentication & Authorization
 
 **Freemium Model:** Authentication-required 7-day free trial, granting full access to all premium features without requiring a credit card. All users must sign up via Replit Auth (OIDC).
