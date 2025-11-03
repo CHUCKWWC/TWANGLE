@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import { AppHeader } from "@/components/AppHeader";
 
 interface JournalEntry {
   id: string;
@@ -95,40 +96,45 @@ export default function Journal() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container max-w-4xl mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold" data-testid="text-page-title">Relationship Journal</h1>
-          <p className="text-muted-foreground mt-1">
-            Reflect on your relationship journey and gain AI-powered insights
-          </p>
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+      <div className="container max-w-4xl mx-auto p-6 pt-20 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold" data-testid="text-page-title">Relationship Journal</h1>
+            <p className="text-muted-foreground mt-1">
+              Reflect on your relationship journey and gain AI-powered insights
+            </p>
+          </div>
+          {!showForm && (
+            <Button onClick={() => setShowForm(true)} data-testid="button-new-entry">
+              <BookOpen className="mr-2 h-4 w-4" />
+              New Entry
+            </Button>
+          )}
         </div>
-        {!showForm && (
-          <Button onClick={() => setShowForm(true)} data-testid="button-new-entry">
-            <BookOpen className="mr-2 h-4 w-4" />
-            New Entry
-          </Button>
-        )}
-      </div>
 
-      {showForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>New Journal Entry</CardTitle>
-            <CardDescription>
-              Share your thoughts and receive personalized insights
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+        {showForm && (
+          <Card>
+            <CardHeader>
+              <CardTitle>New Journal Entry</CardTitle>
+              <CardDescription>
+                Share your thoughts and receive personalized insights
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -258,96 +264,97 @@ export default function Journal() {
                     )}
                   </Button>
                 </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      )}
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        )}
 
-      {!entries || entries.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No journal entries yet</h3>
-            <p className="text-center text-muted-foreground mb-6 max-w-md">
-              Start journaling to track your relationship journey, reflect on experiences,
-              and receive personalized AI insights.
-            </p>
-            {!showForm && (
-              <Button onClick={() => setShowForm(true)} data-testid="button-first-entry">
-                <BookOpen className="mr-2 h-4 w-4" />
-                Write Your First Entry
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {entries.map((entry) => (
-            <Card key={entry.id} data-testid={`entry-${entry.id}`}>
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(entry.createdAt).toLocaleDateString(undefined, {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {entry.mood && (
-                      <Badge variant="secondary" className="gap-1">
-                        {getMoodIcon(entry.mood)}
-                        {entry.mood}
-                      </Badge>
-                    )}
-                    {entry.isPrivate ? (
-                      <Badge variant="outline" className="gap-1">
-                        <Lock className="h-3 w-3" />
-                        Private
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="gap-1">
-                        <Eye className="h-3 w-3" />
-                        Shared
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap">{entry.entry}</p>
-                </div>
-
-                {entry.aiInsights && entry.aiInsights.length > 0 && (
-                  <div className="border-t pt-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">AI Insights</span>
+        {!entries || entries.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No journal entries yet</h3>
+              <p className="text-center text-muted-foreground mb-6 max-w-md">
+                Start journaling to track your relationship journey, reflect on experiences,
+                and receive personalized AI insights.
+              </p>
+              {!showForm && (
+                <Button onClick={() => setShowForm(true)} data-testid="button-first-entry">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Write Your First Entry
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {entries.map((entry) => (
+              <Card key={entry.id} data-testid={`entry-${entry.id}`}>
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(entry.createdAt).toLocaleDateString(undefined, {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </span>
                     </div>
-                    <div className="space-y-2">
-                      {entry.aiInsights.map((insight, index) => (
-                        <div
-                          key={index}
-                          className="p-3 rounded-md bg-primary/5 border border-primary/10"
-                          data-testid={`insight-${index}`}
-                        >
-                          <p className="text-sm">{insight}</p>
-                        </div>
-                      ))}
+                    <div className="flex items-center gap-2">
+                      {entry.mood && (
+                        <Badge variant="secondary" className="gap-1">
+                          {getMoodIcon(entry.mood)}
+                          {entry.mood}
+                        </Badge>
+                      )}
+                      {entry.isPrivate ? (
+                        <Badge variant="outline" className="gap-1">
+                          <Lock className="h-3 w-3" />
+                          Private
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="gap-1">
+                          <Eye className="h-3 w-3" />
+                          Shared
+                        </Badge>
+                      )}
                     </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <p className="whitespace-pre-wrap">{entry.entry}</p>
+                  </div>
+
+                  {entry.aiInsights && entry.aiInsights.length > 0 && (
+                    <div className="border-t pt-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium">AI Insights</span>
+                      </div>
+                      <div className="space-y-2">
+                        {entry.aiInsights.map((insight, index) => (
+                          <div
+                            key={index}
+                            className="p-3 rounded-md bg-primary/5 border border-primary/10"
+                            data-testid={`insight-${index}`}
+                          >
+                            <p className="text-sm">{insight}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

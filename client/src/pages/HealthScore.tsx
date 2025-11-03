@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Heart, TrendingUp, MessageCircle, Users, Sparkles, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AppHeader } from "@/components/AppHeader";
 
 interface HealthScore {
   id: string;
@@ -74,16 +75,21 @@ export default function HealthScore() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-6xl mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container max-w-6xl mx-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container max-w-6xl mx-auto p-6 space-y-6">
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+      <div className="container max-w-6xl mx-auto p-6 pt-20 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold" data-testid="text-page-title">Relationship Health Score</h1>
@@ -278,6 +284,7 @@ export default function HealthScore() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }
