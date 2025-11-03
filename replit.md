@@ -15,7 +15,7 @@ Preferred communication style: Simple, everyday language.
 **Framework & Tooling:** React 18 with TypeScript, Vite, Wouter for routing, TanStack Query for server state.
 **UI Component System:** Shadcn/ui with Radix UI primitives, Tailwind CSS, custom warm rose/mauve and terracotta theme, responsive mobile-first design.
 **Design System:** Focus on a warm, organic aesthetic with Poppins, Inter, and Quicksand typography.
-**Key UI Components:** Dashboard, AI Coach Chat, Retreat Builder, Date Night Planner, Exercises Library, Nervous System Regulation module, Weekly Summaries, Feedback Forms, Admin-only Feedback & Email Monitoring Reports, Relationship Health Score Dashboard, Partner Connection System, AI-Powered Relationship Journal, and Progress Analytics (Insights). Features include a global Trial Countdown Banner, Trial Value Dashboard, Trial Expiring Modal, and Trial Checklist for onboarding.
+**Key UI Components:** Dashboard, AI Coach Chat, Retreat Builder, Date Night Planner, Exercises Library, Nervous System Regulation module, Weekly Summaries, Feedback Forms, Admin-only Feedback & Email Monitoring Reports, Relationship Health Score Dashboard, Partner Connection System, AI-Powered Relationship Journal, Daily Conversations Module, and Progress Analytics (Insights). Features include a global Trial Countdown Banner, Trial Value Dashboard, Trial Expiring Modal, and Trial Checklist for onboarding.
 **Conversion Optimization Features:** Six landing page features designed to maximize sign-ups and trial-to-paid conversion:
 1. **Social Proof Statistics** - Real-time display of user count, coaching sessions, and ratings from database
 2. **Exit Intent Popup** - Modal triggered when user attempts to leave, encouraging signup with value proposition
@@ -23,17 +23,18 @@ Preferred communication style: Simple, everyday language.
 4. **Interactive Coach Demo** - Anonymous users can try Coach Charles with 3 free messages (sample conversations or custom questions), protected by dual security: session-based 3-message cap + IP-based 10 requests/hour rate limiting
 5. **Newsletter Signup** - Email capture form with public API endpoint creating database records
 6. **Partner Invitation Landing** - Personalized landing pages for partnership invitation links with inviter name display
-**Engagement Features:** Four major features to increase user engagement and trial-to-paid conversion:
+**Engagement Features:** Five major features to increase user engagement and trial-to-paid conversion:
 1. **Relationship Health Score** - Calculates a 0-100 score based on user activity (assessments 30%, coaching 25%, exercises 20%, progress 15%, journaling 10%) with category breakdowns and historical trend tracking
 2. **Partner Connection** - Email-based invitation system allowing couples to link accounts with configurable sharing permissions for assessments, progress, and journal entries
 3. **AI-Powered Journal** - Personal relationship journaling with mood tracking and optional GPT-4o generated insights, supporting private or partner-shared entries
-4. **Progress Analytics** - Periodic snapshots (daily/weekly/monthly) tracking engagement metrics with AI-generated insights and benchmarking against user history
+4. **Daily Conversations** - Couples-only feature with therapy-informed daily questions using double-blind responses (both must answer before seeing each other's responses). Includes 140 questions across 7 categories (emotional intimacy, communication/conflict, physical intimacy, finances/planning, values/spiritual, play/adventure, trust/boundaries) with 3 intensity levels. Features AI coaching via "Help Me Out" modal with guidance, think time, and alternative question options
+5. **Progress Analytics** - Periodic snapshots (daily/weekly/monthly) tracking engagement metrics with AI-generated insights and benchmarking against user history
 **SEO Implementation:** Dynamic meta tags, Open Graph, Twitter Cards, and JSON-LD structured data for E-E-A-T compliance across key pages.
 
 ### Backend Architecture
 
 **Server Framework:** Express.js on Node.js with TypeScript.
-**API Design:** RESTful endpoints for core functionalities (chat, planning, assessments, billing, reporting, analytics, admin, email verification, newsletter), secured with JSON request/response validation and ownership verification. Enhanced Stripe webhook handling tracks the full subscription lifecycle and conversion events.
+**API Design:** RESTful endpoints for core functionalities (chat, planning, assessments, billing, reporting, analytics, admin, email verification, newsletter, conversations), secured with JSON request/response validation and ownership verification. Enhanced Stripe webhook handling tracks the full subscription lifecycle and conversion events.
 **API Security:** Anonymous chat endpoint (`/api/chat`) protected by dual security layers: session-based 3-message cap + IP-based rate limiting (10 requests/hour) to prevent OpenAI API abuse while maintaining demo functionality.
 **AI Coach Guardrails:** "Coach Charles" uses strict system prompts to provide relationship-only advice, explicitly refusing off-topic queries (medical, legal, financial, etc.) and redirecting users appropriately.
 **AI Integration:** OpenAI GPT for coaching, planning, and assessment analysis, utilizing streaming responses and Zod-validated structured JSON for data consistency.
@@ -41,9 +42,31 @@ Preferred communication style: Simple, everyday language.
 ### Data Storage Solutions
 
 **Database:** PostgreSQL via Neon serverless, managed with Drizzle ORM for type-safe queries.
-**Data Models:** Comprehensive models for Users, Subscriptions, Chat Sessions, Assessments, Retreats, Date Nights, Feedback, Access Logs, Conversion Events, Subscription Events, Email Send Logs, Health Scores, Partnerships, Journal Entries, and Analytics Snapshots.
+**Data Models:** Comprehensive models for Users, Subscriptions, Chat Sessions, Assessments, Retreats, Date Nights, Feedback, Access Logs, Conversion Events, Subscription Events, Email Send Logs, Health Scores, Partnerships, Journal Entries, Analytics Snapshots, Conversation Questions, Conversation Responses, and Conversation Help Events.
 **Feedback Reporting:** An admin-only dashboard provides detailed analytics on user feedback, including summary statistics, distribution by type/category, and enriched user information.
-**Engagement Tracking:** Health scores track relationship wellness over time, partnerships enable couples to share progress, journals provide AI-powered insights into relationship dynamics, and analytics snapshots capture periodic engagement metrics for benchmarking.
+**Engagement Tracking:** Health scores track relationship wellness over time, partnerships enable couples to share progress, journals provide AI-powered insights into relationship dynamics, daily conversations foster deeper connection through structured dialogue, and analytics snapshots capture periodic engagement metrics for benchmarking.
+
+### Daily Conversations Architecture
+
+**Double-Blind System:** Responses are hidden until both partners answer the same daily question, then unlock simultaneously to encourage honest, independent reflection before discussion.
+
+**Question Bank:** 140 therapy-informed questions organized by:
+- **Categories (7):** Emotional intimacy, communication/conflict, physical intimacy, finances/planning, values/spiritual, play/adventure, trust/boundaries
+- **Intensity Levels (1-3):** Gradual progression from gentle to deeper questions
+- **Therapy Prompts:** Contextual guidance for each question based on therapeutic frameworks
+
+**AI Coaching Integration:** "Help Me Out" modal provides:
+- **Guidance Tab:** OpenAI GPT-4o generates personalized coaching tips for the current question
+- **Think Time Tab:** Encourages users to defer answering when they need more reflection time
+- **Alternative Tab:** AI generates two alternative questions (feelings-focused and action-focused) from the same category for users who find the original too challenging
+
+**API Endpoints:**
+- `GET /api/conversations/daily` - Fetches today's question and response status for the partnership
+- `POST /api/conversations/respond` - Submits a response with double-blind validation
+- `POST /api/conversations/help` - Generates AI coaching content (guidance/alternative questions)
+- `GET /api/conversations/history` - Retrieves past complete conversations
+
+**UI Integration:** Conversations tab within Journal page (`/journal`) uses shadcn Tabs component, requiring active partnership to access.
 
 ### Authentication & Authorization
 
