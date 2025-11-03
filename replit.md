@@ -16,6 +16,13 @@ Preferred communication style: Simple, everyday language.
 **UI Component System:** Shadcn/ui with Radix UI primitives, Tailwind CSS, custom warm rose/mauve and terracotta theme, responsive mobile-first design.
 **Design System:** Focus on a warm, organic aesthetic with Poppins, Inter, and Quicksand typography.
 **Key UI Components:** Dashboard, AI Coach Chat, Retreat Builder, Date Night Planner, Exercises Library, Nervous System Regulation module, Weekly Summaries, Feedback Forms, Admin-only Feedback & Email Monitoring Reports, Relationship Health Score Dashboard, Partner Connection System, AI-Powered Relationship Journal, and Progress Analytics (Insights). Features include a global Trial Countdown Banner, Trial Value Dashboard, Trial Expiring Modal, and Trial Checklist for onboarding.
+**Conversion Optimization Features:** Six landing page features designed to maximize sign-ups and trial-to-paid conversion:
+1. **Social Proof Statistics** - Real-time display of user count, coaching sessions, and ratings from database
+2. **Exit Intent Popup** - Modal triggered when user attempts to leave, encouraging signup with value proposition
+3. **Comparison Table** - Side-by-side Traditional Therapy vs Twangle feature/cost comparison
+4. **Interactive Coach Demo** - Anonymous users can try Coach Charles with 3 free messages (sample conversations or custom questions), protected by dual security: session-based 3-message cap + IP-based 10 requests/hour rate limiting
+5. **Newsletter Signup** - Email capture form with public API endpoint creating database records
+6. **Partner Invitation Landing** - Personalized landing pages for partnership invitation links with inviter name display
 **Engagement Features:** Four major features to increase user engagement and trial-to-paid conversion:
 1. **Relationship Health Score** - Calculates a 0-100 score based on user activity (assessments 30%, coaching 25%, exercises 20%, progress 15%, journaling 10%) with category breakdowns and historical trend tracking
 2. **Partner Connection** - Email-based invitation system allowing couples to link accounts with configurable sharing permissions for assessments, progress, and journal entries
@@ -27,6 +34,7 @@ Preferred communication style: Simple, everyday language.
 
 **Server Framework:** Express.js on Node.js with TypeScript.
 **API Design:** RESTful endpoints for core functionalities (chat, planning, assessments, billing, reporting, analytics, admin, email verification, newsletter), secured with JSON request/response validation and ownership verification. Enhanced Stripe webhook handling tracks the full subscription lifecycle and conversion events.
+**API Security:** Anonymous chat endpoint (`/api/chat`) protected by dual security layers: session-based 3-message cap + IP-based rate limiting (10 requests/hour) to prevent OpenAI API abuse while maintaining demo functionality.
 **AI Coach Guardrails:** "Coach Charles" uses strict system prompts to provide relationship-only advice, explicitly refusing off-topic queries (medical, legal, financial, etc.) and redirecting users appropriately.
 **AI Integration:** OpenAI GPT for coaching, planning, and assessment analysis, utilizing streaming responses and Zod-validated structured JSON for data consistency.
 
