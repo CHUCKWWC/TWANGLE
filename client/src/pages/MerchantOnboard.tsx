@@ -120,6 +120,7 @@ export default function MerchantOnboard() {
           </CardContent>
           <CardFooter>
             <Button
+              type="button"
               onClick={handleCreateAccount}
               disabled={createAccountMutation.isPending}
               data-testid="button-create-account"
@@ -189,6 +190,7 @@ export default function MerchantOnboard() {
           </CardContent>
           <CardFooter>
             <Button
+              type="button"
               onClick={handleStartOnboarding}
               disabled={isOnboarding || getOnboardingLinkMutation.isPending}
               data-testid="button-start-onboarding"
@@ -235,6 +237,7 @@ export default function MerchantOnboard() {
               <a href="/merchant/products">Create Products</a>
             </Button>
             <Button
+              type="button"
               variant="outline"
               onClick={handleStartOnboarding}
               data-testid="button-manage-account"
