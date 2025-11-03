@@ -557,6 +557,7 @@ export type ConnectedAccount = typeof connectedAccounts.$inferSelect;
 
 // Stripe Connect: Products
 // Platform-level products mapped to connected accounts
+// Supports both one-time purchases and recurring subscriptions
 export const products = pgTable("products", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull(),
@@ -567,11 +568,15 @@ export const products = pgTable("products", {
   description: text("description"),
   priceInCents: integer("price_in_cents").notNull(),
   currency: varchar("currency").default('usd').notNull(),
+  productType: varchar("product_type").default('one_time').notNull(), // 'one_time' | 'subscription'
+  billingInterval: varchar("billing_interval"), // 'month' | 'year' (null for one_time)
+  trialDays: integer("trial_days").default(0), // Trial period in days (0 for no trial)
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
   index("idx_products_user").on(table.userId),
   index("idx_products_connected_account").on(table.connectedAccountId),
+  index("idx_products_type").on(table.productType),
 ]);
 
 export const insertProductSchema = createInsertSchema(products).omit({
@@ -583,3 +588,57 @@ export const insertProductSchema = createInsertSchema(products).omit({
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
+
+// Stripe Connect: Merchant Customers
+// Maps platform users to Stripe customer IDs on each connected account
+// Needed because each merchant needs their own customer records
+export const merchantCustomers = pgTable("merchant_customers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Platform user ID
+  connectedAccountId: varchar("connected_account_id").notNull(), // Merchant's connected account
+  stripeCustomerId: varchar("stripe_customer_id").notNull(), // Customer ID on connected account
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_merchant_customers_user").on(table.userId),
+  index("idx_merchant_customers_account").on(table.connectedAccountId),
+  index("idx_merchant_customers_unique").on(table.userId, table.connectedAccountId), // Unique per user-merchant pair
+]);
+
+export const insertMerchantCustomerSchema = createInsertSchema(merchantCustomers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMerchantCustomer = z.infer<typeof insertMerchantCustomerSchema>;
+export type MerchantCustomer = typeof merchantCustomers.$inferSelect;
+
+// Stripe Connect: Merchant Subscriptions
+// Tracks active subscriptions for marketplace products
+export const merchantSubscriptions = pgTable("merchant_subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(), // Customer user ID
+  productId: varchar("product_id").notNull(), // Marketplace product ID
+  connectedAccountId: varchar("connected_account_id").notNull(), // Merchant's account
+  stripeSubscriptionId: varchar("stripe_subscription_id").unique().notNull(),
+  stripeCustomerId: varchar("stripe_customer_id").notNull(), // Customer on connected account
+  status: varchar("status").notNull(), // active, canceled, past_due, etc.
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: integer("cancel_at_period_end").default(0),
+  canceledAt: timestamp("canceled_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_merchant_subs_user").on(table.userId),
+  index("idx_merchant_subs_product").on(table.productId),
+  index("idx_merchant_subs_account").on(table.connectedAccountId),
+  index("idx_merchant_subs_status").on(table.status),
+]);
+
+export const insertMerchantSubscriptionSchema = createInsertSchema(merchantSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMerchantSubscription = z.infer<typeof insertMerchantSubscriptionSchema>;
+export type MerchantSubscription = typeof merchantSubscriptions.$inferSelect;
