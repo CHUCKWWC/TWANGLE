@@ -47,6 +47,10 @@ import {
   type InsertConnectedAccount,
   type Product,
   type InsertProduct,
+  type MerchantCustomer,
+  type InsertMerchantCustomer,
+  type MerchantSubscription,
+  type InsertMerchantSubscription,
   users,
   subscriptions,
   chatSessions,
@@ -69,7 +73,9 @@ import {
   conversationResponses,
   conversationHelpEvents,
   connectedAccounts,
-  products
+  products,
+  merchantCustomers,
+  merchantSubscriptions
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -239,6 +245,21 @@ export interface IStorage {
   getProductsByConnectedAccount(connectedAccountId: string): Promise<Product[]>;
   getAllProducts(): Promise<Product[]>;
   updateProduct(id: string, updates: Partial<Product>): Promise<Product | undefined>;
+  
+  // Stripe Connect: Merchant Customers
+  createMerchantCustomer(customer: InsertMerchantCustomer): Promise<MerchantCustomer>;
+  getMerchantCustomer(userId: string, connectedAccountId: string): Promise<MerchantCustomer | undefined>;
+  getMerchantCustomersByUser(userId: string): Promise<MerchantCustomer[]>;
+  
+  // Stripe Connect: Merchant Subscriptions
+  createMerchantSubscription(subscription: InsertMerchantSubscription): Promise<MerchantSubscription>;
+  getMerchantSubscription(id: string): Promise<MerchantSubscription | undefined>;
+  getMerchantSubscriptionByStripeId(stripeSubscriptionId: string): Promise<MerchantSubscription | undefined>;
+  getMerchantSubscriptionsByUser(userId: string): Promise<MerchantSubscription[]>;
+  getMerchantSubscriptionsByProduct(productId: string): Promise<MerchantSubscription[]>;
+  getMerchantSubscriptionsByAccount(connectedAccountId: string): Promise<MerchantSubscription[]>;
+  updateMerchantSubscription(id: string, updates: Partial<MerchantSubscription>): Promise<MerchantSubscription | undefined>;
+  updateMerchantSubscriptionByStripeId(stripeSubscriptionId: string, updates: Partial<MerchantSubscription>): Promise<MerchantSubscription | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -2118,6 +2139,83 @@ export class DbStorage implements IStorage {
       .update(products)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(products.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Stripe Connect: Merchant Customers implementations
+  async createMerchantCustomer(customer: InsertMerchantCustomer): Promise<MerchantCustomer> {
+    const result = await this.db.insert(merchantCustomers).values(customer).returning();
+    return result[0];
+  }
+
+  async getMerchantCustomer(userId: string, connectedAccountId: string): Promise<MerchantCustomer | undefined> {
+    const result = await this.db.select().from(merchantCustomers)
+      .where(and(
+        eq(merchantCustomers.userId, userId),
+        eq(merchantCustomers.connectedAccountId, connectedAccountId)
+      ))
+      .limit(1);
+    return result[0];
+  }
+
+  async getMerchantCustomersByUser(userId: string): Promise<MerchantCustomer[]> {
+    return await this.db.select().from(merchantCustomers)
+      .where(eq(merchantCustomers.userId, userId));
+  }
+
+  // Stripe Connect: Merchant Subscriptions implementations
+  async createMerchantSubscription(subscription: InsertMerchantSubscription): Promise<MerchantSubscription> {
+    const result = await this.db.insert(merchantSubscriptions).values(subscription).returning();
+    return result[0];
+  }
+
+  async getMerchantSubscription(id: string): Promise<MerchantSubscription | undefined> {
+    const result = await this.db.select().from(merchantSubscriptions)
+      .where(eq(merchantSubscriptions.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async getMerchantSubscriptionByStripeId(stripeSubscriptionId: string): Promise<MerchantSubscription | undefined> {
+    const result = await this.db.select().from(merchantSubscriptions)
+      .where(eq(merchantSubscriptions.stripeSubscriptionId, stripeSubscriptionId))
+      .limit(1);
+    return result[0];
+  }
+
+  async getMerchantSubscriptionsByUser(userId: string): Promise<MerchantSubscription[]> {
+    return await this.db.select().from(merchantSubscriptions)
+      .where(eq(merchantSubscriptions.userId, userId))
+      .orderBy(desc(merchantSubscriptions.createdAt));
+  }
+
+  async getMerchantSubscriptionsByProduct(productId: string): Promise<MerchantSubscription[]> {
+    return await this.db.select().from(merchantSubscriptions)
+      .where(eq(merchantSubscriptions.productId, productId))
+      .orderBy(desc(merchantSubscriptions.createdAt));
+  }
+
+  async getMerchantSubscriptionsByAccount(connectedAccountId: string): Promise<MerchantSubscription[]> {
+    return await this.db.select().from(merchantSubscriptions)
+      .where(eq(merchantSubscriptions.connectedAccountId, connectedAccountId))
+      .orderBy(desc(merchantSubscriptions.createdAt));
+  }
+
+  async updateMerchantSubscription(id: string, updates: Partial<MerchantSubscription>): Promise<MerchantSubscription | undefined> {
+    const result = await this.db
+      .update(merchantSubscriptions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(merchantSubscriptions.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async updateMerchantSubscriptionByStripeId(stripeSubscriptionId: string, updates: Partial<MerchantSubscription>): Promise<MerchantSubscription | undefined> {
+    const result = await this.db
+      .update(merchantSubscriptions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(merchantSubscriptions.stripeSubscriptionId, stripeSubscriptionId))
       .returning();
     return result[0];
   }
