@@ -13,13 +13,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 /**
  * PRODUCT CREATION PAGE
  * 
  * This page allows merchants to:
  * 1. View their existing products
- * 2. Create new products for sale
+ * 2. Create new products for sale (one-time or subscription)
  * 
  * Products are created at the platform level (not on connected account)
  * and mapped to the merchant's connected account in the database
@@ -30,6 +31,9 @@ const productSchema = z.object({
   description: z.string().optional(),
   priceInCents: z.number().min(50, "Price must be at least $0.50"),
   currency: z.string().default("usd"),
+  productType: z.enum(["one_time", "subscription"]).default("one_time"),
+  billingInterval: z.enum(["month", "year"]).optional(),
+  trialDays: z.number().min(0).default(0),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -45,8 +49,14 @@ export default function MerchantProducts() {
       description: "",
       priceInCents: 1000, // $10.00 default
       currency: "usd",
+      productType: "one_time",
+      billingInterval: undefined,
+      trialDays: 0,
     },
   });
+
+  const productType = form.watch("productType");
+  const isSubscription = productType === "subscription";
 
   // Fetch merchant's products
   const { data: products = [], isLoading } = useQuery({
@@ -202,6 +212,83 @@ export default function MerchantProducts() {
 
                 <FormField
                   control={form.control}
+                  name="productType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-product-type">
+                            <SelectValue placeholder="Select product type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="one_time">One-Time Purchase</SelectItem>
+                          <SelectItem value="subscription">Subscription</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Choose whether this is a one-time purchase or recurring subscription
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {isSubscription && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="billingInterval"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Billing Interval</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-billing-interval">
+                                <SelectValue placeholder="Select billing interval" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="month">Monthly</SelectItem>
+                              <SelectItem value="year">Yearly</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            How often customers will be charged
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="trialDays"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Trial Days (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              data-testid="input-trial-days"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Number of days customers get to try before being charged (0 for no trial)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
+
+                <FormField
+                  control={form.control}
                   name="priceInCents"
                   render={({ field }) => (
                     <FormItem>
@@ -217,10 +304,10 @@ export default function MerchantProducts() {
                           />
                           <div className="text-sm space-y-1">
                             <p className="text-muted-foreground">
-                              Enter price in cents. ${formatPrice(field.value)} USD
+                              Enter price in cents. ${formatPrice(field.value)} USD{isSubscription && form.watch("billingInterval") ? `/${form.watch("billingInterval")}` : ""}
                             </p>
                             <p className="text-muted-foreground">
-                              You'll receive: ${formatPrice(Math.round(field.value * 0.9))} (90%)
+                              You'll receive: ${formatPrice(Math.round(field.value * 0.9))} (90%){isSubscription && form.watch("billingInterval") ? ` per ${form.watch("billingInterval")}` : ""}
                             </p>
                             <p className="text-muted-foreground">
                               Platform fee: ${formatPrice(Math.round(field.value * 0.1))} (10%)

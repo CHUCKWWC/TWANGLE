@@ -622,9 +622,12 @@ export const merchantSubscriptions = pgTable("merchant_subscriptions", {
   stripeSubscriptionId: varchar("stripe_subscription_id").unique().notNull(),
   stripeCustomerId: varchar("stripe_customer_id").notNull(), // Customer on connected account
   status: varchar("status").notNull(), // active, canceled, past_due, etc.
+  currentPeriodStart: timestamp("current_period_start"),
   currentPeriodEnd: timestamp("current_period_end"),
   cancelAtPeriodEnd: integer("cancel_at_period_end").default(0),
   canceledAt: timestamp("canceled_at"),
+  endedAt: timestamp("ended_at"),
+  lastPaymentAt: timestamp("last_payment_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
