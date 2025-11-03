@@ -3138,7 +3138,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
   /**
    * POST /api/stripe-connect/product
-   * Create a product at the platform level
+   * Create a product at the platform level (one-time or subscription)
    * 
    * Products are created on the platform account, not the connected account
    * The mapping to the connected account is stored in the database
@@ -3146,7 +3146,15 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   app.post('/api/stripe-connect/product', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { name, description, priceInCents, currency = 'usd' } = req.body;
+      const { 
+        name, 
+        description, 
+        priceInCents, 
+        currency = 'usd',
+        productType = 'one_time',
+        billingInterval,
+        trialDays = 0
+      } = req.body;
 
       if (!stripe) {
         return res.status(500).json({ 
@@ -3164,6 +3172,18 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         return res.status(400).json({ message: "Price must be at least $0.50 (50 cents)" });
       }
 
+      // Validate productType
+      if (!['one_time', 'subscription'].includes(productType)) {
+        return res.status(400).json({ message: "Product type must be 'one_time' or 'subscription'" });
+      }
+
+      // Validate subscription fields
+      if (productType === 'subscription') {
+        if (!billingInterval || !['month', 'year'].includes(billingInterval)) {
+          return res.status(400).json({ message: "Billing interval must be 'month' or 'year' for subscriptions" });
+        }
+      }
+
       // Step 1: Verify user has a connected account
       const connectedAccount = await storage.getConnectedAccountByUserId(userId);
       if (!connectedAccount) {
@@ -3176,29 +3196,44 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       const product = await stripe.products.create({
         name: name,
         description: description,
-        default_price_data: {
-          unit_amount: priceInCents,
-          currency: currency,
-        },
       });
 
-      // Step 3: Store product in database with connected account mapping
+      // Step 3: Create price based on product type
+      let priceParams: any = {
+        product: product.id,
+        unit_amount: priceInCents,
+        currency: currency,
+      };
+
+      if (productType === 'subscription') {
+        priceParams.recurring = {
+          interval: billingInterval,
+          trial_period_days: trialDays > 0 ? trialDays : undefined,
+        };
+      }
+
+      const price = await stripe.prices.create(priceParams);
+
+      // Step 4: Store product in database with connected account mapping
       // This mapping is critical for knowing which account receives payment
       const dbProduct = await storage.createProduct({
         userId,
         connectedAccountId: connectedAccount.id,
         stripeProductId: product.id,
-        stripePriceId: product.default_price as string,
+        stripePriceId: price.id,
         name,
         description: description || null,
         priceInCents,
         currency,
+        productType,
+        billingInterval: productType === 'subscription' ? billingInterval : null,
+        trialDays: productType === 'subscription' ? trialDays : null,
       });
 
       res.json({
         success: true,
         product: dbProduct,
-        message: "Product created successfully"
+        message: `${productType === 'subscription' ? 'Subscription' : 'One-time'} product created successfully`
       });
     } catch (error: any) {
       console.error("Create product error:", error);
@@ -3269,16 +3304,19 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
   /**
    * POST /api/stripe-connect/checkout
-   * Create a checkout session for a product with destination charge
+   * Create a checkout session for a product with destination charge (one-time or subscription)
    * 
    * Uses destination charges to:
    * 1. Charge the customer on the platform account
    * 2. Collect an application fee (platform's cut)
    * 3. Transfer remaining funds to the connected account
+   * 
+   * For subscriptions, application_fee_percent is used on the subscription
    */
   app.post('/api/stripe-connect/checkout', async (req: any, res) => {
     try {
       const { productId, quantity = 1 } = req.body;
+      const userId = req.user?.claims?.sub; // Optional authenticated user
 
       if (!stripe) {
         return res.status(500).json({ 
@@ -3303,38 +3341,64 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         return res.status(400).json({ message: "Product merchant account not found" });
       }
 
-      // Step 3: Calculate application fee (platform takes 10%)
-      const totalAmount = product.priceInCents * quantity;
-      const applicationFeeAmount = Math.round(totalAmount * 0.10);
-
-      // Step 4: Create checkout session with destination charge
-      // The payment is processed on the platform account
-      // The application fee stays with the platform
-      // The rest is transferred to the connected account
-      const session = await stripe.checkout.sessions.create({
+      // Step 3: Handle subscription vs one-time purchase
+      const isSubscription = product.productType === 'subscription';
+      
+      let sessionParams: any = {
         line_items: [
           {
-            price_data: {
-              currency: product.currency,
-              unit_amount: product.priceInCents,
-              product_data: {
-                name: product.name,
-                description: product.description || undefined,
-              },
-            },
+            price: product.stripePriceId,
             quantity: quantity,
           },
         ],
-        payment_intent_data: {
+        mode: isSubscription ? 'subscription' : 'payment',
+        success_url: `${process.env.VITE_ROOT_URL || 'http://localhost:5000'}/storefront/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.VITE_ROOT_URL || 'http://localhost:5000'}/storefront`,
+      };
+
+      // Step 4: Add application fee based on product type
+      if (isSubscription) {
+        // For subscriptions, use application_fee_percent on recurring invoices
+        sessionParams.subscription_data = {
+          application_fee_percent: 10, // Platform takes 10%
+          transfer_data: {
+            destination: connectedAccount.stripeAccountId,
+          },
+        };
+        
+        // Store metadata to track user and product for webhook handling
+        sessionParams.metadata = {
+          productId: product.id,
+          userId: userId || 'anonymous',
+          connectedAccountId: connectedAccount.id,
+        };
+      } else {
+        // For one-time payments, calculate application fee upfront
+        const totalAmount = product.priceInCents * quantity;
+        const applicationFeeAmount = Math.round(totalAmount * 0.10);
+        
+        sessionParams.payment_intent_data = {
           application_fee_amount: applicationFeeAmount,
           transfer_data: {
             destination: connectedAccount.stripeAccountId,
           },
-        },
-        mode: 'payment',
-        success_url: `${process.env.VITE_ROOT_URL || 'http://localhost:5000'}/storefront/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.VITE_ROOT_URL || 'http://localhost:5000'}/storefront`,
-      });
+        };
+      }
+
+      // Step 5: Handle merchant customers for subscriptions
+      if (isSubscription && userId) {
+        // Check if we already have a customer ID for this user+merchant combo
+        const existingCustomer = await storage.getMerchantCustomer(userId, connectedAccount.id);
+        if (existingCustomer) {
+          sessionParams.customer = existingCustomer.stripeCustomerId;
+        } else {
+          // Let Stripe create the customer and we'll store it in the webhook
+          sessionParams.client_reference_id = userId; // For webhook to associate customer
+        }
+      }
+
+      // Step 6: Create checkout session
+      const session = await stripe.checkout.sessions.create(sessionParams);
 
       res.json({
         sessionId: session.id,
@@ -3377,6 +3441,278 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         error: "Failed to retrieve checkout session",
         details: error.message 
       });
+    }
+  });
+
+  /**
+   * GET /api/stripe-connect/my-subscriptions
+   * Get all subscriptions for the current user
+   */
+  app.get('/api/stripe-connect/my-subscriptions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const subscriptions = await storage.getMerchantSubscriptionsByUser(userId);
+      
+      // Enrich with product details
+      const enrichedSubscriptions = await Promise.all(
+        subscriptions.map(async (sub) => {
+          const product = await storage.getProduct(sub.productId);
+          return {
+            ...sub,
+            product,
+          };
+        })
+      );
+      
+      res.json(enrichedSubscriptions);
+    } catch (error: any) {
+      console.error("Get my subscriptions error:", error);
+      res.status(500).json({ 
+        error: "Failed to get subscriptions",
+        details: error.message 
+      });
+    }
+  });
+
+  /**
+   * POST /api/stripe-connect/subscription/:id/cancel
+   * Cancel a subscription (at period end)
+   */
+  app.post('/api/stripe-connect/subscription/:id/cancel', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+
+      if (!stripe) {
+        return res.status(500).json({ error: "Stripe not configured" });
+      }
+
+      // Get subscription from database
+      const subscription = await storage.getMerchantSubscription(id);
+      if (!subscription) {
+        return res.status(404).json({ message: "Subscription not found" });
+      }
+
+      // Verify ownership
+      if (subscription.userId !== userId) {
+        return res.status(403).json({ message: "Not authorized to cancel this subscription" });
+      }
+
+      // Cancel in Stripe (at period end)
+      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+
+      // Update local record
+      await storage.updateMerchantSubscription(id, {
+        cancelAtPeriodEnd: 1,
+      });
+
+      res.json({
+        success: true,
+        message: "Subscription will be canceled at the end of the current billing period"
+      });
+    } catch (error: any) {
+      console.error("Cancel subscription error:", error);
+      res.status(500).json({ 
+        error: "Failed to cancel subscription",
+        details: error.message 
+      });
+    }
+  });
+
+  /**
+   * GET /api/stripe-connect/merchant/subscription-metrics
+   * Get subscription metrics for a merchant
+   */
+  app.get('/api/stripe-connect/merchant/subscription-metrics', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get connected account
+      const connectedAccount = await storage.getConnectedAccountByUserId(userId);
+      if (!connectedAccount) {
+        return res.status(404).json({ message: "No connected account found" });
+      }
+
+      // Get all subscriptions for this merchant
+      const subscriptions = await storage.getMerchantSubscriptionsByAccount(connectedAccount.id);
+      
+      // Calculate metrics
+      const activeSubscriptions = subscriptions.filter(s => s.status === 'active');
+      const totalSubscriptions = subscriptions.length;
+      
+      // Calculate MRR (Monthly Recurring Revenue)
+      let mrr = 0;
+      for (const sub of activeSubscriptions) {
+        const product = await storage.getProduct(sub.productId);
+        if (product && product.productType === 'subscription') {
+          if (product.billingInterval === 'month') {
+            mrr += product.priceInCents;
+          } else if (product.billingInterval === 'year') {
+            mrr += Math.round(product.priceInCents / 12);
+          }
+        }
+      }
+      
+      res.json({
+        totalSubscriptions,
+        activeSubscriptions: activeSubscriptions.length,
+        mrr: Math.round(mrr * 0.9), // Merchant gets 90%
+        mrrGross: mrr,
+      });
+    } catch (error: any) {
+      console.error("Get subscription metrics error:", error);
+      res.status(500).json({ 
+        error: "Failed to get metrics",
+        details: error.message 
+      });
+    }
+  });
+
+  /**
+   * POST /api/stripe-connect/webhook
+   * Handle Stripe Connect marketplace subscription lifecycle events
+   * 
+   * This webhook listens for:
+   * - checkout.session.completed: Create subscription record
+   * - customer.subscription.created: Track new subscriptions
+   * - customer.subscription.updated: Update subscription status
+   * - customer.subscription.deleted: Mark subscriptions as canceled
+   * - invoice.payment_succeeded: Track successful recurring payments
+   * - invoice.payment_failed: Handle payment failures
+   */
+  app.post('/api/stripe-connect/webhook', express.raw({ type: 'application/json' }), async (req: any, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ error: "Stripe not configured" });
+      }
+
+      const sig = req.headers['stripe-signature'];
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+      if (!webhookSecret) {
+        console.error("STRIPE_WEBHOOK_SECRET not configured");
+        return res.status(500).json({ error: "Webhook secret not configured" });
+      }
+
+      // Verify webhook signature
+      let event;
+      try {
+        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+      } catch (err: any) {
+        console.error('Webhook signature verification failed:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
+
+      console.log(`Received Stripe webhook event: ${event.type}`);
+
+      // Handle different event types
+      switch (event.type) {
+        case 'checkout.session.completed': {
+          const session = event.data.object as any;
+          
+          // Only process subscription checkouts
+          if (session.mode === 'subscription') {
+            const { metadata, customer, subscription: subscriptionId, client_reference_id } = session;
+            const userId = metadata?.userId || client_reference_id;
+            const productId = metadata?.productId;
+            const connectedAccountId = metadata?.connectedAccountId;
+
+            if (userId && productId && connectedAccountId) {
+              // Store merchant customer if not exists
+              const existingCustomer = await storage.getMerchantCustomer(userId, connectedAccountId);
+              if (!existingCustomer && customer) {
+                await storage.createMerchantCustomer({
+                  userId,
+                  connectedAccountId,
+                  stripeCustomerId: customer as string,
+                });
+              }
+
+              // Create subscription record
+              if (subscriptionId) {
+                const product = await storage.getProduct(productId);
+                if (product) {
+                  await storage.createMerchantSubscription({
+                    userId,
+                    connectedAccountId,
+                    productId,
+                    stripeSubscriptionId: subscriptionId as string,
+                    stripeCustomerId: customer as string,
+                    status: 'active',
+                    currentPeriodStart: new Date(),
+                    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Placeholder, will be updated
+                    cancelAtPeriodEnd: 0,
+                  });
+                }
+              }
+            }
+          }
+          break;
+        }
+
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated': {
+          const subscription = event.data.object as any;
+          
+          // Update or create subscription record
+          const existing = await storage.getMerchantSubscriptionByStripeId(subscription.id);
+          
+          if (existing) {
+            await storage.updateMerchantSubscriptionByStripeId(subscription.id, {
+              status: subscription.status,
+              currentPeriodStart: new Date(subscription.current_period_start * 1000),
+              currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+              cancelAtPeriodEnd: subscription.cancel_at_period_end ? 1 : 0,
+              canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
+              endedAt: subscription.ended_at ? new Date(subscription.ended_at * 1000) : null,
+            });
+          }
+          break;
+        }
+
+        case 'customer.subscription.deleted': {
+          const subscription = event.data.object as any;
+          
+          await storage.updateMerchantSubscriptionByStripeId(subscription.id, {
+            status: 'canceled',
+            canceledAt: new Date(),
+            endedAt: subscription.ended_at ? new Date(subscription.ended_at * 1000) : new Date(),
+          });
+          break;
+        }
+
+        case 'invoice.payment_succeeded': {
+          const invoice = event.data.object as any;
+          
+          // Update last payment date for subscription
+          if (invoice.subscription) {
+            await storage.updateMerchantSubscriptionByStripeId(invoice.subscription, {
+              lastPaymentAt: new Date(),
+            });
+          }
+          break;
+        }
+
+        case 'invoice.payment_failed': {
+          const invoice = event.data.object as any;
+          
+          // Optionally handle failed payments
+          if (invoice.subscription) {
+            console.log(`Payment failed for subscription ${invoice.subscription}`);
+          }
+          break;
+        }
+
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error('Webhook error:', error);
+      res.status(500).json({ error: 'Webhook handler failed', details: error.message });
     }
   });
 
