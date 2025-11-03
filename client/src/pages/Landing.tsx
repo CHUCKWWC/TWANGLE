@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Brain, Users, Map, BookOpen, Shield, Sparkles, CheckCircle2 } from "lucide-react";
+import { Heart, Brain, Users, Map, BookOpen, Shield, Sparkles, CheckCircle2, MessageSquare } from "lucide-react";
 import { FeatureCard } from "@/components/FeatureCard";
 import { SEO, SEO_CONTENT } from "@/components/SEO";
 import { StructuredData, ORGANIZATION_SCHEMA, SERVICE_SCHEMA } from "@/components/StructuredData";
@@ -187,6 +187,15 @@ export default function Landing() {
               destination="/summaries"
               isPremium={true}
               testId="card-summaries"
+            />
+
+            <FeatureCard
+              icon={MessageSquare}
+              title="Daily Conversations"
+              description="Answer therapy-informed questions together with your partner. Deepen connection through honest, double-blind responses. 3 free, unlimited with premium."
+              destination="/conversations"
+              isPremium={false}
+              testId="card-conversations"
             />
 
             <Card className="hover-elevate">

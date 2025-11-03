@@ -217,6 +217,7 @@ export interface IStorage {
     isComplete: boolean;
   }>>;
   createConversationHelpEvent(event: InsertConversationHelpEvent): Promise<ConversationHelpEvent>;
+  incrementConversationResponseCount(userId: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -2018,6 +2019,15 @@ export class DbStorage implements IStorage {
   async createConversationHelpEvent(event: InsertConversationHelpEvent): Promise<ConversationHelpEvent> {
     const result = await this.db.insert(conversationHelpEvents).values(event).returning();
     return result[0];
+  }
+
+  async incrementConversationResponseCount(userId: string): Promise<void> {
+    await this.db
+      .update(users)
+      .set({ 
+        conversationResponseCount: sql`${users.conversationResponseCount} + 1` 
+      })
+      .where(eq(users.id, userId));
   }
 }
 
