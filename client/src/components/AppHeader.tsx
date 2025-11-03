@@ -1,14 +1,23 @@
 import { useLocation, Link } from "wouter";
-import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, X, MessageSquare, Heart, Users } from "lucide-react";
+import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, Heart, Users, Activity, Sparkles, MessageSquare } from "lucide-react";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
 import { isAdminUser } from "@shared/adminAccess";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export function AppHeader() {
   const [location] = useLocation();
@@ -18,131 +27,158 @@ export function AppHeader() {
   const isAnonymous = (user as any)?.isAnonymous;
   const showReports = isAdminUser(user?.email);
 
-  const navigationLinks = (
-    <>
-      <Link 
+  const NavButton = ({ href, icon: Icon, label, badge }: any) => {
+    const isActive = location === href;
+    return (
+      <Link href={href}>
+        <Button
+          variant={isActive ? "default" : "ghost"}
+          size="sm"
+          className={cn(
+            "gap-2",
+            !isActive && "text-muted-foreground hover:text-foreground"
+          )}
+          data-testid={`link-${href.replace(/\//g, '') || 'home'}`}
+        >
+          <Icon className="h-4 w-4" />
+          {label}
+          {badge && <Badge variant={badge.variant} className="text-xs ml-1">{badge.text}</Badge>}
+        </Button>
+      </Link>
+    );
+  };
+
+  const MobileNavLink = ({ href, icon: Icon, label, badge, onClick }: any) => {
+    const isActive = location === href;
+    return (
+      <Link href={href}>
+        <a
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-md text-sm transition-colors hover-elevate",
+            isActive 
+              ? "bg-accent text-accent-foreground font-medium" 
+              : "text-muted-foreground hover:text-foreground"
+          )}
+          onClick={onClick}
+        >
+          <Icon className="h-4 w-4" />
+          <span className="flex-1">{label}</span>
+          {badge && <Badge variant={badge.variant} className="text-xs">{badge.text}</Badge>}
+        </a>
+      </Link>
+    );
+  };
+
+  const MobileNav = () => (
+    <div className="flex flex-col gap-1 mt-6">
+      <div className="px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        Main Features
+      </div>
+      <MobileNavLink 
         href="/coach" 
-        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-        data-testid="link-coach"
+        icon={MessageCircle} 
+        label="AI Coach" 
+        badge={{ text: "PREMIUM", variant: "default" }}
         onClick={() => setMobileMenuOpen(false)}
-      >
-        <MessageCircle className="w-4 h-4" />
-        Coach
-        <Badge variant="default" className="text-xs">PREMIUM</Badge>
-      </Link>
-      <Link 
+      />
+      <MobileNavLink 
         href="/exercises" 
-        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-        data-testid="link-exercises"
+        icon={BookOpen} 
+        label="Exercises" 
+        badge={{ text: "FREE", variant: "secondary" }}
         onClick={() => setMobileMenuOpen(false)}
-      >
-        <BookOpen className="w-4 h-4" />
-        Exercises
-        <Badge variant="secondary" className="text-xs">FREE</Badge>
-      </Link>
+      />
+      
       {!isAnonymous && (
         <>
-          <Link 
-            href="/summaries" 
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-            data-testid="link-summaries"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <FileText className="w-4 h-4" />
-            Summaries
-            <Badge variant="default" className="text-xs">PREMIUM</Badge>
-          </Link>
-          <Link 
+          <div className="px-4 py-2 mt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Track Progress
+          </div>
+          <MobileNavLink 
             href="/health-score" 
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-            data-testid="link-health-score"
+            icon={Heart} 
+            label="Health Score" 
+            badge={{ text: "PREMIUM", variant: "default" }}
             onClick={() => setMobileMenuOpen(false)}
-          >
-            <Heart className="w-4 h-4" />
-            Health Score
-            <Badge variant="default" className="text-xs">PREMIUM</Badge>
-          </Link>
-          <Link 
-            href="/partner-connection" 
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-            data-testid="link-partner-connection"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <Users className="w-4 h-4" />
-            Partner
-            <Badge variant="default" className="text-xs">PREMIUM</Badge>
-          </Link>
-          <Link 
-            href="/journal" 
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-            data-testid="link-journal"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <BookOpen className="w-4 h-4" />
-            Journal
-            <Badge variant="default" className="text-xs">PREMIUM</Badge>
-          </Link>
-          <Link 
+          />
+          <MobileNavLink 
             href="/insights" 
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-            data-testid="link-insights"
+            icon={TrendingUp} 
+            label="Insights" 
+            badge={{ text: "PREMIUM", variant: "default" }}
             onClick={() => setMobileMenuOpen(false)}
-          >
-            <TrendingUp className="w-4 h-4" />
-            Insights
-            <Badge variant="default" className="text-xs">PREMIUM</Badge>
-          </Link>
+          />
+          <MobileNavLink 
+            href="/summaries" 
+            icon={FileText} 
+            label="Summaries" 
+            badge={{ text: "PREMIUM", variant: "default" }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          
+          <div className="px-4 py-2 mt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Relationship Tools
+          </div>
+          <MobileNavLink 
+            href="/partner-connection" 
+            icon={Users} 
+            label="Partner Connection" 
+            badge={{ text: "PREMIUM", variant: "default" }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <MobileNavLink 
+            href="/journal" 
+            icon={Activity} 
+            label="Journal" 
+            badge={{ text: "PREMIUM", variant: "default" }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
         </>
       )}
+
       {showReports && (
         <>
-          <Link 
+          <div className="px-4 py-2 mt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Admin
+          </div>
+          <MobileNavLink 
             href="/reports" 
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-            data-testid="link-reports"
+            icon={BarChart3} 
+            label="Reports"
             onClick={() => setMobileMenuOpen(false)}
-          >
-            <BarChart3 className="w-4 h-4" />
-            Reports
-          </Link>
-          <Link 
+          />
+          <MobileNavLink 
             href="/analytics" 
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-            data-testid="link-analytics"
+            icon={TrendingUp} 
+            label="Analytics"
             onClick={() => setMobileMenuOpen(false)}
-          >
-            <TrendingUp className="w-4 h-4" />
-            Analytics
-          </Link>
-          <Link 
+          />
+          <MobileNavLink 
             href="/feedback-report" 
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover-elevate px-3 py-2 rounded" 
-            data-testid="link-feedback-report"
+            icon={MessageSquare} 
+            label="Feedback"
             onClick={() => setMobileMenuOpen(false)}
-          >
-            <MessageSquare className="w-4 h-4" />
-            Feedback
-          </Link>
+          />
         </>
       )}
-    </>
+    </div>
   );
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 ${isWelcome ? 'bg-transparent' : 'bg-background/80 backdrop-blur-md border-b border-border'}`}>
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header className={`fixed top-0 left-0 right-0 z-50 ${isWelcome ? 'bg-transparent' : 'bg-background/95 backdrop-blur-md border-b border-border'}`}>
+      <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
         {!isWelcome && (
-          <div className="flex items-center gap-3 md:gap-6">
+          <div className="flex items-center gap-4">
             <Link 
               href="/" 
-              className="font-display font-semibold text-xl text-primary hover-elevate px-2 py-1 rounded" 
+              className="font-display font-semibold text-xl text-primary hover-elevate px-2 py-1 rounded shrink-0" 
               data-testid="link-home"
             >
               Twangle
             </Link>
             
-            {/* Mobile hamburger menu - visible on screens < 768px */}
-            <div className="md:hidden">
+            {/* Mobile hamburger menu */}
+            <div className="lg:hidden">
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
                   <Button 
@@ -150,28 +186,159 @@ export function AppHeader() {
                     size="icon" 
                     data-testid="button-mobile-menu"
                     aria-label="Open navigation menu"
-                    aria-expanded={mobileMenuOpen}
                   >
-                    {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                    <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[280px]">
-                  <div className="flex flex-col gap-4 mt-8">
-                    <div className="font-display font-semibold text-lg mb-4">Navigation</div>
-                    {navigationLinks}
-                  </div>
+                <SheetContent side="left" className="w-[300px] overflow-y-auto">
+                  <div className="font-display font-semibold text-lg mb-2">Menu</div>
+                  <MobileNav />
                 </SheetContent>
               </Sheet>
             </div>
 
-            {/* Desktop navigation - visible on screens >= 768px */}
-            <div className="hidden md:flex items-center gap-6">
-              {navigationLinks}
-            </div>
+            {/* Desktop navigation */}
+            <nav className="hidden lg:flex items-center gap-2">
+              <NavButton 
+                href="/coach" 
+                icon={MessageCircle} 
+                label="Coach" 
+                badge={{ text: "PREMIUM", variant: "default" }}
+              />
+              <NavButton 
+                href="/exercises" 
+                icon={BookOpen} 
+                label="Exercises" 
+                badge={{ text: "FREE", variant: "secondary" }}
+              />
+
+              {!isAnonymous && (
+                <>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="gap-2 text-muted-foreground hover:text-foreground"
+                        data-testid="dropdown-progress"
+                      >
+                        <TrendingUp className="h-4 w-4" />
+                        Progress
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      <DropdownMenuLabel>Track Your Growth</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <Link href="/health-score">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-health-score">
+                          <Heart className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <div className="font-medium">Health Score</div>
+                            <div className="text-xs text-muted-foreground">Track wellness</div>
+                          </div>
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/insights">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-insights">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <div className="font-medium">Insights</div>
+                            <div className="text-xs text-muted-foreground">AI analytics</div>
+                          </div>
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/summaries">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-summaries">
+                          <FileText className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <div className="font-medium">Summaries</div>
+                            <div className="text-xs text-muted-foreground">Weekly recaps</div>
+                          </div>
+                        </DropdownMenuItem>
+                      </Link>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="gap-2 text-muted-foreground hover:text-foreground"
+                        data-testid="dropdown-tools"
+                      >
+                        <Users className="h-4 w-4" />
+                        Tools
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      <DropdownMenuLabel>Relationship Tools</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <Link href="/partner-connection">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-partner-connection">
+                          <Users className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <div className="font-medium">Partner Connection</div>
+                            <div className="text-xs text-muted-foreground">Share progress</div>
+                          </div>
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/journal">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-journal">
+                          <Activity className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <div className="font-medium">Journal</div>
+                            <div className="text-xs text-muted-foreground">Reflect & grow</div>
+                          </div>
+                        </DropdownMenuItem>
+                      </Link>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
+
+              {showReports && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="gap-2 text-muted-foreground hover:text-foreground"
+                      data-testid="dropdown-admin"
+                    >
+                      <BarChart3 className="h-4 w-4" />
+                      Admin
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuLabel>Admin Tools</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <Link href="/reports">
+                      <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-reports">
+                        <BarChart3 className="h-4 w-4" />
+                        Reports
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href="/analytics">
+                      <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-analytics">
+                        <TrendingUp className="h-4 w-4" />
+                        Analytics
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href="/feedback-report">
+                      <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-feedback-report">
+                        <MessageSquare className="h-4 w-4" />
+                        Feedback
+                      </DropdownMenuItem>
+                    </Link>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </nav>
           </div>
         )}
         {isWelcome && <div />}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <FeedbackButton />
           <ThemeToggle />
           {isAnonymous ? (
