@@ -15,7 +15,7 @@ Preferred communication style: Simple, everyday language.
 **Framework & Tooling:** React 18 with TypeScript, Vite, Wouter for routing, TanStack Query for server state.
 **UI Component System:** Shadcn/ui with Radix UI primitives, Tailwind CSS, custom warm rose/mauve and terracotta theme, responsive mobile-first design.
 **Design System:** Focus on a warm, organic aesthetic with Poppins, Inter, and Quicksand typography.
-**Key UI Components:** Dashboard, AI Coach Chat, Retreat Builder, Date Night Planner, Exercises Library, Nervous System Regulation module, Weekly Summaries, Feedback Forms, Admin-only Feedback & Email Monitoring Reports, Relationship Health Score Dashboard, Partner Connection System, AI-Powered Relationship Journal, Daily Conversations Module, and Progress Analytics (Insights). Features include a global Trial Countdown Banner, Trial Value Dashboard, Trial Expiring Modal, and Trial Checklist for onboarding.
+**Key UI Components:** Dashboard, AI Coach Chat, Retreat Builder, Date Night Planner, Exercises Library, Nervous System Regulation module, Weekly Summaries, Feedback Forms, Admin-only Feedback & Email Monitoring Reports, Relationship Health Score Dashboard, Partner Connection System, AI-Powered Relationship Journal, Daily Conversations (standalone dedicated page), and Progress Analytics (Insights). Features include a global Trial Countdown Banner, Trial Value Dashboard, Trial Expiring Modal, and Trial Checklist for onboarding.
 **Conversion Optimization Features:** Six landing page features designed to maximize sign-ups and trial-to-paid conversion:
 1. **Social Proof Statistics** - Real-time display of user count, coaching sessions, and ratings from database
 2. **Exit Intent Popup** - Modal triggered when user attempts to leave, encouraging signup with value proposition
@@ -27,7 +27,7 @@ Preferred communication style: Simple, everyday language.
 1. **Relationship Health Score** - Calculates a 0-100 score based on user activity (assessments 30%, coaching 25%, exercises 20%, progress 15%, journaling 10%) with category breakdowns and historical trend tracking
 2. **Partner Connection** - Email-based invitation system allowing couples to link accounts with configurable sharing permissions for assessments, progress, and journal entries
 3. **AI-Powered Journal** - Personal relationship journaling with mood tracking and optional GPT-4o generated insights, supporting private or partner-shared entries
-4. **Daily Conversations** - Couples-only feature with therapy-informed daily questions using double-blind responses (both must answer before seeing each other's responses). Includes 140 questions across 7 categories (emotional intimacy, communication/conflict, physical intimacy, finances/planning, values/spiritual, play/adventure, trust/boundaries) with 3 intensity levels. Features AI coaching via "Help Me Out" modal with guidance, think time, and alternative question options
+4. **Daily Conversations** - Standalone dedicated feature at /conversations with therapy-informed daily questions using double-blind responses (both must answer before seeing each other's responses). Free users get 3 conversation responses, paid users get unlimited access. Includes 140 questions across 7 categories (emotional intimacy, communication/conflict, physical intimacy, finances/planning, values/spiritual, play/adventure, trust/boundaries) with 3 intensity levels. Features AI coaching via "Help Me Out" modal with guidance, think time, and alternative question options. Prominent feature card on landing page marked "FREE" drives conversions by surfacing the feature limit
 5. **Progress Analytics** - Periodic snapshots (daily/weekly/monthly) tracking engagement metrics with AI-generated insights and benchmarking against user history
 **SEO Implementation:** Dynamic meta tags, Open Graph, Twitter Cards, and JSON-LD structured data for E-E-A-T compliance across key pages.
 
@@ -66,7 +66,9 @@ Preferred communication style: Simple, everyday language.
 - `POST /api/conversations/help` - Generates AI coaching content (guidance/alternative questions)
 - `GET /api/conversations/history` - Retrieves past complete conversations
 
-**UI Integration:** Conversations tab within Journal page (`/journal`) uses shadcn Tabs component, requiring active partnership to access.
+**UI Integration:** Standalone dedicated page at `/conversations` route with full-featured UI (no longer part of Journal tabs). Navigation links appear in desktop Tools dropdown and mobile menu. Requires active partnership to access. Features usage tracking badge showing remaining free questions and upgrade prompts when limit is reached.
+
+**Usage Limits:** Free users get 3 conversation responses total (tracked in `users.conversationResponseCount`). Paid users get unlimited access. API endpoints enforce limits and return `remainingResponses` and `isLimitReached` flags for UI display.
 
 ### Authentication & Authorization
 
