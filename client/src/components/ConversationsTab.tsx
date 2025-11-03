@@ -98,19 +98,39 @@ export function ConversationsTab() {
     },
   });
 
-  const handleSubmitResponse = () => {
+  const handleSubmitResponse = async () => {
     if (!dailyData?.question || !responseText.trim()) return;
     
-    // Get partnership ID from the existing response or we need to fetch it
-    const partnershipId = dailyData.userResponse?.partnershipId || dailyData.partnerResponse?.partnershipId;
+    // Get partnership ID from the existing response if available
+    let partnershipId = dailyData.userResponse?.partnershipId || dailyData.partnerResponse?.partnershipId;
     
+    // If no partnershipId from responses, fetch from partnerships API
     if (!partnershipId) {
-      toast({
-        title: "Error",
-        description: "Partnership information not found. Please try refreshing the page.",
-        variant: "destructive",
-      });
-      return;
+      try {
+        const partnershipResponse = await fetch('/api/partnerships');
+        if (!partnershipResponse.ok) {
+          throw new Error('Failed to fetch partnership information');
+        }
+        const partnership = await partnershipResponse.json();
+        
+        if (!partnership || partnership.status !== 'active') {
+          toast({
+            title: "Error",
+            description: "No active partnership found. Please connect with your partner first.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        partnershipId = partnership.id;
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch partnership information. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     respondMutation.mutate({

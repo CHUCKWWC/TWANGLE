@@ -2677,6 +2677,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       const response = await storage.createConversationResponse({
         partnershipId,
         questionId,
+        userId,
         responseText,
       });
 
