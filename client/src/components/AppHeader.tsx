@@ -133,6 +133,13 @@ export function AppHeader() {
             badge={{ text: "PREMIUM", variant: "default" }}
             onClick={() => setMobileMenuOpen(false)}
           />
+          <MobileNavLink 
+            href="/conversations" 
+            icon={MessageSquare} 
+            label="Daily Conversations" 
+            badge={{ text: "3 FREE", variant: "default" }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
         </>
       )}
 
@@ -289,6 +296,15 @@ export function AppHeader() {
                           <div className="flex-1">
                             <div className="font-medium">Journal</div>
                             <div className="text-xs text-muted-foreground">Reflect & grow</div>
+                          </div>
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/conversations">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-conversations">
+                          <MessageSquare className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <div className="font-medium">Daily Conversations</div>
+                            <div className="text-xs text-muted-foreground">3 free questions</div>
                           </div>
                         </DropdownMenuItem>
                       </Link>

@@ -35,6 +35,7 @@ import PartnerConnection from "@/pages/PartnerConnection";
 import Journal from "@/pages/Journal";
 import Insights from "@/pages/Insights";
 import PartnerInvite from "@/pages/PartnerInvite";
+import Conversations from "@/pages/Conversations";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -67,6 +68,7 @@ function Router() {
         <Route path="/health-score" component={HealthScore} />
         <Route path="/partner-connection" component={PartnerConnection} />
         <Route path="/journal" component={Journal} />
+        <Route path="/conversations" component={Conversations} />
         <Route path="/insights" component={Insights} />
         <Route path="/profile" component={Profile} />
         <Route path="/retreat/:id" component={RetreatItinerary} />

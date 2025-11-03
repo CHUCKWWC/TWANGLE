@@ -2603,6 +2603,22 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     try {
       const userId = req.user.claims.sub;
       
+      // Get user info to check subscription and usage
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check subscription status
+      const subscription = await storage.getSubscriptionByUserId(userId);
+      const isPaidUser = subscription?.status === 'active' || subscription?.status === 'trialing' || user.hasLifetimeAccess === 1;
+      
+      // Calculate remaining responses for free users
+      const responseCount = user.conversationResponseCount || 0;
+      const FREE_LIMIT = 3;
+      const remainingResponses = isPaidUser ? 999 : Math.max(0, FREE_LIMIT - responseCount);
+      const isLimitReached = !isPaidUser && responseCount >= FREE_LIMIT;
+      
       // Get user's active partnership
       const partnership = await storage.getActivePartnership(userId);
       if (!partnership) {
@@ -2638,6 +2654,8 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         hasUserAnswered: !!userResponse,
         hasPartnerAnswered: !!partnerResponse,
         bothAnswered,
+        remainingResponses,
+        isLimitReached,
       });
     } catch (error: any) {
       console.error("Get daily question error:", error);
@@ -2654,6 +2672,25 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       if (!questionId || !responseText || !partnershipId) {
         return res.status(400).json({ 
           message: "Missing required fields: questionId, responseText, partnershipId" 
+        });
+      }
+
+      // Get user info to check subscription and usage limits
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check subscription status
+      const subscription = await storage.getSubscriptionByUserId(userId);
+      const isPaidUser = subscription?.status === 'active' || subscription?.status === 'trialing' || user.hasLifetimeAccess === 1;
+      
+      // Enforce free user limits
+      const FREE_LIMIT = 3;
+      const responseCount = user.conversationResponseCount || 0;
+      if (!isPaidUser && responseCount >= FREE_LIMIT) {
+        return res.status(403).json({ 
+          message: "You have reached the limit of 3 free conversation responses. Upgrade to continue." 
         });
       }
 
@@ -2680,6 +2717,9 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         userId,
         responseText,
       });
+
+      // Increment user's conversation response count
+      await storage.incrementConversationResponseCount(userId);
 
       // Check if both partners have now answered
       const allResponses = await storage.getConversationResponses(partnershipId, questionId);

@@ -31,6 +31,7 @@ export const users = pgTable("users", {
   emailVerificationToken: varchar("email_verification_token"),
   emailVerificationExpires: timestamp("email_verification_expires"),
   newsletterSubscribed: integer("newsletter_subscribed").default(0),
+  conversationResponseCount: integer("conversation_response_count").default(0),
   trialStartedAt: timestamp("trial_started_at"),
   trialEndsAt: timestamp("trial_ends_at"),
   createdAt: timestamp("created_at").defaultNow(),
