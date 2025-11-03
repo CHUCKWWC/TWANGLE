@@ -37,6 +37,12 @@ import {
   type InsertJournalEntry,
   type AnalyticsSnapshot,
   type InsertAnalyticsSnapshot,
+  type ConversationQuestion,
+  type InsertConversationQuestion,
+  type ConversationResponse,
+  type InsertConversationResponse,
+  type ConversationHelpEvent,
+  type InsertConversationHelpEvent,
   users,
   subscriptions,
   chatSessions,
@@ -54,7 +60,10 @@ import {
   healthScores,
   partnerships,
   journalEntries,
-  analyticsSnapshots
+  analyticsSnapshots,
+  conversationQuestions,
+  conversationResponses,
+  conversationHelpEvents
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -196,6 +205,18 @@ export interface IStorage {
   createAnalyticsSnapshot(snapshot: InsertAnalyticsSnapshot): Promise<AnalyticsSnapshot>;
   getAnalyticsSnapshots(userId: string, periodType?: string): Promise<AnalyticsSnapshot[]>;
   getLatestAnalyticsSnapshot(userId: string, periodType: string): Promise<AnalyticsSnapshot | undefined>;
+
+  // Conversation questions and responses
+  getDailyQuestion(partnershipId: string): Promise<ConversationQuestion | undefined>;
+  getRandomQuestion(category?: string): Promise<ConversationQuestion | undefined>;
+  createConversationResponse(response: InsertConversationResponse): Promise<ConversationResponse>;
+  getConversationResponses(partnershipId: string, questionId: string): Promise<ConversationResponse[]>;
+  getConversationHistory(partnershipId: string, limit?: number): Promise<Array<{
+    question: ConversationQuestion;
+    responses: ConversationResponse[];
+    isComplete: boolean;
+  }>>;
+  createConversationHelpEvent(event: InsertConversationHelpEvent): Promise<ConversationHelpEvent>;
 }
 
 export class MemStorage implements IStorage {
@@ -1885,6 +1906,117 @@ export class DbStorage implements IStorage {
       )
       .orderBy(desc(analyticsSnapshots.period))
       .limit(1);
+    return result[0];
+  }
+
+  // Conversation implementations
+  async getDailyQuestion(partnershipId: string): Promise<ConversationQuestion | undefined> {
+    // Get today's question: the one that both partners haven't completed yet
+    const partnership = await this.getPartnership(partnershipId);
+    if (!partnership || !partnership.user1Id || !partnership.user2Id) {
+      return undefined;
+    }
+
+    // Find all questions where both partners haven't responded
+    const allQuestions = await this.db.select().from(conversationQuestions)
+      .where(eq(conversationQuestions.active, 1))
+      .orderBy(conversationQuestions.createdAt);
+
+    for (const question of allQuestions) {
+      const responses = await this.getConversationResponses(partnershipId, question.id);
+      const user1Responded = responses.some(r => r.userId === partnership.user1Id);
+      const user2Responded = responses.some(r => r.userId === partnership.user2Id);
+      
+      if (!user1Responded || !user2Responded) {
+        return question;
+      }
+    }
+
+    // If all questions completed, return a random one
+    return this.getRandomQuestion();
+  }
+
+  async getRandomQuestion(category?: string): Promise<ConversationQuestion | undefined> {
+    let query = this.db.select().from(conversationQuestions)
+      .where(eq(conversationQuestions.active, 1));
+    
+    if (category) {
+      query = query.where(eq(conversationQuestions.category, category));
+    }
+
+    const questions = await query;
+    if (questions.length === 0) return undefined;
+    
+    const randomIndex = Math.floor(Math.random() * questions.length);
+    return questions[randomIndex];
+  }
+
+  async createConversationResponse(response: InsertConversationResponse): Promise<ConversationResponse> {
+    const result = await this.db.insert(conversationResponses).values(response).returning();
+    return result[0];
+  }
+
+  async getConversationResponses(partnershipId: string, questionId: string): Promise<ConversationResponse[]> {
+    return await this.db.select().from(conversationResponses)
+      .where(
+        and(
+          eq(conversationResponses.partnershipId, partnershipId),
+          eq(conversationResponses.questionId, questionId)
+        )
+      )
+      .orderBy(conversationResponses.createdAt);
+  }
+
+  async getConversationHistory(partnershipId: string, limit: number = 20): Promise<Array<{
+    question: ConversationQuestion;
+    responses: ConversationResponse[];
+    isComplete: boolean;
+  }>> {
+    const partnership = await this.getPartnership(partnershipId);
+    if (!partnership || !partnership.user1Id || !partnership.user2Id) {
+      return [];
+    }
+
+    // Get all responses for this partnership
+    const allResponses = await this.db.select().from(conversationResponses)
+      .where(eq(conversationResponses.partnershipId, partnershipId))
+      .orderBy(desc(conversationResponses.createdAt));
+
+    // Group by question
+    const questionMap = new Map<string, ConversationResponse[]>();
+    for (const response of allResponses) {
+      if (!questionMap.has(response.questionId)) {
+        questionMap.set(response.questionId, []);
+      }
+      questionMap.get(response.questionId)!.push(response);
+    }
+
+    // Get question details and check completion
+    const history = [];
+    for (const [questionId, responses] of questionMap.entries()) {
+      const question = await this.db.select().from(conversationQuestions)
+        .where(eq(conversationQuestions.id, questionId))
+        .limit(1);
+      
+      if (question[0]) {
+        const user1Responded = responses.some(r => r.userId === partnership.user1Id);
+        const user2Responded = responses.some(r => r.userId === partnership.user2Id);
+        
+        history.push({
+          question: question[0],
+          responses,
+          isComplete: user1Responded && user2Responded,
+        });
+      }
+      
+      if (history.length >= limit) break;
+    }
+
+    return history;
+  }
+
+  async createConversationHelpEvent(event: InsertConversationHelpEvent): Promise<ConversationHelpEvent> {
+    const result = await this.db.insert(conversationHelpEvents).values(event).returning();
     return result[0];
   }
 }

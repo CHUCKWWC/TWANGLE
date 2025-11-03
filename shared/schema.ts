@@ -465,3 +465,67 @@ export const insertAnalyticsSnapshotSchema = createInsertSchema(analyticsSnapsho
 
 export type InsertAnalyticsSnapshot = z.infer<typeof insertAnalyticsSnapshotSchema>;
 export type AnalyticsSnapshot = typeof analyticsSnapshots.$inferSelect;
+
+// Conversation questions for daily couple check-ins
+export const conversationQuestions = pgTable("conversation_questions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  category: varchar("category").notNull(), // emotional_intimacy, communication_conflict, physical_intimacy, finances_planning, values_spiritual, play_adventure, trust_boundaries
+  intensity: integer("intensity").notNull().default(1), // 1 (gentle), 2 (moderate), 3 (deep)
+  questionText: text("question_text").notNull(),
+  therapyPrompt: text("therapy_prompt"), // Guidance text shown with category
+  active: integer("active").default(1), // Whether question is in rotation
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_questions_category").on(table.category, table.active),
+]);
+
+export const insertConversationQuestionSchema = createInsertSchema(conversationQuestions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertConversationQuestion = z.infer<typeof insertConversationQuestionSchema>;
+export type ConversationQuestion = typeof conversationQuestions.$inferSelect;
+
+// Conversation responses (double-blind: both must answer before revealing)
+export const conversationResponses = pgTable("conversation_responses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  partnershipId: varchar("partnership_id").notNull(), // Links to active partnership
+  questionId: varchar("question_id").notNull(),
+  userId: varchar("user_id").notNull(), // Who answered
+  responseText: text("response_text").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_responses_partnership").on(table.partnershipId, table.questionId),
+  index("idx_responses_user").on(table.userId, table.createdAt),
+]);
+
+export const insertConversationResponseSchema = createInsertSchema(conversationResponses).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+});
+
+export type InsertConversationResponse = z.infer<typeof insertConversationResponseSchema>;
+export type ConversationResponse = typeof conversationResponses.$inferSelect;
+
+// Conversation help events (tracking when users need support)
+export const conversationHelpEvents = pgTable("conversation_help_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  questionId: varchar("question_id").notNull(),
+  actionType: varchar("action_type").notNull(), // guidance, think_time, alternative
+  aiResponse: jsonb("ai_response"), // Stores AI coaching or alternative question
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_help_user").on(table.userId, table.createdAt),
+]);
+
+export const insertConversationHelpEventSchema = createInsertSchema(conversationHelpEvents).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+});
+
+export type InsertConversationHelpEvent = z.infer<typeof insertConversationHelpEventSchema>;
+export type ConversationHelpEvent = typeof conversationHelpEvents.$inferSelect;
