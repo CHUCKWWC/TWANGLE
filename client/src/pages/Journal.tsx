@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Sparkles, Calendar, Heart, Smile, Meh, Frown, Lock, Eye } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BookOpen, Sparkles, Calendar, Heart, Smile, Meh, Frown, Lock, Eye, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +16,7 @@ import { z } from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { AppHeader } from "@/components/AppHeader";
+import { ConversationsTab } from "@/components/ConversationsTab";
 
 interface JournalEntry {
   id: string;
@@ -111,20 +113,34 @@ export default function Journal() {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <div className="container max-w-4xl mx-auto p-6 pt-20 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold" data-testid="text-page-title">Relationship Journal</h1>
-            <p className="text-muted-foreground mt-1">
-              Reflect on your relationship journey and gain AI-powered insights
-            </p>
-          </div>
-          {!showForm && (
-            <Button onClick={() => setShowForm(true)} data-testid="button-new-entry">
-              <BookOpen className="mr-2 h-4 w-4" />
-              New Entry
-            </Button>
-          )}
+        <div>
+          <h1 className="text-3xl font-bold" data-testid="text-page-title">Relationship Journal</h1>
+          <p className="text-muted-foreground mt-1">
+            Reflect on your relationship journey and connect with your partner
+          </p>
         </div>
+
+        <Tabs defaultValue="journal" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="journal" data-testid="tab-journal">
+              <BookOpen className="h-4 w-4 mr-2" />
+              My Journal
+            </TabsTrigger>
+            <TabsTrigger value="conversations" data-testid="tab-conversations">
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Conversations
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="journal" className="space-y-6 mt-6">
+            <div className="flex items-center justify-end">
+              {!showForm && (
+                <Button onClick={() => setShowForm(true)} data-testid="button-new-entry">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  New Entry
+                </Button>
+              )}
+            </div>
 
         {showForm && (
           <Card>
@@ -354,6 +370,12 @@ export default function Journal() {
             ))}
           </div>
         )}
+          </TabsContent>
+
+          <TabsContent value="conversations" className="mt-6">
+            <ConversationsTab />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
