@@ -62,6 +62,8 @@ export default function StorefrontSuccess() {
     );
   }
 
+  const isSubscription = session.mode === 'subscription';
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <Card data-testid="card-success">
@@ -71,14 +73,23 @@ export default function StorefrontSuccess() {
               <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
             </div>
           </div>
-          <CardTitle className="text-2xl">Payment Successful!</CardTitle>
+          <CardTitle className="text-2xl">
+            {isSubscription ? 'Subscription Activated!' : 'Payment Successful!'}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="bg-muted rounded-lg p-4 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Amount Paid</span>
+              <span className="text-muted-foreground">
+                {isSubscription ? 'Subscription Amount' : 'Amount Paid'}
+              </span>
               <span className="font-bold text-lg">
                 ${formatPrice(session.amountTotal)} {session.currency?.toUpperCase()}
+                {isSubscription && session.subscription?.billingInterval && (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    /{session.subscription.billingInterval}
+                  </span>
+                )}
               </span>
             </div>
             {session.customerEmail && (
@@ -87,14 +98,34 @@ export default function StorefrontSuccess() {
                 <span>{session.customerEmail}</span>
               </div>
             )}
+            {isSubscription && session.subscription?.trialEnd && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Trial Period Ends</span>
+                <span>{new Date(session.subscription.trialEnd * 1000).toLocaleDateString()}</span>
+              </div>
+            )}
+            {isSubscription && session.subscription?.currentPeriodEnd && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Next Billing Date</span>
+                <span>{new Date(session.subscription.currentPeriodEnd * 1000).toLocaleDateString()}</span>
+              </div>
+            )}
           </div>
 
           <div className="text-sm text-muted-foreground space-y-2">
             <p>
-              Thank you for your purchase! You should receive a confirmation email shortly.
+              {isSubscription 
+                ? 'Thank you for subscribing! You should receive a confirmation email shortly.' 
+                : 'Thank you for your purchase! You should receive a confirmation email shortly.'
+              }
             </p>
+            {isSubscription && (
+              <p>
+                Your subscription is now active. You can manage your subscription at any time.
+              </p>
+            )}
             <p>
-              If you have any questions about your order, please contact the merchant.
+              If you have any questions about your {isSubscription ? 'subscription' : 'order'}, please contact the merchant.
             </p>
           </div>
         </CardContent>

@@ -107,9 +107,23 @@ export default function Storefront() {
                   <div>
                     <div className="text-3xl font-bold">
                       ${formatPrice(product.priceInCents)}
+                      {product.productType === 'subscription' && product.billingInterval && (
+                        <span className="text-lg text-muted-foreground">/{product.billingInterval}</span>
+                      )}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      per item
+                      {product.productType === 'subscription' ? (
+                        <>
+                          {product.billingInterval === 'month' ? 'Monthly subscription' : 'Yearly subscription'}
+                          {product.trialDays > 0 && (
+                            <Badge variant="secondary" className="ml-2">
+                              {product.trialDays} day trial
+                            </Badge>
+                          )}
+                        </>
+                      ) : (
+                        'per item'
+                      )}
                     </div>
                   </div>
                   
@@ -131,7 +145,9 @@ export default function Storefront() {
                   data-testid={`button-buy-${product.id}`}
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
-                  {checkoutMutation.isPending ? "Loading..." : "Buy Now"}
+                  {checkoutMutation.isPending ? "Loading..." : (
+                    product.productType === 'subscription' ? 'Subscribe' : 'Buy Now'
+                  )}
                 </Button>
               </CardFooter>
             </Card>
