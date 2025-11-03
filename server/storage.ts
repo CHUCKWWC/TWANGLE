@@ -1176,6 +1176,26 @@ export class DbStorage implements IStorage {
     return Number(result[0]?.count || 0);
   }
 
+  async getTotalMessageCount(): Promise<number> {
+    const result = await this.db
+      .select({ total: sql<number>`sum(${chatSessions.messageCount})` })
+      .from(chatSessions);
+    return Number(result[0]?.total || 0);
+  }
+
+  async getAverageSessionRating(): Promise<{ avgRating: number; count: number }> {
+    const result = await this.db
+      .select({ 
+        avgRating: sql<number>`avg(${sessionFeedback.rating})`,
+        count: sql<number>`count(*)`
+      })
+      .from(sessionFeedback);
+    return {
+      avgRating: Number(result[0]?.avgRating || 0),
+      count: Number(result[0]?.count || 0)
+    };
+  }
+
   async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
     const result = await this.db.insert(chatSessions).values(insertSession).returning();
     return result[0];

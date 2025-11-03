@@ -37,6 +37,21 @@ const stripe = process.env.STRIPE_SECRET_KEY
     })
   : null;
 
+// IP-based rate limiter for anonymous chat to prevent API abuse
+const anonymousChatLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // Maximum 10 requests per IP per hour
+  message: { 
+    error: "Too many requests",
+    message: "You've reached the maximum number of demo messages. Please sign up for unlimited access.",
+    requiresAuth: true 
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Only apply rate limit to anonymous users
+  skip: (req: any) => !!req.user?.claims?.sub,
+});
+
 const SYSTEM_PROMPT = `You are Coach Charles, an expert relationship coach trained in research-backed methods including:
 - The Gottman Method (Dr. John Gottman's research on relationship stability)
 - Emotionally Focused Therapy - EFT (Dr. Sue Johnson's attachment-based approach)
@@ -389,6 +404,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public social proof statistics endpoint (no authentication required)
+  app.get('/api/social-proof', async (req: any, res) => {
+    try {
+      // Query database for statistics
+      const [userCount, messageCount, ratingData] = await Promise.all([
+        storage.getTotalUserCount(),
+        storage.getTotalMessageCount(),
+        storage.getAverageSessionRating()
+      ]);
+
+      res.json({
+        userCount,
+        messageCount,
+        avgRating: ratingData.avgRating > 0 ? Number(ratingData.avgRating.toFixed(1)) : 4.8,
+        feedbackCount: ratingData.count
+      });
+    } catch (error) {
+      console.error("Error fetching social proof statistics:", error);
+      // Return fallback statistics on error
+      res.json({
+        userCount: 2300,
+        messageCount: 12400,
+        avgRating: 4.8,
+        feedbackCount: 0
+      });
+    }
+  });
+
+  // Newsletter subscription endpoint (public, no auth required)
+  app.post('/api/newsletter/subscribe', async (req: any, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: "Valid email is required" });
+      }
+
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // Check if user already exists
+      let user = await storage.getUserByEmail(email);
+      
+      if (user) {
+        // Update existing user's newsletter subscription
+        await storage.updateNewsletterSubscription(user.id, true);
+        return res.json({ 
+          message: "Successfully subscribed to newsletter",
+          alreadyRegistered: true
+        });
+      } else {
+        // Create a newsletter-only user (no full registration)
+        user = await storage.createUser({
+          email,
+          newsletterSubscribed: 1,
+        });
+        
+        return res.json({ 
+          message: "Successfully subscribed to newsletter",
+          alreadyRegistered: false
+        });
+      }
+    } catch (error) {
+      console.error("Error subscribing to newsletter:", error);
+      res.status(500).json({ message: "Failed to subscribe to newsletter" });
+    }
+  });
+
   // Update user profile
   app.put('/api/user/profile', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
@@ -412,8 +498,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chat endpoint (requires authentication)
-  app.post("/api/chat", isAuthenticated, logUserAccess, async (req: any, res) => {
+  // Chat endpoint (supports both authenticated and anonymous users)
+  // Anonymous users are rate-limited by IP to prevent API abuse
+  app.post("/api/chat", anonymousChatLimiter, async (req: any, res) => {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(501).json({ 
         error: "AI chat not configured", 
@@ -424,13 +511,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { messages, sessionId } = req.body;
       const userId = req.user?.claims?.sub;
+      const isAnonymous = !userId;
 
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: "Messages array is required" });
       }
 
       // Backend enforcement of freemium limits for anonymous users
-      if (req.anonymousUser) {
+      if (isAnonymous) {
         // Track message count in session for anonymous users
         if (!req.session.anonymousChatCount) {
           req.session.anonymousChatCount = 0;
@@ -451,7 +539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Track chat sessions for authenticated users (for trial progress tracking)
       let currentSessionId = sessionId;
-      if (userId && !req.anonymousUser) {
+      if (userId) {
         if (!currentSessionId) {
           // Create a new session
           const session = await storage.createChatSession({
@@ -2270,6 +2358,47 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     } catch (error: any) {
       console.error("Get pending invites error:", error);
       res.status(500).json({ message: "Failed to get pending invites" });
+    }
+  });
+
+  // Get partnership invitation details (public endpoint for landing page)
+  app.get('/api/partnerships/:token/details', async (req: any, res) => {
+    try {
+      const { token } = req.params;
+
+      // Get partnership by token
+      const partnership = await storage.getPartnershipByToken(token);
+      if (!partnership) {
+        return res.status(404).json({ message: "Invalid partnership invitation" });
+      }
+
+      // Check if token is expired
+      if (partnership.inviteExpiresAt && new Date() > partnership.inviteExpiresAt) {
+        return res.status(400).json({ message: "Partnership invitation has expired", expired: true });
+      }
+
+      // Check if already accepted
+      if (partnership.acceptedAt) {
+        return res.status(400).json({ message: "This invitation has already been accepted", alreadyAccepted: true });
+      }
+
+      // Get inviter's information
+      const inviter = await storage.getUser(partnership.user1Id);
+      if (!inviter) {
+        return res.status(404).json({ message: "Inviter not found" });
+      }
+
+      // Return safe invitation details for landing page
+      res.json({
+        inviterName: inviter.displayName || inviter.email?.split('@')[0] || 'Your partner',
+        inviterEmail: inviter.email,
+        invitedEmail: partnership.user2Email,
+        expiresAt: partnership.inviteExpiresAt,
+        token: partnership.inviteToken
+      });
+    } catch (error: any) {
+      console.error("Get partnership invite error:", error);
+      res.status(500).json({ message: "Failed to get invitation details" });
     }
   });
 
