@@ -51,18 +51,31 @@ export default function PartnerInvite() {
     onError: (error: Error) => {
       console.error('Failed to accept partnership:', error);
       setIsAccepting(false);
+      // Show error but don't redirect - let user see the page and try manual accept
     }
   });
 
   useEffect(() => {
     // If user is authenticated and we have invite details, auto-accept
-    if (user && inviteDetails && !isAccepting && !acceptMutation.isPending) {
+    if (user && inviteDetails && !isAccepting && !acceptMutation.isPending && !acceptMutation.isError) {
       setIsAccepting(true);
       acceptMutation.mutate();
     }
-  }, [user, inviteDetails, isAccepting]);
+  }, [user, inviteDetails, isAccepting, acceptMutation.isPending, acceptMutation.isError]);
 
-  if (isLoading) {
+  // Show loading while auto-accepting for authenticated users
+  if (user && (isAccepting || acceptMutation.isPending)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="animate-spin h-12 w-12 mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Accepting invitation...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
@@ -98,10 +111,48 @@ export default function PartnerInvite() {
 
   const expiresIn = formatDistanceToNow(new Date(inviteDetails.expiresAt), { addSuffix: true });
 
+  // Handle manual accept for authenticated users when auto-accept fails
+  const handleManualAccept = async () => {
+    setIsAccepting(true);
+    acceptMutation.mutate();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background">
       <div className="container mx-auto px-6 py-16">
         <div className="max-w-3xl mx-auto">
+          {/* Error banner when auto-accept fails */}
+          {acceptMutation.isError && user && (
+            <Card className="mb-6 border-destructive/50 bg-destructive/5">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-destructive mb-1">Failed to accept invitation</p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      We couldn't automatically accept the invitation. Please try again.
+                    </p>
+                    <Button 
+                      onClick={handleManualAccept}
+                      disabled={acceptMutation.isPending}
+                      size="sm"
+                      data-testid="button-retry-accept"
+                    >
+                      {acceptMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Accepting...
+                        </>
+                      ) : (
+                        'Try Again'
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="text-center mb-12">
             <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
               <Heart className="w-10 h-10 text-primary" />
