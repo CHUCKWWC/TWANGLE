@@ -2697,7 +2697,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   app.post('/api/conversations/respond', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { questionId, responseText, partnershipId } = req.body;
+      const { questionId, responseText } = req.body;
 
       if (!questionId || !responseText) {
         return res.status(400).json({ 
@@ -2724,16 +2724,19 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         });
       }
 
+      // Automatically look up user's active partnership
+      const partnership = await storage.getActivePartnership(userId);
+      const partnershipId = partnership?.id || null;
+      
+      console.log('[DEBUG] Conversation Response - userId:', userId);
+      console.log('[DEBUG] Conversation Response - partnership:', partnership);
+      console.log('[DEBUG] Conversation Response - partnershipId:', partnershipId);
+      
       // Determine if solo or partnered mode
       const isSoloMode = !partnershipId;
       
-      if (!isSoloMode) {
-        // Verify partnership
-        const partnership = await storage.getPartnership(partnershipId);
-        if (!partnership) {
-          return res.status(404).json({ message: "Partnership not found" });
-        }
-
+      if (!isSoloMode && partnership) {
+        // Verify user is part of the partnership
         if (partnership.user1Id !== userId && partnership.user2Id !== userId) {
           return res.status(403).json({ message: "Not authorized for this partnership" });
         }

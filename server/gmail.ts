@@ -188,7 +188,7 @@ export async function sendPartnerInvitationEmail(
     const gmail = await getUncachableGmailClient();
     const fromEmail = getFromEmail();
     
-    const inviteUrl = `${baseUrl}/partner-invite/${inviteToken}`;
+    const inviteUrl = `${baseUrl}/invite/${inviteToken}`;
     
     const text = `${inviterName} has invited you to connect on Twangle! Join them to share your relationship journey. Click this link to accept the invitation: ${inviteUrl}`;
     

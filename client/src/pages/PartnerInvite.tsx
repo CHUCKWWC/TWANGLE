@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { useRoute } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useRoute, useLocation } from "wouter";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Users, Sparkles, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Heart, Users, Sparkles, CheckCircle2, XCircle, Clock, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
 
 interface InviteDetails {
   inviterName: string;
@@ -16,7 +18,10 @@ interface InviteDetails {
 
 export default function PartnerInvite() {
   const [, params] = useRoute("/invite/:token");
+  const [, navigate] = useLocation();
   const token = params?.token;
+  const { user, isLoading: authLoading } = useAuth();
+  const [isAccepting, setIsAccepting] = useState(false);
 
   const { data: inviteDetails, isLoading, error } = useQuery<InviteDetails>({
     queryKey: ['/api/partnerships', token, 'details'],
@@ -33,6 +38,29 @@ export default function PartnerInvite() {
     enabled: !!token,
     retry: false,
   });
+
+  // Auto-accept partnership if user is already authenticated
+  const acceptMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', `/api/partnerships/${token}/accept`, {});
+    },
+    onSuccess: () => {
+      // Redirect to partner connection page after acceptance
+      navigate('/partner-connection');
+    },
+    onError: (error: Error) => {
+      console.error('Failed to accept partnership:', error);
+      setIsAccepting(false);
+    }
+  });
+
+  useEffect(() => {
+    // If user is authenticated and we have invite details, auto-accept
+    if (user && inviteDetails && !isAccepting && !acceptMutation.isPending) {
+      setIsAccepting(true);
+      acceptMutation.mutate();
+    }
+  }, [user, inviteDetails, isAccepting]);
 
   if (isLoading) {
     return (
