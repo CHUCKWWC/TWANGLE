@@ -5,7 +5,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { logUserAccess } from "./accessLogger";
-import { sendVerificationEmail, sendWelcomeEmail, sendTrialReminder } from "./gmail";
+import { sendVerificationEmail, sendWelcomeEmail, sendTrialReminder, sendPartnerInvitationEmail } from "./gmail";
 import OpenAI from "openai";
 import Stripe from "stripe";
 import rateLimit from "express-rate-limit";
@@ -2298,7 +2298,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // ===== PARTNERSHIP ROUTES =====
   
   // Create partnership invitation
-  app.post('/api/partnerships', isAuthenticated, async (req: any, res) => {
+  app.post('/api/partnerships', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -2317,6 +2317,12 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         return res.status(400).json({ message: "You already have an active partnership" });
       }
 
+      // Get current user to include their name in the invitation
+      const inviter = await storage.getUser(userId);
+      if (!inviter) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       // Create invite token
       const inviteToken = randomUUID();
       const inviteExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
@@ -2330,6 +2336,18 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         sharedProgress: req.body.sharedProgress ?? 1,
         sharedJournal: req.body.sharedJournal ?? 0,
       });
+
+      // Send invitation email
+      try {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const inviterName = inviter.displayName || inviter.firstName || inviter.email?.split('@')[0] || 'Your partner';
+        await sendPartnerInvitationEmail(req.body.user2Email, inviterName, inviteToken, baseUrl);
+        console.log(`Partner invitation email sent to ${req.body.user2Email} from ${inviterName}`);
+      } catch (emailError) {
+        console.error("Failed to send partner invitation email:", emailError);
+        // Don't fail the request if email sending fails - partnership is already created
+        // User can still use the manual invitation link
+      }
 
       res.json(partnership);
     } catch (error: any) {
