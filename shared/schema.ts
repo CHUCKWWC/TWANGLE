@@ -488,10 +488,10 @@ export const insertConversationQuestionSchema = createInsertSchema(conversationQ
 export type InsertConversationQuestion = z.infer<typeof insertConversationQuestionSchema>;
 export type ConversationQuestion = typeof conversationQuestions.$inferSelect;
 
-// Conversation responses (double-blind: both must answer before revealing)
+// Conversation responses (double-blind for partnered mode, solo journaling for individual mode)
 export const conversationResponses = pgTable("conversation_responses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  partnershipId: varchar("partnership_id").notNull(), // Links to active partnership
+  partnershipId: varchar("partnership_id"), // Optional: Links to active partnership (null for solo mode)
   questionId: varchar("question_id").notNull(),
   userId: varchar("user_id").notNull(), // Who answered
   responseText: text("response_text").notNull(),
