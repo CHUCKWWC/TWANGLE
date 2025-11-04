@@ -2617,7 +2617,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
   // ===== CONVERSATION ROUTES =====
   
-  // Get daily question for partnership
+  // Get daily question (works for both solo and partnered users)
   app.get('/api/conversations/daily', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -2638,33 +2638,43 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       const remainingResponses = isPaidUser ? 999 : Math.max(0, FREE_LIMIT - responseCount);
       const isLimitReached = !isPaidUser && responseCount >= FREE_LIMIT;
       
-      // Get user's active partnership
+      // Check if user has an active partnership
       const partnership = await storage.getActivePartnership(userId);
-      if (!partnership) {
-        return res.status(404).json({ 
-          message: "No active partnership found. Connect with your partner to access this feature." 
-        });
+      const hasPartnership = partnership && partnership.status === 'active';
+      
+      // Get daily question based on partnership status
+      let question;
+      let responses: any[] = [];
+      let userResponse = null;
+      let partnerResponse = null;
+      let bothAnswered = false;
+      
+      if (hasPartnership) {
+        // Partnered mode: Get question for the partnership
+        question = await storage.getDailyQuestion(partnership.id);
+        if (!question) {
+          return res.status(404).json({ message: "No question available" });
+        }
+        
+        // Get existing responses for this question
+        responses = await storage.getConversationResponses(partnership.id, question.id);
+        userResponse = responses.find(r => r.userId === userId) || null;
+        partnerResponse = responses.find(r => r.userId !== userId) || null;
+        
+        // Double-blind: only show partner response if both have answered
+        bothAnswered = responses.length >= 2;
+      } else {
+        // Solo mode: Get question for the individual user
+        question = await storage.getSoloQuestion(userId);
+        if (!question) {
+          return res.status(404).json({ message: "No question available" });
+        }
+        
+        // Get user's existing response
+        responses = await storage.getSoloConversationResponses(userId, question.id);
+        userResponse = responses[0] || null;
+        bothAnswered = false; // No partner, so never "both answered"
       }
-
-      if (partnership.status !== 'active') {
-        return res.status(403).json({ 
-          message: "Partnership must be active to access conversations." 
-        });
-      }
-
-      // Get daily question
-      const question = await storage.getDailyQuestion(partnership.id);
-      if (!question) {
-        return res.status(404).json({ message: "No question available" });
-      }
-
-      // Get existing responses for this question
-      const responses = await storage.getConversationResponses(partnership.id, question.id);
-      const userResponse = responses.find(r => r.userId === userId);
-      const partnerResponse = responses.find(r => r.userId !== userId);
-
-      // Double-blind: only show partner response if both have answered
-      const bothAnswered = responses.length >= 2;
 
       res.json({
         question,
@@ -2675,6 +2685,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         bothAnswered,
         remainingResponses,
         isLimitReached,
+        isSoloMode: !hasPartnership,
       });
     } catch (error: any) {
       console.error("Get daily question error:", error);
@@ -2682,15 +2693,15 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  // Submit response to conversation question
+  // Submit response to conversation question (works for both solo and partnered users)
   app.post('/api/conversations/respond', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { questionId, responseText, partnershipId } = req.body;
 
-      if (!questionId || !responseText || !partnershipId) {
+      if (!questionId || !responseText) {
         return res.status(400).json({ 
-          message: "Missing required fields: questionId, responseText, partnershipId" 
+          message: "Missing required fields: questionId, responseText" 
         });
       }
 
@@ -2713,25 +2724,36 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         });
       }
 
-      // Verify partnership
-      const partnership = await storage.getPartnership(partnershipId);
-      if (!partnership) {
-        return res.status(404).json({ message: "Partnership not found" });
-      }
+      // Determine if solo or partnered mode
+      const isSoloMode = !partnershipId;
+      
+      if (!isSoloMode) {
+        // Verify partnership
+        const partnership = await storage.getPartnership(partnershipId);
+        if (!partnership) {
+          return res.status(404).json({ message: "Partnership not found" });
+        }
 
-      if (partnership.user1Id !== userId && partnership.user2Id !== userId) {
-        return res.status(403).json({ message: "Not authorized for this partnership" });
-      }
+        if (partnership.user1Id !== userId && partnership.user2Id !== userId) {
+          return res.status(403).json({ message: "Not authorized for this partnership" });
+        }
 
-      // Check if user already responded
-      const existingResponses = await storage.getConversationResponses(partnershipId, questionId);
-      if (existingResponses.some(r => r.userId === userId)) {
-        return res.status(400).json({ message: "You have already responded to this question" });
+        // Check if user already responded
+        const existingResponses = await storage.getConversationResponses(partnershipId, questionId);
+        if (existingResponses.some(r => r.userId === userId)) {
+          return res.status(400).json({ message: "You have already responded to this question" });
+        }
+      } else {
+        // Solo mode: Check if user already responded
+        const existingResponses = await storage.getSoloConversationResponses(userId, questionId);
+        if (existingResponses.length > 0) {
+          return res.status(400).json({ message: "You have already responded to this question" });
+        }
       }
 
       // Create response
       const response = await storage.createConversationResponse({
-        partnershipId,
+        partnershipId: partnershipId || null,
         questionId,
         userId,
         responseText,
@@ -2740,14 +2762,21 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       // Increment user's conversation response count
       await storage.incrementConversationResponseCount(userId);
 
-      // Check if both partners have now answered
-      const allResponses = await storage.getConversationResponses(partnershipId, questionId);
-      const bothAnswered = allResponses.length >= 2;
+      // Check if both partners have now answered (only for partnered mode)
+      let bothAnswered = false;
+      let partnerResponse = null;
+      
+      if (!isSoloMode) {
+        const allResponses = await storage.getConversationResponses(partnershipId, questionId);
+        bothAnswered = allResponses.length >= 2;
+        partnerResponse = bothAnswered ? allResponses.find(r => r.userId !== userId) : null;
+      }
 
       res.json({
         response,
         bothAnswered,
-        partnerResponse: bothAnswered ? allResponses.find(r => r.userId !== userId) : null,
+        partnerResponse,
+        isSoloMode,
       });
     } catch (error: any) {
       console.error("Create response error:", error);
@@ -2755,21 +2784,25 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  // Get conversation history
+  // Get conversation history (works for both solo and partnered users)
   app.get('/api/conversations/history', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const limit = parseInt(req.query.limit as string) || 20;
 
-      // Get user's active partnership
+      // Check if user has an active partnership
       const partnership = await storage.getActivePartnership(userId);
-      if (!partnership) {
-        return res.status(404).json({ 
-          message: "No active partnership found" 
-        });
+      const hasPartnership = partnership && partnership.status === 'active';
+      
+      let history;
+      if (hasPartnership) {
+        // Partnered mode: Get partnership history
+        history = await storage.getConversationHistory(partnership.id, limit);
+      } else {
+        // Solo mode: Get solo history
+        history = await storage.getSoloConversationHistory(userId, limit);
       }
 
-      const history = await storage.getConversationHistory(partnership.id, limit);
       res.json(history);
     } catch (error: any) {
       console.error("Get conversation history error:", error);

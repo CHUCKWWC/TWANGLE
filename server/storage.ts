@@ -220,10 +220,17 @@ export interface IStorage {
 
   // Conversation questions and responses
   getDailyQuestion(partnershipId: string): Promise<ConversationQuestion | undefined>;
+  getSoloQuestion(userId: string): Promise<ConversationQuestion | undefined>;
   getRandomQuestion(category?: string): Promise<ConversationQuestion | undefined>;
   createConversationResponse(response: InsertConversationResponse): Promise<ConversationResponse>;
   getConversationResponses(partnershipId: string, questionId: string): Promise<ConversationResponse[]>;
+  getSoloConversationResponses(userId: string, questionId: string): Promise<ConversationResponse[]>;
   getConversationHistory(partnershipId: string, limit?: number): Promise<Array<{
+    question: ConversationQuestion;
+    responses: ConversationResponse[];
+    isComplete: boolean;
+  }>>;
+  getSoloConversationHistory(userId: string, limit?: number): Promise<Array<{
     question: ConversationQuestion;
     responses: ConversationResponse[];
     isComplete: boolean;
@@ -1994,6 +2001,23 @@ export class DbStorage implements IStorage {
     return questions[randomIndex];
   }
 
+  async getSoloQuestion(userId: string): Promise<ConversationQuestion | undefined> {
+    // Get the first question that the solo user hasn't answered yet
+    const allQuestions = await this.db.select().from(conversationQuestions)
+      .where(eq(conversationQuestions.active, 1))
+      .orderBy(conversationQuestions.createdAt);
+
+    for (const question of allQuestions) {
+      const responses = await this.getSoloConversationResponses(userId, question.id);
+      if (responses.length === 0) {
+        return question;
+      }
+    }
+
+    // If all questions completed, return a random one
+    return this.getRandomQuestion();
+  }
+
   async createConversationResponse(response: InsertConversationResponse): Promise<ConversationResponse> {
     const result = await this.db.insert(conversationResponses).values(response).returning();
     return result[0];
@@ -2004,6 +2028,18 @@ export class DbStorage implements IStorage {
       .where(
         and(
           eq(conversationResponses.partnershipId, partnershipId),
+          eq(conversationResponses.questionId, questionId)
+        )
+      )
+      .orderBy(conversationResponses.createdAt);
+  }
+
+  async getSoloConversationResponses(userId: string, questionId: string): Promise<ConversationResponse[]> {
+    return await this.db.select().from(conversationResponses)
+      .where(
+        and(
+          isNull(conversationResponses.partnershipId),
+          eq(conversationResponses.userId, userId),
           eq(conversationResponses.questionId, questionId)
         )
       )
@@ -2049,6 +2085,51 @@ export class DbStorage implements IStorage {
           question: question[0],
           responses,
           isComplete: user1Responded && user2Responded,
+        });
+      }
+      
+      if (history.length >= limit) break;
+    }
+
+    return history;
+  }
+
+  async getSoloConversationHistory(userId: string, limit: number = 20): Promise<Array<{
+    question: ConversationQuestion;
+    responses: ConversationResponse[];
+    isComplete: boolean;
+  }>> {
+    // Get all solo responses for this user
+    const allResponses = await this.db.select().from(conversationResponses)
+      .where(
+        and(
+          isNull(conversationResponses.partnershipId),
+          eq(conversationResponses.userId, userId)
+        )
+      )
+      .orderBy(desc(conversationResponses.createdAt));
+
+    // Group by question
+    const questionMap = new Map<string, ConversationResponse[]>();
+    for (const response of allResponses) {
+      if (!questionMap.has(response.questionId)) {
+        questionMap.set(response.questionId, []);
+      }
+      questionMap.get(response.questionId)!.push(response);
+    }
+
+    // Get question details
+    const history = [];
+    for (const [questionId, responses] of questionMap.entries()) {
+      const question = await this.db.select().from(conversationQuestions)
+        .where(eq(conversationQuestions.id, questionId))
+        .limit(1);
+      
+      if (question[0]) {
+        history.push({
+          question: question[0],
+          responses,
+          isComplete: true, // Solo responses are always "complete"
         });
       }
       
