@@ -80,7 +80,7 @@ import {
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool, neonConfig } from "@neondatabase/serverless";
-import { eq, and, or, desc, sql } from "drizzle-orm";
+import { eq, and, or, desc, sql, isNull } from "drizzle-orm";
 import ws from "ws";
 
 // Configure Neon to use WebSocket for Node.js environment
@@ -1987,14 +1987,15 @@ export class DbStorage implements IStorage {
   }
 
   async getRandomQuestion(category?: string): Promise<ConversationQuestion | undefined> {
-    let query = this.db.select().from(conversationQuestions)
-      .where(eq(conversationQuestions.active, 1));
+    const whereConditions = [eq(conversationQuestions.active, 1)];
     
     if (category) {
-      query = query.where(eq(conversationQuestions.category, category));
+      whereConditions.push(eq(conversationQuestions.category, category));
     }
 
-    const questions = await query;
+    const questions = await this.db.select().from(conversationQuestions)
+      .where(and(...whereConditions));
+      
     if (questions.length === 0) return undefined;
     
     const randomIndex = Math.floor(Math.random() * questions.length);
