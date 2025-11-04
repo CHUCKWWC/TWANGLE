@@ -22,7 +22,7 @@ interface ConversationQuestion {
 
 interface ConversationResponse {
   id: string;
-  partnershipId: string;
+  partnershipId: string | null;
   questionId: string;
   userId: string;
   responseText: string;
@@ -38,6 +38,7 @@ interface DailyQuestionData {
   bothAnswered: boolean;
   remainingResponses?: number;
   isLimitReached?: boolean;
+  isSoloMode?: boolean;
 }
 
 interface HistoryItem {
@@ -82,15 +83,19 @@ export default function Conversations() {
   });
 
   const respondMutation = useMutation({
-    mutationFn: async (data: { questionId: string; responseText: string; partnershipId: string }) => {
+    mutationFn: async (data: { questionId: string; responseText: string; partnershipId?: string | null }) => {
       return await apiRequest('POST', '/api/conversations/respond', data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/conversations/daily'] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations/history'] });
+      
+      const isSoloMode = data.isSoloMode || dailyData?.isSoloMode;
       toast({
         title: "Response Saved",
-        description: "Your response has been saved. Your partner's answer will appear once they respond.",
+        description: isSoloMode 
+          ? "Your response has been saved to your personal journal." 
+          : "Your response has been saved. Your partner's answer will appear once they respond.",
       });
       setResponseText("");
     },
@@ -106,40 +111,13 @@ export default function Conversations() {
   const handleSubmitResponse = async () => {
     if (!dailyData?.question || !responseText.trim()) return;
     
-    let partnershipId = dailyData.userResponse?.partnershipId || dailyData.partnerResponse?.partnershipId;
-    
-    if (!partnershipId) {
-      try {
-        const partnershipResponse = await fetch('/api/partnerships');
-        if (!partnershipResponse.ok) {
-          throw new Error('Failed to fetch partnership information');
-        }
-        const partnership = await partnershipResponse.json();
-        
-        if (!partnership || partnership.status !== 'active') {
-          toast({
-            title: "Error",
-            description: "No active partnership found. Please connect with your partner first.",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        partnershipId = partnership.id;
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to fetch partnership information. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
+    // Get partnership ID if user has one
+    const partnershipId = dailyData.userResponse?.partnershipId || dailyData.partnerResponse?.partnershipId;
 
     respondMutation.mutate({
       questionId: dailyData.question.id,
       responseText: responseText.trim(),
-      partnershipId,
+      partnershipId: partnershipId || undefined,
     });
   };
 
@@ -163,29 +141,9 @@ export default function Conversations() {
       <div className="min-h-screen bg-background">
         <AppHeader />
         <div className="container max-w-4xl mx-auto p-6 pt-20">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold">Daily Conversations</h1>
-            <p className="text-muted-foreground mt-1">
-              Connect deeper with daily relationship questions
-            </p>
-          </div>
-          <Card data-testid="card-no-partnership">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5" />
-                Partner Connection Required
-              </CardTitle>
-              <CardDescription>
-                Daily Conversations is a feature for couples with linked accounts.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                Connect with your partner to unlock daily relationship questions and share your responses together.
-              </p>
-              <Button data-testid="button-connect-partner" onClick={() => window.location.href = '/partner-connection'}>
-                Connect with Partner
-              </Button>
+          <Card>
+            <CardContent className="p-8 text-center">
+              <p className="text-muted-foreground">Failed to load daily conversation. Please try again.</p>
             </CardContent>
           </Card>
         </div>
@@ -208,7 +166,7 @@ export default function Conversations() {
     );
   }
 
-  const { question, userResponse, partnerResponse, hasUserAnswered, hasPartnerAnswered, bothAnswered, remainingResponses, isLimitReached } = dailyData;
+  const { question, userResponse, partnerResponse, hasUserAnswered, hasPartnerAnswered, bothAnswered, remainingResponses, isLimitReached, isSoloMode } = dailyData;
 
   return (
     <div className="min-h-screen bg-background">
@@ -332,27 +290,29 @@ export default function Conversations() {
                   </Card>
                 </div>
 
-                {/* Partner Status or Response */}
-                {bothAnswered && partnerResponse ? (
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-medium">Partner's Response</span>
-                      <Unlock className="h-4 w-4 text-green-600" />
+                {/* Partner Status or Response (only in partnered mode) */}
+                {!isSoloMode && (
+                  bothAnswered && partnerResponse ? (
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium">Partner's Response</span>
+                        <Unlock className="h-4 w-4 text-green-600" />
+                      </div>
+                      <Card className="bg-primary/5 border-primary/20">
+                        <CardContent className="p-4">
+                          <p className="text-sm" data-testid="text-partner-response">{partnerResponse.responseText}</p>
+                        </CardContent>
+                      </Card>
                     </div>
-                    <Card className="bg-primary/5 border-primary/20">
-                      <CardContent className="p-4">
-                        <p className="text-sm" data-testid="text-partner-response">{partnerResponse.responseText}</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 border border-dashed" data-testid="div-waiting-partner">
-                    <Lock className="h-5 w-5 text-muted-foreground" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Waiting for your partner...</p>
-                      <p className="text-xs text-muted-foreground">Their response will appear here once they answer</p>
+                  ) : (
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 border border-dashed" data-testid="div-waiting-partner">
+                      <Lock className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Waiting for your partner...</p>
+                        <p className="text-xs text-muted-foreground">Their response will appear here once they answer</p>
+                      </div>
                     </div>
-                  </div>
+                  )
                 )}
               </div>
             )}
@@ -364,7 +324,9 @@ export default function Conversations() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Past Conversations</CardTitle>
-              <CardDescription>Review your shared responses</CardDescription>
+              <CardDescription>
+                {isSoloMode ? "Review your personal responses" : "Review your shared responses"}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {history.filter(item => item.isComplete).slice(0, 5).map((item, index) => (
