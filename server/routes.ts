@@ -110,6 +110,50 @@ const isAdmin = (req: any, res: Response, next: NextFunction) => {
   next();
 };
 
+async function checkUserPremiumAccess(userId: string): Promise<{
+  hasPremiumAccess: boolean;
+  source: 'individual_subscription' | 'couple_subscription' | 'lifetime' | 'trial' | 'none';
+  subscription?: any;
+  couple?: any;
+}> {
+  const user = await storage.getUser(userId);
+  if (!user) {
+    return { hasPremiumAccess: false, source: 'none' };
+  }
+
+  if (user.hasLifetimeAccess === 1) {
+    return { hasPremiumAccess: true, source: 'lifetime' };
+  }
+
+  const now = new Date();
+  const hasActiveTrial = user.trialStartedAt && user.trialEndsAt && now < user.trialEndsAt;
+  if (hasActiveTrial) {
+    return { hasPremiumAccess: true, source: 'trial' };
+  }
+
+  const subscription = await storage.getSubscriptionByUserId(userId);
+  if (subscription && (subscription.status === 'active' || subscription.status === 'trialing')) {
+    return { hasPremiumAccess: true, source: 'individual_subscription', subscription };
+  }
+
+  let couple = await storage.getCoupleByPrimaryUser(userId);
+  let isCoupleUser = false;
+  if (couple) {
+    isCoupleUser = true;
+  } else {
+    couple = await storage.getCoupleByPartnerUser(userId);
+    if (couple) {
+      isCoupleUser = true;
+    }
+  }
+
+  if (isCoupleUser && couple && (couple.status === 'active' || couple.status === 'trialing')) {
+    return { hasPremiumAccess: true, source: 'couple_subscription', couple };
+  }
+
+  return { hasPremiumAccess: false, source: 'none' };
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup custom Twangle authentication
   await setupAuth(app);
@@ -962,39 +1006,46 @@ ${conversationText}`;
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const accessCheck = await checkUserPremiumAccess(userId);
       const subscription = await storage.getSubscriptionByUserId(userId);
 
-      const hasLifetimeAccess = user?.hasLifetimeAccess === 1;
+      const hasLifetimeAccess = user.hasLifetimeAccess === 1;
       
       // Check if user has an active free trial
       const now = new Date();
-      const hasActiveTrial = user?.trialEndsAt && new Date(user.trialEndsAt) > now;
-      const trialEndsAt = user?.trialEndsAt ? new Date(user.trialEndsAt) : null;
+      const hasActiveTrial = user.trialEndsAt && new Date(user.trialEndsAt) > now;
+      const trialEndsAt = user.trialEndsAt ? new Date(user.trialEndsAt) : null;
 
-      if (!subscription) {
-        // User is either on trial or free tier
-        return res.json({
-          tier: hasLifetimeAccess || hasActiveTrial ? "premium" : "free",
-          isActive: hasActiveTrial || false,
-          hasLifetimeAccess,
-          currentPeriodEnd: trialEndsAt,
-          cancelAtPeriodEnd: false,
-          onTrial: hasActiveTrial || false,
-          trialEndsAt: trialEndsAt,
-        });
+      // Determine tier based on premium access check
+      const tier = accessCheck.hasPremiumAccess ? "premium" : "free";
+      
+      // Get current period end and cancel status
+      let currentPeriodEnd = trialEndsAt;
+      let cancelAtPeriodEnd = false;
+      
+      if (accessCheck.source === 'individual_subscription' && subscription) {
+        currentPeriodEnd = subscription.currentPeriodEnd || trialEndsAt;
+        cancelAtPeriodEnd = subscription.cancelAtPeriodEnd === 1;
+      } else if (accessCheck.source === 'couple_subscription' && accessCheck.couple) {
+        currentPeriodEnd = accessCheck.couple.currentPeriodEnd || trialEndsAt;
+        cancelAtPeriodEnd = accessCheck.couple.cancelAtPeriodEnd === 1;
       }
-
-      const isActive = subscription.status === 'active' || subscription.status === 'trialing';
-      const tier = isActive || hasLifetimeAccess || hasActiveTrial ? "premium" : "free";
 
       res.json({
         tier,
-        isActive,
+        isActive: accessCheck.hasPremiumAccess,
         hasLifetimeAccess,
-        currentPeriodEnd: subscription.currentPeriodEnd || trialEndsAt,
-        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd === 1,
-        onTrial: hasActiveTrial && !isActive,
-        trialEndsAt: trialEndsAt,
+        currentPeriodEnd,
+        cancelAtPeriodEnd,
+        onTrial: hasActiveTrial && accessCheck.source === 'trial',
+        trialEndsAt,
+        subscriptionSource: accessCheck.source,
+        isCoupleMember: accessCheck.source === 'couple_subscription',
       });
     } catch (error: any) {
       console.error("Get billing status error:", error);
@@ -2882,9 +2933,9 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Check subscription status
-      const subscription = await storage.getSubscriptionByUserId(userId);
-      const isPaidUser = subscription?.status === 'active' || subscription?.status === 'trialing' || user.hasLifetimeAccess === 1;
+      // Check subscription status including couple subscriptions
+      const accessCheck = await checkUserPremiumAccess(userId);
+      const isPaidUser = accessCheck.hasPremiumAccess;
       
       // Calculate remaining responses for free users
       const responseCount = user.conversationResponseCount || 0;
@@ -2965,9 +3016,9 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Check subscription status
-      const subscription = await storage.getSubscriptionByUserId(userId);
-      const isPaidUser = subscription?.status === 'active' || subscription?.status === 'trialing' || user.hasLifetimeAccess === 1;
+      // Check subscription status including couple subscriptions
+      const accessCheck = await checkUserPremiumAccess(userId);
+      const isPaidUser = accessCheck.hasPremiumAccess;
       
       // Enforce free user limits
       const FREE_LIMIT = 3;
