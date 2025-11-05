@@ -3,8 +3,7 @@ import { pgTable, text, varchar, timestamp, integer, jsonb, index } from "drizzl
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Session storage table for Replit Auth
-// Reference: blueprint:javascript_log_in_with_replit
+// Session storage table for express-session PostgreSQL store
 export const sessions = pgTable(
   "sessions",
   {
@@ -16,7 +15,7 @@ export const sessions = pgTable(
 );
 
 // User storage table for custom Twangle authentication
-// Password is nullable to support migration from Replit Auth
+// Password is nullable to support legacy users migrating to custom auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),

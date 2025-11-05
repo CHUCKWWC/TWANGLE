@@ -3,6 +3,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import bcrypt from "bcrypt";
+import rateLimit from "express-rate-limit";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import { randomBytes } from "crypto";
@@ -26,6 +27,18 @@ async function comparePasswords(supplied: string, stored: string): Promise<boole
 function generateToken(): string {
   return randomBytes(32).toString('hex');
 }
+
+// Rate limiter for password reset to prevent abuse
+const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // Max 3 requests per 15 minutes per IP
+  message: { 
+    error: "Too many password reset requests",
+    message: "Please wait before requesting another password reset.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
@@ -157,7 +170,13 @@ export function setupAuth(app: Express) {
   app.post("/api/auth/logout", (req: Request, res: Response, next: NextFunction) => {
     req.logout((err) => {
       if (err) return next(err);
-      res.sendStatus(200);
+      req.session.destroy((destroyErr) => {
+        if (destroyErr) {
+          console.error("Session destroy error:", destroyErr);
+        }
+        res.clearCookie('connect.sid');
+        res.sendStatus(200);
+      });
     });
   });
 
@@ -169,7 +188,7 @@ export function setupAuth(app: Express) {
     res.json(userWithoutPassword);
   });
 
-  app.post("/api/auth/request-password-reset", async (req: Request, res: Response) => {
+  app.post("/api/auth/request-password-reset", passwordResetLimiter, async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
 
