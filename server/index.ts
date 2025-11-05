@@ -119,12 +119,23 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
           }
 
           const subscriptionData = getSubscriptionData(subscription);
-          await storage.upsertSubscription({
-            userId,
-            stripeSubscriptionId: subscription.id,
-            status: subscription.status,
-            ...subscriptionData,
-          });
+          
+          const existingCouple = await storage.getCoupleByStripeSubscriptionId(subscription.id);
+          if (existingCouple) {
+            await storage.updateCouple(existingCouple.id, {
+              status: subscription.status,
+              priceId: subscriptionData.priceId || undefined,
+              currentPeriodEnd: subscriptionData.currentPeriodEnd,
+              cancelAtPeriodEnd: subscriptionData.cancelAtPeriodEnd,
+            });
+          } else {
+            await storage.upsertSubscription({
+              userId,
+              stripeSubscriptionId: subscription.id,
+              status: subscription.status,
+              ...subscriptionData,
+            });
+          }
 
           // Track conversion event: free_to_paid
           const amount = session.amount_total || 0;
@@ -197,12 +208,23 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
         }
 
         const subscriptionData = getSubscriptionData(subscription);
-        await storage.upsertSubscription({
-          userId,
-          stripeSubscriptionId: subscription.id,
-          status: subscription.status,
-          ...subscriptionData,
-        });
+        
+        const existingCouple = await storage.getCoupleByStripeSubscriptionId(subscription.id);
+        if (existingCouple) {
+          await storage.updateCouple(existingCouple.id, {
+            status: subscription.status,
+            priceId: subscriptionData.priceId || undefined,
+            currentPeriodEnd: subscriptionData.currentPeriodEnd,
+            cancelAtPeriodEnd: subscriptionData.cancelAtPeriodEnd,
+          });
+        } else {
+          await storage.upsertSubscription({
+            userId,
+            stripeSubscriptionId: subscription.id,
+            status: subscription.status,
+            ...subscriptionData,
+          });
+        }
 
         // Track subscription event
         const amount = subscription.items?.data?.[0]?.price?.unit_amount || 0;
@@ -246,11 +268,20 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
         const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
         const subscriptionData = getSubscriptionData(subscription);
         
-        await storage.updateSubscriptionStatus(
-          subscription.id,
-          'canceled',
-          subscriptionData.currentPeriodEnd
-        );
+        const existingCouple = await storage.getCoupleByStripeSubscriptionId(subscription.id);
+        if (existingCouple) {
+          await storage.updateCouple(existingCouple.id, {
+            status: 'canceled',
+            currentPeriodEnd: subscriptionData.currentPeriodEnd,
+            cancelAtPeriodEnd: 0,
+          });
+        } else {
+          await storage.updateSubscriptionStatus(
+            subscription.id,
+            'canceled',
+            subscriptionData.currentPeriodEnd
+          );
+        }
 
         // Get subscription record to find user
         const subRecord = await storage.getSubscriptionByStripeId(subscription.id);
