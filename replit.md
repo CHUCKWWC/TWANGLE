@@ -2,7 +2,7 @@
 
 ## Overview
 
-Twangle is a couples' relationship wellness application providing psychological assessments, AI-powered coaching, and relationship-building tools. It helps couples understand attachment styles, identify relationship patterns, and offers personalized guidance based on established therapeutic frameworks. The platform features an AI relationship coach, an Attachment Style Assessment, a library of research-based exercises, a DIY couples retreat builder, and an AI-powered date night planner. Its primary goal is to foster healthier relationships through personalized, data-driven insights and interactive tools.
+Twangle is a couples' relationship wellness platform designed to provide psychological assessments, AI-powered coaching, and relationship-building tools. It aims to help couples understand attachment styles, identify relationship patterns, and offer personalized guidance based on established therapeutic frameworks. Key features include an AI relationship coach, an Attachment Style Assessment, a library of research-based exercises, a DIY couples retreat builder, and an AI-powered date night planner. The platform's core purpose is to foster healthier relationships through personalized, data-driven insights and interactive tools, maximizing user sign-ups and trial-to-paid conversions.
 
 ## User Preferences
 
@@ -10,137 +10,46 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
+### Frontend
 
-**Framework & Tooling:** React 18 with TypeScript, Vite, Wouter for routing, TanStack Query for server state.
-**UI Component System:** Shadcn/ui with Radix UI primitives, Tailwind CSS, custom warm rose/mauve and terracotta theme, responsive mobile-first design.
-**Design System:** Focus on a warm, organic aesthetic with Poppins, Inter, and Quicksand typography.
-**Key UI Components:** Dashboard, AI Coach Chat, Retreat Builder, Date Night Planner, Exercises Library, Nervous System Regulation module, Weekly Summaries, Feedback Forms, Admin-only Feedback & Email Monitoring Reports, Relationship Health Score Dashboard, Partner Connection System, AI-Powered Relationship Journal, Daily Conversations (standalone dedicated page), and Progress Analytics (Insights). Features include a global Trial Countdown Banner, Trial Value Dashboard, Trial Expiring Modal, and Trial Checklist for onboarding.
-**Conversion Optimization Features:** Six landing page features designed to maximize sign-ups and trial-to-paid conversion:
-1. **Social Proof Statistics** - Real-time display of user count, coaching sessions, and ratings from database
-2. **Exit Intent Popup** - Modal triggered when user attempts to leave, encouraging signup with value proposition
-3. **Comparison Table** - Side-by-side Traditional Therapy vs Twangle feature/cost comparison
-4. **Interactive Coach Demo** - Anonymous users can try Coach Charles with 3 free messages (sample conversations or custom questions), protected by dual security: session-based 3-message cap + IP-based 10 requests/hour rate limiting
-5. **Newsletter Signup** - Email capture form with public API endpoint creating database records
-6. **Partner Invitation Landing** - Personalized landing pages for partnership invitation links with inviter name display
-**Engagement Features:** Five major features to increase user engagement and trial-to-paid conversion:
-1. **Relationship Health Score** - Calculates a 0-100 score based on user activity (assessments 30%, coaching 25%, exercises 20%, progress 15%, journaling 10%) with category breakdowns and historical trend tracking
-2. **Partner Connection** - Email-based invitation system allowing couples to link accounts with configurable sharing permissions for assessments, progress, and journal entries
-3. **AI-Powered Journal** - Personal relationship journaling with mood tracking and optional GPT-4o generated insights, supporting private or partner-shared entries
-4. **Daily Conversations** - Standalone dedicated feature at /conversations with therapy-informed daily questions using double-blind responses (both must answer before seeing each other's responses). Free users get 3 conversation responses, paid users get unlimited access. Includes 140 questions across 7 categories (emotional intimacy, communication/conflict, physical intimacy, finances/planning, values/spiritual, play/adventure, trust/boundaries) with 3 intensity levels. Features AI coaching via "Help Me Out" modal with guidance, think time, and alternative question options. Prominent feature card on landing page marked "FREE" drives conversions by surfacing the feature limit
-5. **Progress Analytics** - Periodic snapshots (daily/weekly/monthly) tracking engagement metrics with AI-generated insights and benchmarking against user history
-**SEO Implementation:** Dynamic meta tags, Open Graph, Twitter Cards, and JSON-LD structured data for E-E-A-T compliance across key pages.
+The frontend is built with React 18 and TypeScript, utilizing Vite, Wouter for routing, and TanStack Query for server state management. UI components are developed with Shadcn/ui, Radix UI primitives, and Tailwind CSS, following a warm, organic aesthetic with a responsive mobile-first design. Key UI elements include a Dashboard, AI Coach Chat, Retreat Builder, Date Night Planner, Exercises Library, and various engagement features like a Relationship Health Score, Partner Connection System, AI-Powered Relationship Journal, and Daily Conversations. Conversion optimization features include Social Proof Statistics, an Exit Intent Popup, a Comparison Table, and an Interactive Coach Demo. SEO is implemented with dynamic meta tags, Open Graph, Twitter Cards, and JSON-LD structured data.
 
-### Backend Architecture
+### Backend
 
-**Server Framework:** Express.js on Node.js with TypeScript.
-**API Design:** RESTful endpoints for core functionalities (chat, planning, assessments, billing, reporting, analytics, admin, email verification, newsletter, conversations), secured with JSON request/response validation and ownership verification. Enhanced Stripe webhook handling tracks the full subscription lifecycle and conversion events.
-**API Security:** Anonymous chat endpoint (`/api/chat`) protected by dual security layers: session-based 3-message cap + IP-based rate limiting (10 requests/hour) to prevent OpenAI API abuse while maintaining demo functionality.
-**AI Coach Guardrails:** "Coach Charles" uses strict system prompts to provide relationship-only advice, explicitly refusing off-topic queries (medical, legal, financial, etc.) and redirecting users appropriately.
-**AI Integration:** OpenAI GPT for coaching, planning, and assessment analysis, utilizing streaming responses and Zod-validated structured JSON for data consistency.
+The backend is an Express.js application on Node.js with TypeScript, providing RESTful APIs for core functionalities such as chat, planning, assessments, billing, and reporting. API security includes JSON request/response validation, ownership verification, and IP-based rate limiting for anonymous endpoints. An AI Coach ("Coach Charles") uses strict system prompts to provide relationship-only advice. AI integration leverages OpenAI GPT for coaching, planning, and assessment analysis, using streaming responses and Zod-validated structured JSON.
 
-### Data Storage Solutions
+### Data Storage
 
-**Database:** PostgreSQL via Neon serverless, managed with Drizzle ORM for type-safe queries.
-**Data Models:** Comprehensive models for Users, Subscriptions, Chat Sessions, Assessments, Retreats, Date Nights, Feedback, Access Logs, Conversion Events, Subscription Events, Email Send Logs, Health Scores, Partnerships, Journal Entries, Analytics Snapshots, Conversation Questions, Conversation Responses, and Conversation Help Events.
-**Feedback Reporting:** An admin-only dashboard provides detailed analytics on user feedback, including summary statistics, distribution by type/category, and enriched user information.
-**Engagement Tracking:** Health scores track relationship wellness over time, partnerships enable couples to share progress, journals provide AI-powered insights into relationship dynamics, daily conversations foster deeper connection through structured dialogue, and analytics snapshots capture periodic engagement metrics for benchmarking.
-
-### Daily Conversations Architecture
-
-**Double-Blind System:** Responses are hidden until both partners answer the same daily question, then unlock simultaneously to encourage honest, independent reflection before discussion.
-
-**Question Bank:** 140 therapy-informed questions organized by:
-- **Categories (7):** Emotional intimacy, communication/conflict, physical intimacy, finances/planning, values/spiritual, play/adventure, trust/boundaries
-- **Intensity Levels (1-3):** Gradual progression from gentle to deeper questions
-- **Therapy Prompts:** Contextual guidance for each question based on therapeutic frameworks
-
-**AI Coaching Integration:** "Help Me Out" modal provides:
-- **Guidance Tab:** OpenAI GPT-4o generates personalized coaching tips for the current question
-- **Think Time Tab:** Encourages users to defer answering when they need more reflection time
-- **Alternative Tab:** AI generates two alternative questions (feelings-focused and action-focused) from the same category for users who find the original too challenging
-
-**API Endpoints:**
-- `GET /api/conversations/daily` - Fetches today's question and response status for the partnership
-- `POST /api/conversations/respond` - Submits a response with double-blind validation
-- `POST /api/conversations/help` - Generates AI coaching content (guidance/alternative questions)
-- `GET /api/conversations/history` - Retrieves past complete conversations
-
-**UI Integration:** Standalone dedicated page at `/conversations` route with full-featured UI (no longer part of Journal tabs). Navigation links appear in desktop Tools dropdown and mobile menu. Requires active partnership to access. Features usage tracking badge showing remaining free questions and upgrade prompts when limit is reached.
-
-**Usage Limits:** Free users get 3 conversation responses total (tracked in `users.conversationResponseCount`). Paid users get unlimited access. API endpoints enforce limits and return `remainingResponses` and `isLimitReached` flags for UI display.
-
-### Stripe Connect Marketplace
-
-**Platform Model:** Twangle now supports a marketplace model enabling users to become merchants and sell products through the platform using Stripe Connect with destination charges.
-
-**Architecture Pattern:** 
-- **Destination Charges:** Payments are processed on the platform account, with funds transferred to connected merchant accounts
-- **Application Fee:** Platform collects 10% of each sale as an application fee
-- **Express Accounts:** Merchants use Stripe Express accounts with platform-controlled pricing and fees
-
-**Database Schema:**
-- `connected_accounts` table: Stores Stripe connected account IDs linked to users with status flags (chargesEnabled, detailsSubmitted, payoutsEnabled)
-- `products` table: Platform-level products mapped to connected accounts, storing Stripe product/price IDs, pricing, and merchant associations
-
-**API Endpoints:**
-- `POST /api/stripe-connect/account` - Create connected account with controller properties (requires auth)
-- `POST /api/stripe-connect/account-link` - Generate Stripe onboarding URL (requires auth)
-- `GET /api/stripe-connect/account-status` - Fetch and sync account status from Stripe (requires auth)
-- `POST /api/stripe-connect/product` - Create platform-level products (requires auth)
-- `GET /api/stripe-connect/products` - List all products across merchants (public)
-- `GET /api/stripe-connect/my-products` - Get user's products (requires auth)
-- `POST /api/stripe-connect/checkout` - Create checkout session with destination charge (public)
-- `GET /api/stripe-connect/checkout-session/:sessionId` - Retrieve session details (public)
-
-**Frontend Pages:**
-- `/merchant/onboard` - Merchant account creation and Stripe onboarding status tracking
-- `/merchant/products` - Product creation and management with fee breakdown display
-- `/storefront` - Public marketplace for browsing and purchasing products
-- `/storefront/success` - Checkout confirmation page
-
-**Key Features:**
-- Real-time account status syncing with Stripe API
-- Clear fee breakdown showing merchant earnings (90%) vs platform fee (10%)
-- Secure authentication for all merchant endpoints
-- Public storefront for customer browsing and purchasing
-- Comprehensive error handling and validation
+PostgreSQL, managed via Neon serverless and Drizzle ORM, serves as the primary database. It stores comprehensive data models for users, subscriptions, chat sessions, assessments, and engagement features like Health Scores, Journal Entries, and Conversation Responses.
 
 ### Authentication & Authorization
 
-**Custom Twangle Authentication:** Branded email/password authentication system replacing Replit Auth to reduce user confusion and provide full control over the auth experience. Implemented using Passport.js with local strategy and bcrypt password hashing.
+Twangle uses a custom email/password authentication system built with Passport.js and bcrypt. It supports a freemium model with a 7-day free trial that automatically starts upon registration. The platform offers various pricing tiers, including individual, couple, annual, and lifetime access plans. Authentication features include PostgreSQL-backed session management, token-based password reset, email verification, and IP-based geolocation blocking.
 
-**Freemium Model:** Authentication-required 7-day free trial, granting full access to all premium features without requiring a credit card. Registration creates an account and automatically starts the trial.
+### Daily Conversations
 
-**Trial System Implementation:** Trials automatically start on signup, tracked by `trialStartedAt` and `trialEndsAt` timestamps. Frontend components dynamically display trial status, accumulated value, and trigger conversion modals based on trial progress.
+A dedicated feature at `/conversations` implements a double-blind system where partners' responses to daily questions are hidden until both have answered. It features a question bank of 140 therapy-informed questions across 7 categories and 3 intensity levels. AI coaching is integrated via a "Help Me Out" modal offering guidance, "think time," and alternative questions using OpenAI GPT-4o. Free users have a limited number of responses, while paid users have unlimited access.
 
-**Pricing Tiers:** Offers Couples Starter, Premium, Annual, and Lifetime Access plans.
+### Couple Subscription Architecture
 
-**Auth Implementation Details:**
-- **Session Management:** PostgreSQL-backed express-session with 30-day cookie expiration
-- **Password Security:** bcrypt hashing with 10 salt rounds
-- **Password Reset:** Token-based reset flow with rate limiting (3 requests per 15 minutes per IP)
-- **Logout:** Properly destroys session and clears cookies for complete logout
-- **Email Verification:** 24-hour expiring tokens sent via Gmail/SendGrid
+The platform supports a shared subscription model where one Stripe subscription grants premium access to both partners. This involves a database schema for `couples` and an invitation flow for partners to join. Access control integrates lifetime access, free trials, individual subscriptions, and couple subscriptions. Stripe webhook integration ensures simultaneous access changes for both partners when a couple's subscription status changes.
 
-**Backend Security:** All API endpoints require authentication, with specific admin functions protected by `isAdmin` middleware. Features include email verification, IP-based geolocation blocking (Russia, China), password reset rate limiting, and automated trial reminder emails.
+### Stripe Connect Marketplace
 
-**UI Pages:**
-- `/login` - Combined login and registration with tabbed interface
-- `/forgot-password` - Password reset request and completion flow
-
-**Admin Access Control:** Reporting and analytics features are restricted to specific admin emails.
+Twangle supports a marketplace model using Stripe Connect with destination charges, allowing users to become merchants and sell products. The platform collects a 10% application fee, and merchants use Stripe Express accounts. The architecture includes `connected_accounts` and `products` database tables, and API endpoints for account creation, onboarding, product management, and checkout. Frontend pages exist for merchant onboarding, product management, and a public storefront.
 
 ## External Dependencies
 
-**Third-Party Services:**
-- **OpenAI API:** AI functionalities.
-- **Neon Database:** Serverless PostgreSQL.
-- **Gmail:** Transactional email services.
-- **ip-api.com:** Geolocation services.
-- **Stripe:** Payment processing and subscription management.
+### Third-Party Services
 
-**Key NPM Packages:**
+- **OpenAI API:** For all AI functionalities.
+- **Neon Database:** Serverless PostgreSQL hosting.
+- **Gmail:** Used for transactional email services.
+- **ip-api.com:** For geolocation services.
+- **Stripe:** For payment processing and subscription management.
+
+### Key NPM Packages
+
 - **UI/UX:** `@radix-ui/*`, `recharts`, `embla-carousel`.
 - **Forms:** `react-hook-form`, `@hookform/resolvers`.
 - **Database:** `drizzle-orm`, `drizzle-zod`, `@neondatabase/serverless`.
