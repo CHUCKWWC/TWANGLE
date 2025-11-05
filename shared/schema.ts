@@ -530,7 +530,6 @@ export const conversationHelpEvents = pgTable("conversation_help_events", {
 
 export const insertConversationHelpEventSchema = createInsertSchema(conversationHelpEvents).omit({
   id: true,
-  userId: true,
   createdAt: true,
 });
 
