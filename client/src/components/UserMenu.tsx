@@ -1,4 +1,3 @@
-// Reference: blueprint:javascript_log_in_with_replit
 import { LogOut, User as UserIcon } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {

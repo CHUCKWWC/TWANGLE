@@ -49,7 +49,7 @@ const anonymousChatLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   // Only apply rate limit to anonymous users
-  skip: (req: any) => !!req.user?.claims?.sub,
+  skip: (req: any) => !!req.user?.id,
 });
 
 const SYSTEM_PROMPT = `You are Coach Charles, an expert relationship coach trained in research-backed methods including:
@@ -111,10 +111,10 @@ const isAdmin = (req: any, res: Response, next: NextFunction) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup Replit Auth (Reference: blueprint:javascript_log_in_with_replit)
+  // Setup custom Twangle authentication
   await setupAuth(app);
 
-  // Auth routes (Reference: blueprint:javascript_log_in_with_replit)
+  // Auth routes
   app.get('/api/auth/user', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
       const userId = req.user.id;
