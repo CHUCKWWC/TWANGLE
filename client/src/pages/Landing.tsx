@@ -84,7 +84,7 @@ export default function Landing() {
               className="text-lg px-8 py-6 rounded-xl"
               data-testid="button-get-started"
             >
-              <a href="/api/signup">
+              <a href="/login">
                 Get Started Free
               </a>
             </Button>
@@ -96,7 +96,7 @@ export default function Landing() {
               className="text-lg px-8 py-6 rounded-xl"
               data-testid="button-login"
             >
-              <a href="/api/login">
+              <a href="/login">
                 Sign In
               </a>
             </Button>
@@ -301,7 +301,7 @@ export default function Landing() {
               className="px-8 py-6"
               data-testid="button-start-trial-comparison"
             >
-              <a href="/api/signup">
+              <a href="/login">
                 Start Your Free Trial
               </a>
             </Button>
@@ -435,7 +435,7 @@ export default function Landing() {
               className="text-lg px-8 py-6 rounded-xl"
               data-testid="button-get-started-bottom"
             >
-              <a href="/api/signup">
+              <a href="/login">
                 Start Your Free Trial
               </a>
             </Button>
@@ -640,7 +640,7 @@ export default function Landing() {
             className="text-lg px-8 py-6 rounded-xl mb-6"
             data-testid="button-cta-final"
           >
-            <a href="/api/login">
+            <a href="/login">
               Start Your Free Assessment
             </a>
           </Button>

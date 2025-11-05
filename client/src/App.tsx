@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { TrialCountdownBanner } from "@/components/TrialCountdownBanner";
 import { TrialExpiringModal } from "@/components/TrialExpiringModal";
 import Landing from "@/pages/Landing";
+import Login from "@/pages/Login";
+import ForgotPassword from "@/pages/ForgotPassword";
 import Home from "@/pages/Home";
 import Assessment from "@/pages/Assessment";
 import Results from "@/pages/Results";
@@ -60,6 +62,8 @@ function Router() {
       <Switch>
         <Route path="/shared/:token" component={SharedAssessment} />
         <Route path="/invite/:token" component={PartnerInvite} />
+        <Route path="/login" component={Login} />
+        <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/" component={isAuthenticated ? Home : Landing} />
         <Route path="/assessment" component={Assessment} />
         <Route path="/results" component={Results} />
