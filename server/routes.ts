@@ -1077,6 +1077,17 @@ ${conversationText}`;
     try {
       const prices = [
         {
+          id: 'couple',
+          priceId: process.env.STRIPE_PRICE_COUPLE_ID || process.env.STRIPE_PRICE_MONTHLY_ID,
+          name: 'Couple Plan',
+          price: 19.99,
+          interval: 'month',
+          trialDays: 7,
+          features: ['Full access for both partners', 'Unlimited everything', 'AI Coach access', 'Partner collaboration tools'],
+          popular: true,
+          bestValue: true,
+        },
+        {
           id: 'starter',
           priceId: process.env.STRIPE_PRICE_STARTER_ID,
           name: 'Couples Starter',
@@ -1093,7 +1104,6 @@ ${conversationText}`;
           interval: 'month',
           trialDays: 7,
           features: ['Unlimited everything', 'Weekly summaries', 'Priority support'],
-          popular: true,
         },
         {
           id: 'annual',
@@ -1180,17 +1190,49 @@ ${conversationText}`;
       const planTier = subscriptionPriceId ? 'premium' : 'free';
       const subscriptionData: any = subscription;
       
-      await storage.upsertSubscription({
-        userId: userId,
-        stripeSubscriptionId: subscription.id,
-        priceId: subscriptionPriceId,
-        planTier,
-        status: subscription.status,
-        currentPeriodEnd: subscriptionData.current_period_end 
-          ? new Date(subscriptionData.current_period_end * 1000) 
-          : undefined,
-        cancelAtPeriodEnd: subscriptionData.cancel_at_period_end ? 1 : 0,
-      });
+      const isCouplePlan = priceId === process.env.STRIPE_PRICE_COUPLE_ID;
+      
+      if (isCouplePlan) {
+        const existingCouple = await storage.getCoupleByPrimaryUser(userId);
+        
+        if (existingCouple) {
+          await storage.updateCouple(existingCouple.id, {
+            stripeSubscriptionId: subscription.id,
+            priceId: subscriptionPriceId || undefined,
+            status: subscription.status,
+            currentPeriodEnd: subscriptionData.current_period_end 
+              ? new Date(subscriptionData.current_period_end * 1000) 
+              : undefined,
+            cancelAtPeriodEnd: subscriptionData.cancel_at_period_end ? 1 : 0,
+          });
+        } else {
+          const couple = await storage.createCouple({
+            primaryUserId: userId,
+            partnerUserId: null,
+            stripeSubscriptionId: subscription.id,
+            priceId: subscriptionPriceId || undefined,
+            status: subscription.status,
+            currentPeriodEnd: subscriptionData.current_period_end 
+              ? new Date(subscriptionData.current_period_end * 1000) 
+              : undefined,
+            cancelAtPeriodEnd: subscriptionData.cancel_at_period_end ? 1 : 0,
+          });
+          
+          await storage.updateUser(userId, { coupleId: couple.id });
+        }
+      } else {
+        await storage.upsertSubscription({
+          userId: userId,
+          stripeSubscriptionId: subscription.id,
+          priceId: subscriptionPriceId,
+          planTier,
+          status: subscription.status,
+          currentPeriodEnd: subscriptionData.current_period_end 
+            ? new Date(subscriptionData.current_period_end * 1000) 
+            : undefined,
+          cancelAtPeriodEnd: subscriptionData.cancel_at_period_end ? 1 : 0,
+        });
+      }
 
       // Track Facebook conversion for subscription
       const priceAmount = subscription.items?.data?.[0]?.price?.unit_amount || 0;
