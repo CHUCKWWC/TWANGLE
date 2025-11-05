@@ -51,6 +51,8 @@ import {
   type InsertMerchantCustomer,
   type MerchantSubscription,
   type InsertMerchantSubscription,
+  type Couple,
+  type InsertCouple,
   users,
   subscriptions,
   chatSessions,
@@ -75,7 +77,8 @@ import {
   connectedAccounts,
   products,
   merchantCustomers,
-  merchantSubscriptions
+  merchantSubscriptions,
+  couples
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -273,6 +276,18 @@ export interface IStorage {
   getMerchantSubscriptionsByAccount(connectedAccountId: string): Promise<MerchantSubscription[]>;
   updateMerchantSubscription(id: string, updates: Partial<MerchantSubscription>): Promise<MerchantSubscription | undefined>;
   updateMerchantSubscriptionByStripeId(stripeSubscriptionId: string, updates: Partial<MerchantSubscription>): Promise<MerchantSubscription | undefined>;
+  
+  // Couple subscription management
+  createCouple(couple: InsertCouple): Promise<Couple>;
+  getCouple(id: string): Promise<Couple | undefined>;
+  getCoupleByPrimaryUser(userId: string): Promise<Couple | undefined>;
+  getCoupleByPartnerUser(userId: string): Promise<Couple | undefined>;
+  getCoupleByStripeSubscriptionId(stripeSubscriptionId: string): Promise<Couple | undefined>;
+  getCoupleByInviteToken(token: string): Promise<Couple | undefined>;
+  updateCouple(id: string, updates: Partial<Couple>): Promise<Couple | undefined>;
+  generatePartnerInviteToken(coupleId: string, expiresInHours?: number): Promise<{ token: string; couple: Couple }>;
+  acceptPartnerInvite(token: string, userId: string): Promise<Couple | undefined>;
+  removePartner(coupleId: string): Promise<Couple | undefined>;
   
   // Session store for authentication
   sessionStore: any;
@@ -2338,6 +2353,122 @@ export class DbStorage implements IStorage {
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(merchantSubscriptions.stripeSubscriptionId, stripeSubscriptionId))
       .returning();
+    return result[0];
+  }
+
+  // Couple subscription management implementations
+  async createCouple(couple: InsertCouple): Promise<Couple> {
+    const result = await this.db.insert(couples).values(couple).returning();
+    return result[0];
+  }
+
+  async getCouple(id: string): Promise<Couple | undefined> {
+    const result = await this.db.select().from(couples).where(eq(couples.id, id));
+    return result[0];
+  }
+
+  async getCoupleByPrimaryUser(userId: string): Promise<Couple | undefined> {
+    const result = await this.db.select().from(couples)
+      .where(eq(couples.primaryUserId, userId))
+      .orderBy(desc(couples.createdAt));
+    return result[0];
+  }
+
+  async getCoupleByPartnerUser(userId: string): Promise<Couple | undefined> {
+    const result = await this.db.select().from(couples)
+      .where(eq(couples.partnerUserId, userId))
+      .orderBy(desc(couples.createdAt));
+    return result[0];
+  }
+
+  async getCoupleByStripeSubscriptionId(stripeSubscriptionId: string): Promise<Couple | undefined> {
+    const result = await this.db.select().from(couples)
+      .where(eq(couples.stripeSubscriptionId, stripeSubscriptionId));
+    return result[0];
+  }
+
+  async getCoupleByInviteToken(token: string): Promise<Couple | undefined> {
+    const result = await this.db.select().from(couples)
+      .where(
+        and(
+          eq(couples.partnerInviteToken, token),
+          sql`${couples.partnerInviteExpires} > NOW()`
+        )
+      );
+    return result[0];
+  }
+
+  async updateCouple(id: string, updates: Partial<Couple>): Promise<Couple | undefined> {
+    const result = await this.db
+      .update(couples)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(couples.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async generatePartnerInviteToken(coupleId: string, expiresInHours: number = 72): Promise<{ token: string; couple: Couple }> {
+    const token = randomUUID();
+    const expires = new Date();
+    expires.setHours(expires.getHours() + expiresInHours);
+
+    const result = await this.db
+      .update(couples)
+      .set({
+        partnerInviteToken: token,
+        partnerInviteExpires: expires,
+        partnerInvitedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(couples.id, coupleId))
+      .returning();
+
+    return { token, couple: result[0] };
+  }
+
+  async acceptPartnerInvite(token: string, userId: string): Promise<Couple | undefined> {
+    const couple = await this.getCoupleByInviteToken(token);
+    if (!couple) return undefined;
+
+    const result = await this.db
+      .update(couples)
+      .set({
+        partnerUserId: userId,
+        partnerJoinedAt: new Date(),
+        partnerInviteToken: null,
+        partnerInviteExpires: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(couples.id, couple.id))
+      .returning();
+
+    await this.db
+      .update(users)
+      .set({ coupleId: couple.id })
+      .where(eq(users.id, userId));
+
+    return result[0];
+  }
+
+  async removePartner(coupleId: string): Promise<Couple | undefined> {
+    const couple = await this.getCouple(coupleId);
+    if (!couple || !couple.partnerUserId) return undefined;
+
+    await this.db
+      .update(users)
+      .set({ coupleId: null })
+      .where(eq(users.id, couple.partnerUserId));
+
+    const result = await this.db
+      .update(couples)
+      .set({
+        partnerUserId: null,
+        partnerJoinedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(couples.id, coupleId))
+      .returning();
+
     return result[0];
   }
 }
