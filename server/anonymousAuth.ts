@@ -54,7 +54,7 @@ export const ensureAnonymousSession: RequestHandler = (req, res, next) => {
 };
 
 export const optionalAuth: RequestHandler = async (req: any, res, next) => {
-  // If user is authenticated via Replit Auth, proceed normally
+  // If user is authenticated, proceed normally
   if (req.isAuthenticated?.() && req.user) {
     return next();
   }

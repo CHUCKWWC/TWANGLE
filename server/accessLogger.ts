@@ -14,11 +14,11 @@ export async function logUserAccess(req: Request, res: Response, next: NextFunct
     const region = locationParts[1] || null;
     const country = locationParts[2] || geoData.location;
     
-    // Extract user data from claims object (Replit Auth structure)
-    const userId = user?.claims?.sub || null;
-    const email = user?.claims?.email || null;
-    const firstName = user?.claims?.first_name || null;
-    const lastName = user?.claims?.last_name || null;
+    // Extract user data from authenticated session
+    const userId = user?.id || null;
+    const email = user?.email || null;
+    const firstName = user?.firstName || null;
+    const lastName = user?.lastName || null;
     const displayName = firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || null;
     
     await storage.createAccessLog({
