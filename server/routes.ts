@@ -3187,9 +3187,33 @@ Make sure the percentages add up to 100. Base your analysis on established attac
           response_format: { type: "json_object" },
         });
 
+        const messageContent = completion.choices[0].message.content || '{}';
+        console.log('[Conversations Help] Raw AI response for alternative:', messageContent);
+        
+        let parsedContent;
+        try {
+          parsedContent = JSON.parse(messageContent);
+          console.log('[Conversations Help] Parsed alternative questions:', parsedContent);
+          
+          // Ensure the expected fields exist
+          if (!parsedContent.question1 || !parsedContent.question2) {
+            console.warn('[Conversations Help] Missing question fields in response:', parsedContent);
+            parsedContent = {
+              question1: parsedContent.question1 || "What's one small thing that made you feel closer to your partner recently?",
+              question2: parsedContent.question2 || "What's one way you could show appreciation to your partner this week?"
+            };
+          }
+        } catch (parseError) {
+          console.error('[Conversations Help] Failed to parse alternative questions JSON:', parseError);
+          parsedContent = {
+            question1: "What's one small thing that made you feel closer to your partner recently?",
+            question2: "What's one way you could show appreciation to your partner this week?"
+          };
+        }
+
         aiResponse = {
           type: 'alternative',
-          content: JSON.parse(completion.choices[0].message.content || '{}'),
+          content: parsedContent,
         };
       } else if (actionType === 'think_time') {
         aiResponse = {
@@ -3200,6 +3224,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
       // Log the help event
       await storage.createConversationHelpEvent({
+        userId,
         questionId,
         actionType,
         aiResponse,
