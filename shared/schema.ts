@@ -34,6 +34,7 @@ export const users = pgTable("users", {
   passwordResetExpires: timestamp("password_reset_expires"),
   newsletterSubscribed: integer("newsletter_subscribed").default(0),
   conversationResponseCount: integer("conversation_response_count").default(0),
+  coupleId: varchar("couple_id"), // Link to couples table for shared subscriptions
   trialStartedAt: timestamp("trial_started_at"),
   trialEndsAt: timestamp("trial_ends_at"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -647,3 +648,36 @@ export const insertMerchantSubscriptionSchema = createInsertSchema(merchantSubsc
 
 export type InsertMerchantSubscription = z.infer<typeof insertMerchantSubscriptionSchema>;
 export type MerchantSubscription = typeof merchantSubscriptions.$inferSelect;
+
+// Couples: Shared subscription between two partners
+// One subscription covers both users at $19.99/month
+export const couples = pgTable("couples", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  stripeSubscriptionId: varchar("stripe_subscription_id").unique(), // Stripe subscription ID
+  primaryUserId: varchar("primary_user_id").notNull(), // User who pays
+  partnerUserId: varchar("partner_user_id"), // Invited partner (nullable)
+  status: varchar("status").notNull().default("trialing"), // trialing, active, past_due, canceled
+  priceId: varchar("price_id"), // Stripe price ID for couple plan
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: integer("cancel_at_period_end").default(0),
+  partnerInviteToken: varchar("partner_invite_token"), // Token for partner invitation
+  partnerInviteExpires: timestamp("partner_invite_expires"), // Invitation expiry
+  partnerInvitedAt: timestamp("partner_invited_at"), // When partner was invited
+  partnerJoinedAt: timestamp("partner_joined_at"), // When partner accepted
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_couples_primary_user").on(table.primaryUserId),
+  index("idx_couples_partner_user").on(table.partnerUserId),
+  index("idx_couples_status").on(table.status),
+  index("idx_couples_invite_token").on(table.partnerInviteToken),
+]);
+
+export const insertCoupleSchema = createInsertSchema(couples).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertCouple = z.infer<typeof insertCoupleSchema>;
+export type Couple = typeof couples.$inferSelect;
