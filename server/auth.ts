@@ -1,5 +1,7 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as FacebookStrategy } from "passport-facebook";
 import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -86,6 +88,118 @@ export function setupAuth(app: Express) {
       }
     )
   );
+
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          callbackURL: "/auth/google/callback",
+          state: true,
+        },
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            const email = profile.emails?.[0]?.value;
+            if (!email) {
+              return done(new Error("No email found in Google profile"));
+            }
+
+            let user = await storage.getUserByEmail(email);
+            
+            if (user) {
+              if (user.authProvider !== 'google' && user.authProviderId !== profile.id) {
+                await storage.updateUser(user.id, {
+                  authProvider: 'google',
+                  authProviderId: profile.id,
+                  profileImageUrl: profile.photos?.[0]?.value || user.profileImageUrl,
+                  emailVerified: 1,
+                });
+                user = await storage.getUser(user.id);
+              }
+            } else {
+              const trialStartedAt = new Date();
+              const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+              
+              user = await storage.createUser({
+                email,
+                authProvider: 'google',
+                authProviderId: profile.id,
+                firstName: profile.name?.givenName || null,
+                lastName: profile.name?.familyName || null,
+                displayName: profile.displayName || email,
+                profileImageUrl: profile.photos?.[0]?.value || null,
+                emailVerified: 1,
+                trialStartedAt,
+                trialEndsAt,
+              });
+            }
+
+            return done(null, user);
+          } catch (error) {
+            return done(error as Error);
+          }
+        }
+      )
+    );
+  }
+
+  if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
+    passport.use(
+      new FacebookStrategy(
+        {
+          clientID: process.env.FACEBOOK_APP_ID,
+          clientSecret: process.env.FACEBOOK_APP_SECRET,
+          callbackURL: "/auth/facebook/callback",
+          profileFields: ['id', 'emails', 'name', 'picture.type(large)'],
+          enableProof: true,
+          state: true,
+        },
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            const email = profile.emails?.[0]?.value;
+            if (!email) {
+              return done(new Error("No email found in Facebook profile"));
+            }
+
+            let user = await storage.getUserByEmail(email);
+            
+            if (user) {
+              if (user.authProvider !== 'facebook' && user.authProviderId !== profile.id) {
+                await storage.updateUser(user.id, {
+                  authProvider: 'facebook',
+                  authProviderId: profile.id,
+                  profileImageUrl: profile.photos?.[0]?.value || user.profileImageUrl,
+                  emailVerified: 1,
+                });
+                user = await storage.getUser(user.id);
+              }
+            } else {
+              const trialStartedAt = new Date();
+              const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+              
+              user = await storage.createUser({
+                email,
+                authProvider: 'facebook',
+                authProviderId: profile.id,
+                firstName: profile.name?.givenName || null,
+                lastName: profile.name?.familyName || null,
+                displayName: profile.displayName || email,
+                profileImageUrl: profile.photos?.[0]?.value || null,
+                emailVerified: 1,
+                trialStartedAt,
+                trialEndsAt,
+              });
+            }
+
+            return done(null, user);
+          } catch (error) {
+            return done(error as Error);
+          }
+        }
+      )
+    );
+  }
 
   passport.serializeUser((user, done) => done(null, user.id));
   
@@ -249,6 +363,68 @@ export function setupAuth(app: Express) {
       res.status(500).json({ message: "Failed to reset password" });
     }
   });
+
+  app.get("/auth/google", 
+    passport.authenticate("google", { 
+      scope: ["profile", "email"],
+      session: true 
+    })
+  );
+
+  app.get(
+    "/auth/google/callback",
+    (req: Request, res: Response, next: NextFunction) => {
+      passport.authenticate("google", (err: any, user: SelectUser | false, info: any) => {
+        if (err) {
+          console.error("Google OAuth error:", err);
+          return res.redirect("/login?error=google_auth_error");
+        }
+        if (!user) {
+          console.error("Google OAuth failed - no user:", info);
+          return res.redirect("/login?error=google_auth_failed");
+        }
+        
+        req.login(user, (loginErr) => {
+          if (loginErr) {
+            console.error("Login error after Google OAuth:", loginErr);
+            return res.redirect("/login?error=login_failed");
+          }
+          res.redirect("/");
+        });
+      })(req, res, next);
+    }
+  );
+
+  app.get("/auth/facebook", 
+    passport.authenticate("facebook", { 
+      scope: ["email"],
+      session: true 
+    })
+  );
+
+  app.get(
+    "/auth/facebook/callback",
+    (req: Request, res: Response, next: NextFunction) => {
+      passport.authenticate("facebook", (err: any, user: SelectUser | false, info: any) => {
+        if (err) {
+          console.error("Facebook OAuth error:", err);
+          return res.redirect("/login?error=facebook_auth_error");
+        }
+        if (!user) {
+          console.error("Facebook OAuth failed - no user:", info);
+          return res.redirect("/login?error=facebook_auth_failed");
+        }
+        
+        req.login(user, (loginErr) => {
+          if (loginErr) {
+            console.error("Login error after Facebook OAuth:", loginErr);
+            return res.redirect("/login?error=login_failed");
+          }
+          res.redirect("/");
+        });
+      })(req, res, next);
+    }
+  );
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {

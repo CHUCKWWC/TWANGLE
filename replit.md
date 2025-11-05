@@ -24,7 +24,30 @@ PostgreSQL, managed via Neon serverless and Drizzle ORM, serves as the primary d
 
 ### Authentication & Authorization
 
-Twangle uses a custom email/password authentication system built with Passport.js and bcrypt. It supports a freemium model with a 7-day free trial that automatically starts upon registration. The platform offers various pricing tiers, including individual, couple, annual, and lifetime access plans. Authentication features include PostgreSQL-backed session management, token-based password reset, email verification, and IP-based geolocation blocking.
+Twangle uses a custom authentication system built with Passport.js supporting both email/password and social login (Google, Facebook). Password authentication uses bcrypt hashing for security. The platform implements a freemium model with a 7-day free trial that automatically starts upon registration. Pricing tiers include individual, couple, annual, and lifetime access plans.
+
+**Authentication Methods:**
+- **Email/Password:** Traditional login with bcrypt password hashing
+- **Google OAuth:** Sign in with Google using passport-google-oauth20
+- **Facebook OAuth:** Sign in with Facebook using passport-facebook
+
+**Social Login Features:**
+- Automatic account linking: If a user signs in with social login using an email that already exists, the accounts are automatically linked
+- Email verification: Social login users are automatically marked as email verified
+- Profile information: First name, last name, and profile picture are imported from social providers
+- Trial activation: New social login users automatically get a 7-day free trial
+
+**Security Features:**
+- PostgreSQL-backed session management with 30-day cookie expiration
+- Token-based password reset with rate limiting (3 requests per 15 minutes per IP)
+- Email verification with 24-hour expiring tokens
+- IP-based geolocation blocking for high-risk countries
+- Secure OAuth callback handling with error redirection
+
+**Database Schema:**
+- Users table includes `authProvider` field ('local', 'google', 'facebook')
+- `authProviderId` stores the unique identifier from OAuth provider
+- Supports multiple authentication methods per email address through account linking
 
 ### Daily Conversations
 

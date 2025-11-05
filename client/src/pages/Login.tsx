@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Heart, Mail, Lock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useLocation } from "wouter";
+import { FaGoogle, FaFacebook } from "react-icons/fa";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -37,6 +39,29 @@ export default function Login() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
+    
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        google_auth_error: "Google authentication encountered an error. Please try again.",
+        google_auth_failed: "Google authentication failed. Please check your account settings.",
+        facebook_auth_error: "Facebook authentication encountered an error. Please try again.",
+        facebook_auth_failed: "Facebook authentication failed. Please check your account settings.",
+        login_failed: "Login failed after authentication. Please try again.",
+      };
+      
+      toast({
+        title: "Authentication Error",
+        description: errorMessages[error] || "An unknown error occurred during authentication.",
+        variant: "destructive",
+      });
+      
+      window.history.replaceState({}, '', '/login');
+    }
+  }, [toast]);
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -113,6 +138,42 @@ export default function Login() {
   const onRegister = (data: RegisterFormData) => {
     registerMutation.mutate(data);
   };
+
+  const SocialLoginButtons = () => (
+    <div className="space-y-4">
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <Separator />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-2 text-muted-foreground">or continue with</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() => window.location.href = '/auth/google'}
+          data-testid="button-google-login"
+        >
+          <FaGoogle className="mr-2 h-4 w-4" />
+          Google
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() => window.location.href = '/auth/facebook'}
+          data-testid="button-facebook-login"
+        >
+          <FaFacebook className="mr-2 h-4 w-4" />
+          Facebook
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-secondary/10 to-accent/5 flex items-center justify-center p-4">
@@ -222,6 +283,8 @@ export default function Login() {
                     </Button>
                   </form>
                 </Form>
+
+                <SocialLoginButtons />
               </TabsContent>
 
               <TabsContent value="register" className="space-y-4 mt-6">
@@ -348,6 +411,8 @@ export default function Login() {
                     </Button>
                   </form>
                 </Form>
+
+                <SocialLoginButtons />
               </TabsContent>
             </Tabs>
           </CardContent>
