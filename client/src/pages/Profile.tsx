@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { User, Calendar, Activity, MessageSquare, MapPin, ClipboardList, Settings, Mail, CheckCircle2 } from "lucide-react";
+import { User, Calendar, Activity, MessageSquare, MapPin, ClipboardList, Settings, Mail, CheckCircle2, Heart, Send, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 
@@ -23,14 +23,31 @@ interface UserStats {
   subscriptionTier: string;
 }
 
+interface CoupleData {
+  id: string;
+  primaryUserId: string;
+  partnerUserId: string | null;
+  status: string;
+  inviteEmail: string | null;
+  inviteToken: string | null;
+  primaryUserEmail: string;
+  partnerUserEmail: string | null;
+  stripeSubscriptionId: string | null;
+}
+
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [newDisplayName, setNewDisplayName] = useState('');
   const [newsletterSubscribed, setNewsletterSubscribed] = useState((user as any)?.newsletterSubscribed === 1);
+  const [partnerEmail, setPartnerEmail] = useState('');
   
   const { data: stats, isLoading: statsLoading } = useQuery<UserStats>({
     queryKey: ["/api/user/stats"],
+  });
+
+  const { data: coupleData, isLoading: coupleLoading } = useQuery<CoupleData>({
+    queryKey: ["/api/couple/status"],
   });
 
   const updateProfileMutation = useMutation({
@@ -78,10 +95,55 @@ export default function Profile() {
     },
   });
 
+  const invitePartnerMutation = useMutation({
+    mutationFn: async (email: string) => {
+      return await apiRequest("POST", "/api/couple/invite", { partnerEmail: email });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/couple/status"] });
+      setPartnerEmail('');
+      toast({
+        title: "Invitation Sent",
+        description: "Your partner has been invited to join your couple subscription.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send invitation.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const manageBillingMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/billing/customer-portal", {});
+      return await res.json();
+    },
+    onSuccess: (data: { url: string }) => {
+      window.location.href = data.url;
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to open billing portal.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleUpdateDisplayName = (e: React.FormEvent) => {
     e.preventDefault();
     if (newDisplayName.trim()) {
       updateProfileMutation.mutate(newDisplayName.trim());
+    }
+  };
+
+  const handleInvitePartner = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (partnerEmail.trim()) {
+      invitePartnerMutation.mutate(partnerEmail.trim());
     }
   };
 
@@ -229,6 +291,110 @@ export default function Profile() {
                 </div>
               </CardContent>
             </Card>
+
+            {coupleData && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-primary" />
+                    <CardTitle>Couple Subscription</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Share premium access with your partner for one low price
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {coupleLoading ? (
+                    <Skeleton className="h-20 w-full" />
+                  ) : coupleData.partnerUserId ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                        <div>
+                          <p className="text-sm font-medium">Partner</p>
+                          <p className="text-sm text-muted-foreground" data-testid="text-partner-email">
+                            {coupleData.partnerUserEmail}
+                          </p>
+                        </div>
+                        <Badge variant="default" data-testid="badge-couple-status">Connected</Badge>
+                      </div>
+                      {coupleData.primaryUserId === user?.id && (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => manageBillingMutation.mutate()}
+                          disabled={manageBillingMutation.isPending}
+                          data-testid="button-manage-billing"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          {manageBillingMutation.isPending ? 'Opening...' : 'Manage Billing'}
+                        </Button>
+                      )}
+                    </div>
+                  ) : coupleData.inviteEmail ? (
+                    <div className="space-y-3">
+                      <div className="p-3 rounded-lg bg-muted/50">
+                        <p className="text-sm font-medium">Pending Invitation</p>
+                        <p className="text-sm text-muted-foreground" data-testid="text-invite-email">
+                          {coupleData.inviteEmail}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Waiting for your partner to accept
+                        </p>
+                      </div>
+                      {coupleData.primaryUserId === user?.id && (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => manageBillingMutation.mutate()}
+                          disabled={manageBillingMutation.isPending}
+                          data-testid="button-manage-billing"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          {manageBillingMutation.isPending ? 'Opening...' : 'Manage Billing'}
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <form onSubmit={handleInvitePartner} className="space-y-3">
+                      <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+                        <p className="text-sm font-medium">Invite Your Partner</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Share your premium subscription with your partner at no extra cost
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          type="email"
+                          placeholder="partner@example.com"
+                          value={partnerEmail}
+                          onChange={(e) => setPartnerEmail(e.target.value)}
+                          disabled={invitePartnerMutation.isPending}
+                          data-testid="input-partner-email"
+                        />
+                        <Button
+                          type="submit"
+                          disabled={!partnerEmail.trim() || invitePartnerMutation.isPending}
+                          data-testid="button-send-invite"
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          {invitePartnerMutation.isPending ? 'Sending...' : 'Invite'}
+                        </Button>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => manageBillingMutation.mutate()}
+                        disabled={manageBillingMutation.isPending}
+                        data-testid="button-manage-billing"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        {manageBillingMutation.isPending ? 'Opening...' : 'Manage Billing'}
+                      </Button>
+                    </form>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader>
