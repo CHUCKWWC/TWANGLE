@@ -102,7 +102,7 @@ const isAdmin = (req: any, res: Response, next: NextFunction) => {
     return res.status(401).json({ message: "Unauthorized" });
   }
   
-  const userEmail = req.user.email;
+  const userEmail = req.user.claims.email;
   if (!isAdminUser(userEmail)) {
     return res.status(403).json({ message: "Access denied. Admin privileges required." });
   }
@@ -117,7 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes (Reference: blueprint:javascript_log_in_with_replit)
   app.get('/api/auth/user', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       return res.json(user);
     } catch (error) {
@@ -384,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User stats endpoint
   app.get('/api/user/stats', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       
       const assessments = await storage.getAssessmentsByUser(userId);
       const chatSessions = await storage.getChatSessionsByUser(userId);
@@ -478,7 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update user profile
   app.put('/api/user/profile', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { displayName } = req.body;
 
       if (displayName !== undefined && typeof displayName !== 'string') {
@@ -598,7 +598,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { messages, sessionId } = req.body;
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -687,7 +687,7 @@ ${conversationText}`;
 
   app.get("/api/summaries", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const summaries = await storage.getWeeklySummaries(userId);
       res.json({ summaries });
     } catch (error: any) {
@@ -701,7 +701,7 @@ ${conversationText}`;
 
   app.post("/api/feedback/session", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { sessionId, rating, feedbackText } = req.body;
 
       if (!rating || rating < 1 || rating > 5) {
@@ -734,7 +734,7 @@ ${conversationText}`;
 
   app.get("/api/feedback/session", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const feedback = await storage.getSessionFeedback(userId);
       res.json({ feedback });
     } catch (error: any) {
@@ -748,7 +748,7 @@ ${conversationText}`;
 
   app.post("/api/feedback/progress", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { weekStartDate, relationshipScore, improvementNotes } = req.body;
 
       if (!weekStartDate) {
@@ -778,7 +778,7 @@ ${conversationText}`;
 
   app.get("/api/feedback/progress", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const progress = await storage.getRelationshipProgress(userId);
       res.json({ progress });
     } catch (error: any) {
@@ -792,7 +792,7 @@ ${conversationText}`;
 
   app.get("/api/user/eligibility", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       const lifetimeAccessCount = await storage.getLifetimeAccessCount();
       
@@ -820,7 +820,7 @@ ${conversationText}`;
 
   app.post("/api/feedback/general", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       
       const validationResult = insertGeneralFeedbackSchema.safeParse({
         userId,
@@ -863,7 +863,7 @@ ${conversationText}`;
 
   app.get("/api/feedback/general", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const feedbackType = req.query.feedbackType as string | undefined;
       const feedback = await storage.getGeneralFeedback(userId, feedbackType);
       res.json({ feedback });
@@ -885,7 +885,7 @@ ${conversationText}`;
     }
 
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
@@ -937,7 +937,7 @@ ${conversationText}`;
     }
 
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       if (!user || !user.stripeCustomerId) {
         return res.status(404).json({ error: "No billing account found" });
@@ -960,7 +960,7 @@ ${conversationText}`;
 
   app.get("/api/billing/status", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       const subscription = await storage.getSubscriptionByUserId(userId);
 
@@ -1007,7 +1007,7 @@ ${conversationText}`;
 
   app.get("/api/trial/progress", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
 
       if (!user) {
@@ -1125,7 +1125,7 @@ ${conversationText}`;
     }
 
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { paymentMethodId, priceId } = req.body;
 
       if (!paymentMethodId || !priceId) {
@@ -1224,7 +1224,7 @@ ${conversationText}`;
     }
 
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       
       const requestData = {
         userId,
@@ -1373,7 +1373,7 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
 
   app.get("/api/retreat/itineraries", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const itineraries = await storage.getRetreatItineraries(userId);
       res.json({ itineraries });
     } catch (error: any) {
@@ -1387,7 +1387,7 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
 
   app.get("/api/retreat/itinerary/:id", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const itinerary = await storage.getRetreatItinerary(req.params.id);
       
       if (!itinerary) {
@@ -1418,7 +1418,7 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
 
     try {
       // Determine userId or anonId
-      const userId = req.isAuthenticated?.() && req.user ? req.user.id : null;
+      const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
       
       if (!userId && !anonId) {
@@ -1504,7 +1504,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
 
   app.get("/api/datenight/plans", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.isAuthenticated?.() && req.user ? req.user.id : null;
+      const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
       
       if (!userId && !anonId) {
@@ -1526,7 +1526,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
 
   app.get("/api/datenight/:id", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.isAuthenticated?.() && req.user ? req.user.id : null;
+      const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
       const plan = await storage.getDateNight(req.params.id);
       
@@ -1552,7 +1552,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
 
   app.post("/api/assessments", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.isAuthenticated?.() && req.user ? req.user.id : null;
+      const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
       
       if (!userId && !anonId) {
@@ -1585,7 +1585,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
 
   app.get("/api/assessments/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.isAuthenticated?.() && req.user ? req.user.id : null;
+      const userId = req.isAuthenticated?.() && req.user ? req.user.claims.sub : null;
       const anonId = req.anonymousUser?.anonId || null;
       const assessment = await storage.getAssessment(req.params.id);
       
@@ -1687,7 +1687,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
   app.post("/api/assessments/:id/share", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const assessment = await storage.getAssessment(req.params.id);
       
       if (!assessment) {
@@ -2026,7 +2026,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Email verification endpoints
   app.post("/api/send-verification-email", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
       if (!user || !user.email) {
@@ -2089,7 +2089,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
   app.post("/api/newsletter/subscribe", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       await storage.updateNewsletterSubscription(userId, true);
       res.json({ success: true, message: "Subscribed to newsletter" });
     } catch (error: any) {
@@ -2103,7 +2103,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
   app.post("/api/newsletter/unsubscribe", isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       await storage.updateNewsletterSubscription(userId, false);
       res.json({ success: true, message: "Unsubscribed from newsletter" });
     } catch (error: any) {
@@ -2260,7 +2260,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Calculate and get latest health score
   app.post('/api/health-score/calculate', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const healthScore = await storage.calculateHealthScore(userId);
       res.json(healthScore);
     } catch (error: any) {
@@ -2272,7 +2272,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Get latest health score
   app.get('/api/health-score', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const healthScore = await storage.getLatestHealthScore(userId);
       res.json(healthScore || null);
     } catch (error: any) {
@@ -2284,7 +2284,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Get health score history
   app.get('/api/health-score/history', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const limit = parseInt(req.query.limit as string) || 30;
       const scores = await storage.getHealthScores(userId, limit);
       res.json(scores);
@@ -2299,7 +2299,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Create partnership invitation
   app.post('/api/partnerships', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       
       // Validate request
       const validation = insertPartnershipSchema.safeParse(req.body);
@@ -2358,7 +2358,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Get active partnership
   app.get('/api/partnerships', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const partnership = await storage.getActivePartnership(userId);
       res.json(partnership || null);
     } catch (error: any) {
@@ -2370,7 +2370,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Get pending invites
   app.get('/api/partnerships/pending', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const invites = await storage.getPendingInvites(userId);
       res.json(invites);
     } catch (error: any) {
@@ -2423,7 +2423,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Accept partnership invitation
   app.post('/api/partnerships/:token/accept', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { token } = req.params;
 
       // Check if user already has an active partnership
@@ -2455,7 +2455,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Update partnership settings
   app.patch('/api/partnerships/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { id } = req.params;
 
       // Get partnership and verify ownership
@@ -2488,7 +2488,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Create journal entry with AI insights
   app.post('/api/journal', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       
       // Validate request
       const validation = insertJournalEntrySchema.safeParse(req.body);
@@ -2549,7 +2549,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Get journal entries
   app.get('/api/journal', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const limit = parseInt(req.query.limit as string) || 50;
       const entries = await storage.getJournalEntries(userId, limit);
       res.json(entries);
@@ -2562,7 +2562,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Get single journal entry
   app.get('/api/journal/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { id } = req.params;
 
       const entry = await storage.getJournalEntry(id);
@@ -2585,7 +2585,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Update journal entry
   app.patch('/api/journal/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { id } = req.params;
 
       // Get entry and verify ownership
@@ -2619,7 +2619,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Get daily question (works for both solo and partnered users)
   app.get('/api/conversations/daily', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       
       // Get user info to check subscription and usage
       const user = await storage.getUser(userId);
@@ -2695,7 +2695,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Submit response to conversation question (works for both solo and partnered users)
   app.post('/api/conversations/respond', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { questionId, responseText } = req.body;
 
       if (!questionId || !responseText) {
@@ -2789,7 +2789,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Get conversation history (works for both solo and partnered users)
   app.get('/api/conversations/history', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const limit = parseInt(req.query.limit as string) || 20;
 
       // Check if user has an active partnership
@@ -2815,7 +2815,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Request help with a question (AI coaching, alternative question, or think time)
   app.post('/api/conversations/help', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { questionId, actionType } = req.body;
 
       if (!questionId || !actionType) {
@@ -2911,7 +2911,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Generate analytics snapshot
   app.post('/api/analytics/snapshot', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { periodType = 'weekly' } = req.body;
 
       // Get user progress data
@@ -2982,7 +2982,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Get latest analytics snapshot
   app.get('/api/analytics/snapshot/:periodType', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { periodType } = req.params;
 
       const snapshot = await storage.getLatestAnalyticsSnapshot(userId, periodType);
@@ -2996,7 +2996,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
   // Get analytics history
   app.get('/api/analytics/history/:periodType', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { periodType } = req.params;
       const snapshots = await storage.getAnalyticsSnapshots(userId, periodType);
       res.json(snapshots);
@@ -3025,7 +3025,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
    */
   app.post('/api/stripe-connect/account', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
 
       // Validate Stripe is configured
@@ -3100,7 +3100,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
    */
   app.post('/api/stripe-connect/account-link', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       
       if (!stripe) {
         return res.status(500).json({ 
@@ -3146,7 +3146,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
    */
   app.get('/api/stripe-connect/account-status', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
 
       if (!stripe) {
         return res.status(500).json({ 
@@ -3198,7 +3198,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
    */
   app.post('/api/stripe-connect/product', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { 
         name, 
         description, 
@@ -3343,7 +3343,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
    */
   app.get('/api/stripe-connect/my-products', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const products = await storage.getProductsByUserId(userId);
       res.json(products);
     } catch (error: any) {
@@ -3503,7 +3503,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
    */
   app.get('/api/stripe-connect/my-subscriptions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const subscriptions = await storage.getMerchantSubscriptionsByUser(userId);
       
       // Enrich with product details
@@ -3533,7 +3533,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
    */
   app.post('/api/stripe-connect/subscription/:id/cancel', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       const { id } = req.params;
 
       if (!stripe) {
@@ -3580,7 +3580,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
    */
   app.get('/api/stripe-connect/merchant/subscription-metrics', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.claims.sub;
       
       // Get connected account
       const connectedAccount = await storage.getConnectedAccountByUserId(userId);
