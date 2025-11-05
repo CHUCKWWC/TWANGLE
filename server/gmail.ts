@@ -302,6 +302,72 @@ export async function sendPasswordResetEmail(to: string, token: string, baseUrl:
   }
 }
 
+export async function sendPartnerInviteEmail(
+  to: string,
+  data: { inviterName: string; inviteUrl: string }
+) {
+  try {
+    const gmail = await getUncachableGmailClient();
+    const fromEmail = getFromEmail();
+    const { inviterName, inviteUrl } = data;
+    
+    const text = `${inviterName} has invited you to join their couple subscription on Twangle! Join them to get full access to all premium features together. Click this link to accept the invitation: ${inviteUrl}`;
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #d4718b;">You've Been Invited to a Couple Subscription!</h2>
+        <p><strong>${inviterName}</strong> has invited you to join their couple subscription on Twangle.</p>
+        
+        <div style="background-color: #f9f5f7; padding: 20px; border-radius: 8px; margin: 25px 0;">
+          <h3 style="color: #333; margin-top: 0;">What's Included:</h3>
+          <ul style="line-height: 1.8; color: #555;">
+            <li>Full premium access for both of you</li>
+            <li>Unlimited AI coaching with Coach Charles</li>
+            <li>Partner collaboration tools and shared progress</li>
+            <li>All assessments, exercises, and retreat planning</li>
+            <li>One subscription covers both partners - no extra cost!</li>
+          </ul>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${inviteUrl}" 
+             style="background-color: #d4718b; color: white; padding: 14px 36px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            Accept Invitation
+          </a>
+        </div>
+        
+        <p style="color: #666; font-size: 14px;">
+          Or copy and paste this link into your browser:<br>
+          <a href="${inviteUrl}" style="color: #d4718b;">${inviteUrl}</a>
+        </p>
+        
+        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+          This invitation will expire in 72 hours. If you didn't expect this invitation, you can safely ignore this email.
+        </p>
+        
+        <p style="color: #666; font-size: 14px; margin-top: 30px;">
+          With gratitude,<br>
+          The Twangle Team
+        </p>
+      </div>
+    `;
+    
+    const encodedMessage = createMimeMessage(to, fromEmail, `${inviterName} invited you to their Twangle couple subscription`, text, html);
+    
+    await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: {
+        raw: encodedMessage
+      }
+    });
+    
+    console.log('Couple partner invite email sent to:', to);
+  } catch (error) {
+    console.error('Error sending couple partner invite email:', error);
+    throw error;
+  }
+}
+
 export async function sendTrialReminder(to: string, data: TrialReminderData, baseUrl: string) {
   try {
     const gmail = await getUncachableGmailClient();

@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { logUserAccess } from "./accessLogger";
-import { sendVerificationEmail, sendWelcomeEmail, sendTrialReminder, sendPartnerInvitationEmail } from "./gmail";
+import { sendVerificationEmail, sendWelcomeEmail, sendTrialReminder, sendPartnerInvitationEmail, sendPartnerInviteEmail } from "./gmail";
 import OpenAI from "openai";
 import Stripe from "stripe";
 import rateLimit from "express-rate-limit";
@@ -2653,6 +2653,219 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     } catch (error: any) {
       console.error("Update journal entry error:", error);
       res.status(500).json({ message: "Failed to update journal entry" });
+    }
+  });
+
+  // ===== COUPLE SUBSCRIPTION ROUTES =====
+  
+  // Get current user's couple status
+  app.get('/api/couples/me', isAuthenticated, logUserAccess, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      let couple = null;
+      let isPrimaryUser = false;
+      let isPartnerUser = false;
+
+      const primaryCouple = await storage.getCoupleByPrimaryUser(userId);
+      if (primaryCouple) {
+        couple = primaryCouple;
+        isPrimaryUser = true;
+      } else {
+        const partnerCouple = await storage.getCoupleByPartnerUser(userId);
+        if (partnerCouple) {
+          couple = partnerCouple;
+          isPartnerUser = true;
+        }
+      }
+
+      let primaryUser = null;
+      let partnerUser = null;
+      
+      if (couple) {
+        primaryUser = await storage.getUser(couple.primaryUserId);
+        if (couple.partnerUserId) {
+          partnerUser = await storage.getUser(couple.partnerUserId);
+        }
+      }
+
+      res.json({
+        couple,
+        isPrimaryUser,
+        isPartnerUser,
+        primaryUser: primaryUser ? {
+          id: primaryUser.id,
+          email: primaryUser.email,
+          firstName: primaryUser.firstName,
+          lastName: primaryUser.lastName,
+        } : null,
+        partnerUser: partnerUser ? {
+          id: partnerUser.id,
+          email: partnerUser.email,
+          firstName: partnerUser.firstName,
+          lastName: partnerUser.lastName,
+        } : null,
+      });
+    } catch (error: any) {
+      console.error("Get couple status error:", error);
+      res.status(500).json({ message: "Failed to get couple status" });
+    }
+  });
+
+  // Generate partner invite token and send email
+  app.post('/api/couples/invite', isAuthenticated, logUserAccess, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { partnerEmail } = req.body;
+
+      if (!partnerEmail) {
+        return res.status(400).json({ message: "Partner email is required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const couple = await storage.getCoupleByPrimaryUser(userId);
+      if (!couple) {
+        return res.status(404).json({ 
+          message: "Couple subscription not found. Please subscribe to a couple plan first." 
+        });
+      }
+
+      if (couple.partnerUserId) {
+        return res.status(400).json({ 
+          message: "A partner is already linked to this couple subscription" 
+        });
+      }
+
+      const { token, couple: updatedCouple } = await storage.generatePartnerInviteToken(couple.id, 72);
+
+      const inviteUrl = `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/couples/accept/${token}`;
+      
+      await sendPartnerInviteEmail(partnerEmail, {
+        inviterName: [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email || 'Your partner',
+        inviteUrl,
+      });
+
+      await storage.createEmailSendLog({
+        userId: userId,
+        emailType: 'couple_partner_invite',
+        recipientEmail: partnerEmail,
+        status: 'sent',
+      });
+
+      res.json({ 
+        message: "Partner invite sent successfully",
+        inviteToken: token,
+        inviteUrl,
+        expiresAt: updatedCouple.partnerInviteExpires,
+      });
+    } catch (error: any) {
+      console.error("Send partner invite error:", error);
+      res.status(500).json({ message: "Failed to send partner invite" });
+    }
+  });
+
+  // Accept partner invite
+  app.post('/api/couples/accept/:token', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { token } = req.params;
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const existingPrimaryCouple = await storage.getCoupleByPrimaryUser(userId);
+      if (existingPrimaryCouple) {
+        return res.status(400).json({ 
+          message: "You are already the primary user of a couple subscription" 
+        });
+      }
+
+      const existingPartnerCouple = await storage.getCoupleByPartnerUser(userId);
+      if (existingPartnerCouple) {
+        return res.status(400).json({ 
+          message: "You are already part of a couple subscription" 
+        });
+      }
+
+      const couple = await storage.acceptPartnerInvite(token, userId);
+      
+      if (!couple) {
+        return res.status(400).json({ 
+          message: "Invalid or expired invitation token" 
+        });
+      }
+
+      res.json({ 
+        message: "Partner invite accepted successfully",
+        couple,
+      });
+    } catch (error: any) {
+      console.error("Accept partner invite error:", error);
+      res.status(500).json({ message: "Failed to accept partner invite" });
+    }
+  });
+
+  // Remove partner from couple
+  app.delete('/api/couples/partner', isAuthenticated, logUserAccess, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+
+      const couple = await storage.getCoupleByPrimaryUser(userId);
+      if (!couple) {
+        return res.status(404).json({ 
+          message: "Couple subscription not found" 
+        });
+      }
+
+      if (!couple.partnerUserId) {
+        return res.status(400).json({ 
+          message: "No partner is linked to this couple subscription" 
+        });
+      }
+
+      const updatedCouple = await storage.removePartner(couple.id);
+
+      res.json({ 
+        message: "Partner removed successfully",
+        couple: updatedCouple,
+      });
+    } catch (error: any) {
+      console.error("Remove partner error:", error);
+      res.status(500).json({ message: "Failed to remove partner" });
+    }
+  });
+
+  // Get couple subscription details
+  app.get('/api/couples/subscription', isAuthenticated, logUserAccess, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+
+      let couple = await storage.getCoupleByPrimaryUser(userId);
+      if (!couple) {
+        couple = await storage.getCoupleByPartnerUser(userId);
+      }
+
+      if (!couple) {
+        return res.status(404).json({ 
+          message: "No couple subscription found" 
+        });
+      }
+
+      res.json({ couple });
+    } catch (error: any) {
+      console.error("Get couple subscription error:", error);
+      res.status(500).json({ message: "Failed to get couple subscription" });
     }
   });
 
