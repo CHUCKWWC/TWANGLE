@@ -15,11 +15,12 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for Replit Auth
-// Reference: blueprint:javascript_log_in_with_replit
+// User storage table for custom Twangle authentication
+// Password is nullable to support migration from Replit Auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
+  password: varchar("password"),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   displayName: varchar("display_name"),
@@ -30,6 +31,8 @@ export const users = pgTable("users", {
   emailVerified: integer("email_verified").default(0),
   emailVerificationToken: varchar("email_verification_token"),
   emailVerificationExpires: timestamp("email_verification_expires"),
+  passwordResetToken: varchar("password_reset_token"),
+  passwordResetExpires: timestamp("password_reset_expires"),
   newsletterSubscribed: integer("newsletter_subscribed").default(0),
   conversationResponseCount: integer("conversation_response_count").default(0),
   trialStartedAt: timestamp("trial_started_at"),
