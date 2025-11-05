@@ -1,9 +1,8 @@
-// Reference: blueprint:javascript_log_in_with_replit
 import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { logUserAccess } from "./accessLogger";
 import { sendVerificationEmail, sendWelcomeEmail, sendTrialReminder, sendPartnerInvitationEmail } from "./gmail";
 import OpenAI from "openai";

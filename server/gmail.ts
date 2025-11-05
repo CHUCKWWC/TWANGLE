@@ -256,6 +256,52 @@ interface TrialReminderData {
   daysRemaining: number;
 }
 
+export async function sendPasswordResetEmail(to: string, token: string, baseUrl: string) {
+  try {
+    const gmail = await getUncachableGmailClient();
+    const fromEmail = getFromEmail();
+    
+    const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+    
+    const text = `You requested to reset your Twangle password. Click this link to set a new password: ${resetUrl}`;
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #d4718b;">Reset Your Password</h2>
+        <p>You requested to reset your Twangle account password.</p>
+        <p>Click the button below to set a new password:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" 
+             style="background-color: #d4718b; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            Reset Password
+          </a>
+        </div>
+        <p style="color: #666; font-size: 14px;">
+          Or copy and paste this link into your browser:<br>
+          <a href="${resetUrl}">${resetUrl}</a>
+        </p>
+        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+          This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.
+        </p>
+      </div>
+    `;
+    
+    const encodedMessage = createMimeMessage(to, fromEmail, 'Reset your Twangle password', text, html);
+    
+    await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: {
+        raw: encodedMessage
+      }
+    });
+    
+    console.log('Password reset email sent to:', to);
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw error;
+  }
+}
+
 export async function sendTrialReminder(to: string, data: TrialReminderData, baseUrl: string) {
   try {
     const gmail = await getUncachableGmailClient();
