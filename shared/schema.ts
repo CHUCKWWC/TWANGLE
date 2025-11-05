@@ -15,11 +15,14 @@ export const sessions = pgTable(
 );
 
 // User storage table for custom Twangle authentication
-// Password is nullable to support legacy users migrating to custom auth
+// Password is nullable to support social login users
+// authProvider: 'local' for email/password, 'google', 'facebook', 'apple' for OAuth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: varchar("email").unique(),
   password: varchar("password"),
+  authProvider: varchar("auth_provider").default("local"),
+  authProviderId: varchar("auth_provider_id"),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   displayName: varchar("display_name"),
