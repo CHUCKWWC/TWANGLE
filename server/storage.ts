@@ -1099,7 +1099,13 @@ export class DbStorage implements IStorage {
     const PostgresSessionStore = connectPg(session);
     this.sessionStore = new PostgresSessionStore({ 
       pool, 
-      createTableIfMissing: true 
+      createTableIfMissing: true,
+      errorLog: (err: Error) => {
+        // Suppress benign "already exists" errors from session store initialization
+        if (!err.message?.includes('already exists')) {
+          console.error('Session store error:', err);
+        }
+      }
     });
   }
 
