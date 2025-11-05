@@ -10,6 +10,8 @@ import { useQuery } from "@tanstack/react-query";
 import { ExitIntentPopup } from "@/components/ExitIntentPopup";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { CoachDemo } from "@/components/CoachDemo";
+import { AssessmentPreview } from "@/components/AssessmentPreview";
+import { RetreatPreview } from "@/components/RetreatPreview";
 
 interface SocialProofStats {
   userCount: number;
@@ -30,13 +32,26 @@ export default function Landing() {
       <StructuredData data={ORGANIZATION_SCHEMA} />
       <StructuredData data={SERVICE_SCHEMA} />
       
+      {/* Skip to content link for accessibility */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md"
+        data-testid="link-skip-to-content"
+      >
+        Skip to main content
+      </a>
+
       <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
-      <div className="relative flex-1 flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/10 min-h-screen">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1920&h=1080&fit=crop')] bg-cover bg-center opacity-20" />
+      <div id="main-content" className="relative flex-1 flex items-center justify-center bg-gradient-to-br from-primary/20 via-background to-secondary/10 min-h-screen">
+        <div 
+          className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1920&h=1080&fit=crop')] bg-cover bg-center opacity-20" 
+          role="img"
+          aria-label="Background image of couple holding hands together"
+        />
         
         <div className="relative z-10 max-w-4xl mx-auto px-6 py-20 text-center">
-          <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center justify-center mb-8" aria-hidden="true">
             <Heart className="w-16 h-16 text-primary" />
           </div>
 
@@ -55,10 +70,10 @@ export default function Landing() {
 
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8 max-w-md mx-auto">
             <p className="text-sm font-medium text-foreground">
-              ✨ Start your 7-day free trial
+              ✨ Start your 7-day free trial — then only $19.99/month
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Full access to AI coaching, assessments, retreat planning, and exercises. No credit card required to start.
+              Full access to AI coaching, assessments, retreat planning, and exercises. No credit card required to start. Cancel anytime.
             </p>
           </div>
 
@@ -89,23 +104,23 @@ export default function Landing() {
 
           <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
+              <Shield className="w-4 h-4" aria-hidden="true" />
               <span>Private & Secure</span>
             </div>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-4 h-4" aria-hidden="true" />
               <span>AI Personalized</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4" aria-hidden="true" />
               <span>Research-Backed</span>
             </div>
           </div>
 
           {stats && (
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto" data-testid="social-proof-stats">
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto" data-testid="social-proof-stats" role="region" aria-label="Social proof statistics">
               <div className="bg-card/80 backdrop-blur border border-border rounded-lg p-6 text-center">
-                <div className="text-3xl font-bold text-primary mb-1" data-testid="stat-user-count">
+                <div className="text-3xl font-bold text-primary mb-1" data-testid="stat-user-count" aria-label={`${stats.userCount} couples growing together`}>
                   {stats.userCount.toLocaleString()}+
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -113,7 +128,7 @@ export default function Landing() {
                 </div>
               </div>
               <div className="bg-card/80 backdrop-blur border border-border rounded-lg p-6 text-center">
-                <div className="text-3xl font-bold text-primary mb-1" data-testid="stat-message-count">
+                <div className="text-3xl font-bold text-primary mb-1" data-testid="stat-message-count" aria-label={`${stats.messageCount} coaching conversations`}>
                   {stats.messageCount.toLocaleString()}+
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -121,7 +136,7 @@ export default function Landing() {
                 </div>
               </div>
               <div className="bg-card/80 backdrop-blur border border-border rounded-lg p-6 text-center">
-                <div className="text-3xl font-bold text-primary mb-1" data-testid="stat-avg-rating">
+                <div className="text-3xl font-bold text-primary mb-1" data-testid="stat-avg-rating" aria-label={`${stats.avgRating} out of 5 average user rating`}>
                   {stats.avgRating}/5
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -225,7 +240,7 @@ export default function Landing() {
           </p>
 
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse" data-testid="comparison-table">
+            <table className="w-full border-collapse" data-testid="comparison-table" role="table" aria-label="Comparison between Traditional Therapy and Twangle">
               <thead>
                 <tr className="border-b border-border">
                   <th className="py-4 px-6 text-left font-semibold">Feature</th>
@@ -272,6 +287,14 @@ export default function Landing() {
             <p className="text-sm text-muted-foreground mb-4">
               Note: Twangle complements but does not replace clinical therapy for serious mental health concerns
             </p>
+            <div className="mb-4">
+              <p className="text-lg font-semibold mb-1">
+                7 days free, then $19.99/month
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Cancel anytime. No hidden fees.
+              </p>
+            </div>
             <Button
               asChild
               size="lg"
@@ -298,6 +321,36 @@ export default function Landing() {
             </p>
           </div>
           <CoachDemo />
+        </div>
+      </div>
+
+      {/* Assessment Preview Section */}
+      <div className="py-20 px-6 bg-background">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
+              Try the Attachment Assessment
+            </h2>
+            <p className="text-muted-foreground">
+              Experience a preview of our research-backed attachment style assessment. Answer 3 sample questions to see how it works.
+            </p>
+          </div>
+          <AssessmentPreview />
+        </div>
+      </div>
+
+      {/* Retreat Preview Section */}
+      <div className="py-20 px-6 bg-card">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
+              Preview Retreat Planning
+            </h2>
+            <p className="text-muted-foreground">
+              See how our AI creates personalized couples retreats tailored to your goals, budget, and preferences.
+            </p>
+          </div>
+          <RetreatPreview />
         </div>
       </div>
 
@@ -368,6 +421,14 @@ export default function Landing() {
           </div>
 
           <div className="text-center mt-16">
+            <div className="mb-4">
+              <p className="text-lg font-semibold mb-1">
+                7 days free, then $19.99/month
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Cancel anytime. All features included.
+              </p>
+            </div>
             <Button
               asChild
               size="lg"
@@ -457,6 +518,102 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* Privacy & Security Section */}
+      <div className="py-20 px-6 bg-background">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+              <Shield className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
+              Your Privacy Matters
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              We understand that relationship conversations are deeply personal. Your data is protected with enterprise-grade security.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">End-to-End Encryption</h3>
+                    <p className="text-sm text-muted-foreground">
+                      All your conversations, assessments, and journal entries are encrypted in transit and at rest using industry-standard TLS/SSL protocols.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Private by Default</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Your data belongs to you. We never sell your personal information to third parties or use it for advertising purposes.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Secure Infrastructure</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Hosted on enterprise-grade cloud infrastructure with automatic backups, 24/7 monitoring, and regular security audits.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">You Control Your Data</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Export or delete your data anytime. You decide what to share with your partner and can revoke access instantly.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-4">
+              Learn more about how we protect your privacy in our{" "}
+              <a href="/privacy" className="text-primary hover:underline font-medium" data-testid="link-privacy-details">
+                Privacy Policy
+              </a>
+              {" "}and{" "}
+              <a href="/terms" className="text-primary hover:underline font-medium" data-testid="link-terms-details">
+                Terms of Service
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Final CTA Section */}
       <div className="py-20 px-6 bg-gradient-to-br from-primary/20 via-background to-secondary/10">
         <div className="max-w-3xl mx-auto text-center">
@@ -468,6 +625,15 @@ export default function Landing() {
             discover your attachment style today.
           </p>
           
+          <div className="mb-6">
+            <p className="text-lg font-semibold mb-1">
+              7 days free, then $19.99/month
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Cancel anytime. All features included.
+            </p>
+          </div>
+
           <Button
             asChild
             size="lg"
