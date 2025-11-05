@@ -82,6 +82,9 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import { eq, and, or, desc, sql, isNull } from "drizzle-orm";
 import ws from "ws";
+import session from "express-session";
+import connectPg from "connect-pg-simple";
+import { sendVerificationEmail as gmailSendVerificationEmail, sendPasswordResetEmail as gmailSendPasswordResetEmail } from "./gmail";
 
 // Configure Neon to use WebSocket for Node.js environment
 neonConfig.webSocketConstructor = ws;
@@ -104,6 +107,9 @@ export interface IStorage {
   setEmailVerificationToken(userId: string, token: string, expires: Date): Promise<User | undefined>;
   getUserByVerificationToken(token: string): Promise<User | undefined>;
   markEmailVerified(userId: string): Promise<User | undefined>;
+  getUserByPasswordResetToken(token: string): Promise<User | undefined>;
+  sendVerificationEmail(email: string, token: string): Promise<void>;
+  sendPasswordResetEmail(email: string, token: string): Promise<void>;
   updateNewsletterSubscription(userId: string, subscribed: boolean): Promise<User | undefined>;
   getTrialProgress(userId: string): Promise<{
     chatSessions: number;
@@ -267,6 +273,9 @@ export interface IStorage {
   getMerchantSubscriptionsByAccount(connectedAccountId: string): Promise<MerchantSubscription[]>;
   updateMerchantSubscription(id: string, updates: Partial<MerchantSubscription>): Promise<MerchantSubscription | undefined>;
   updateMerchantSubscriptionByStripeId(stripeSubscriptionId: string, updates: Partial<MerchantSubscription>): Promise<MerchantSubscription | undefined>;
+  
+  // Session store for authentication
+  sessionStore: any;
 }
 
 export class MemStorage implements IStorage {
@@ -1066,10 +1075,17 @@ export class MemStorage implements IStorage {
 
 export class DbStorage implements IStorage {
   private db;
+  public sessionStore: any;
 
   constructor() {
     const pool = new Pool({ connectionString: process.env.DATABASE_URL });
     this.db = drizzle(pool);
+    
+    const PostgresSessionStore = connectPg(session);
+    this.sessionStore = new PostgresSessionStore({ 
+      pool, 
+      createTableIfMissing: true 
+    });
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -1221,6 +1237,29 @@ export class DbStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return result[0];
+  }
+
+  async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.passwordResetToken, token))
+      .limit(1);
+    return result[0];
+  }
+
+  async sendVerificationEmail(email: string, token: string): Promise<void> {
+    const baseUrl = process.env.REPL_SLUG 
+      ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+      : 'http://localhost:5000';
+    await gmailSendVerificationEmail(email, token, baseUrl);
+  }
+
+  async sendPasswordResetEmail(email: string, token: string): Promise<void> {
+    const baseUrl = process.env.REPL_SLUG 
+      ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`
+      : 'http://localhost:5000';
+    await gmailSendPasswordResetEmail(email, token, baseUrl);
   }
 
   async updateNewsletterSubscription(userId: string, subscribed: boolean): Promise<User | undefined> {
