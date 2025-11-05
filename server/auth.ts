@@ -85,7 +85,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/register", async (req: Request, res: Response, next: NextFunction) => {
+  app.post("/api/auth/register", async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { email, password, firstName, lastName } = req.body;
 
@@ -135,7 +135,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/login", (req: Request, res: Response, next: NextFunction) => {
+  app.post("/api/auth/login", (req: Request, res: Response, next: NextFunction) => {
     passport.authenticate("local", (err: any, user: SelectUser | false, info: any) => {
       if (err) {
         return next(err);
@@ -154,14 +154,14 @@ export function setupAuth(app: Express) {
     })(req, res, next);
   });
 
-  app.post("/api/logout", (req: Request, res: Response, next: NextFunction) => {
+  app.post("/api/auth/logout", (req: Request, res: Response, next: NextFunction) => {
     req.logout((err) => {
       if (err) return next(err);
       res.sendStatus(200);
     });
   });
 
-  app.get("/api/user", (req: Request, res: Response) => {
+  app.get("/api/auth/user", (req: Request, res: Response) => {
     if (!req.isAuthenticated()) {
       return res.sendStatus(401);
     }
@@ -169,7 +169,7 @@ export function setupAuth(app: Express) {
     res.json(userWithoutPassword);
   });
 
-  app.post("/api/request-password-reset", async (req: Request, res: Response) => {
+  app.post("/api/auth/request-password-reset", async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
 
@@ -198,7 +198,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  app.post("/api/reset-password", async (req: Request, res: Response) => {
+  app.post("/api/auth/reset-password", async (req: Request, res: Response) => {
     try {
       const { token, newPassword } = req.body;
 
