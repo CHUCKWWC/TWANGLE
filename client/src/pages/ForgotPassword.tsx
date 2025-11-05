@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Heart, Mail, ArrowLeft, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,9 +32,18 @@ export default function ForgotPassword() {
   const [, navigate] = useLocation();
   const [emailSent, setEmailSent] = useState(false);
   
-  // Get token from URL if present
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get("token");
+  // Get token from URL if present (using useEffect for SSR compatibility)
+  const [token, setToken] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get("token");
+      if (urlToken) {
+        setToken(urlToken);
+      }
+    }
+  }, []);
 
   const requestForm = useForm<RequestResetFormData>({
     resolver: zodResolver(requestResetSchema),

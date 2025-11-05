@@ -108,11 +108,27 @@ Preferred communication style: Simple, everyday language.
 
 ### Authentication & Authorization
 
-**Freemium Model:** Authentication-required 7-day free trial, granting full access to all premium features without requiring a credit card. All users must sign up via Replit Auth (OIDC).
+**Custom Twangle Authentication:** Branded email/password authentication system replacing Replit Auth to reduce user confusion and provide full control over the auth experience. Implemented using Passport.js with local strategy and bcrypt password hashing.
+
+**Freemium Model:** Authentication-required 7-day free trial, granting full access to all premium features without requiring a credit card. Registration creates an account and automatically starts the trial.
+
 **Trial System Implementation:** Trials automatically start on signup, tracked by `trialStartedAt` and `trialEndsAt` timestamps. Frontend components dynamically display trial status, accumulated value, and trigger conversion modals based on trial progress.
+
 **Pricing Tiers:** Offers Couples Starter, Premium, Annual, and Lifetime Access plans.
-**Backend Security:** All API endpoints require authentication, with specific admin functions protected by `isAdmin` middleware. Features include email verification, IP-based geolocation blocking (Russia, China), and automated trial reminder emails.
-**Email Verification & Reminders:** Utilizes Gmail/SendGrid for transactional emails, including 24-hour expiring tokens for verification and personalized trial reminder emails based on user activity.
+
+**Auth Implementation Details:**
+- **Session Management:** PostgreSQL-backed express-session with 30-day cookie expiration
+- **Password Security:** bcrypt hashing with 10 salt rounds
+- **Password Reset:** Token-based reset flow with rate limiting (3 requests per 15 minutes per IP)
+- **Logout:** Properly destroys session and clears cookies for complete logout
+- **Email Verification:** 24-hour expiring tokens sent via Gmail/SendGrid
+
+**Backend Security:** All API endpoints require authentication, with specific admin functions protected by `isAdmin` middleware. Features include email verification, IP-based geolocation blocking (Russia, China), password reset rate limiting, and automated trial reminder emails.
+
+**UI Pages:**
+- `/login` - Combined login and registration with tabbed interface
+- `/forgot-password` - Password reset request and completion flow
+
 **Admin Access Control:** Reporting and analytics features are restricted to specific admin emails.
 
 ## External Dependencies
