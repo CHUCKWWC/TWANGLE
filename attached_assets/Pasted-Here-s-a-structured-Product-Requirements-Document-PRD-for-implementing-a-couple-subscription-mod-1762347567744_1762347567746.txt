@@ -1,0 +1,101 @@
+Here’s a structured Product Requirements Document (PRD) for implementing a “couple subscription” model, where one Stripe subscription covers two distinct user accounts. You can hand this off to any development team—or, indeed, an AI assistant like Claude—to guide the build.
+
+---
+
+## 1. Purpose & Scope
+
+Traditional subscriptions treat a single user as the sole beneficiary. Twangle’s relationship‑centric model needs to support **one subscription that grants paid access to both partners**. The paying partner should be able to invite their significant other, and both accounts should get the same premium privileges for $19.99/month.
+
+This PRD covers the backend data model, payment integration via Stripe, and user flows for creating, managing, and cancelling couple subscriptions.
+
+---
+
+## 2. Objectives
+
+1. **Single Billing**: Charge one credit card per couple; no duplicate charges.
+2. **Dual Access**: Allow the second partner full premium access without requiring their own payment method.
+3. **Simple Management**: Make it easy for the paying partner to invite, remove, or replace their partner.
+4. **Accurate Access Control**: Ensure both users retain or lose access based on the subscription state (active, past‑due, cancelled).
+
+---
+
+## 3. Key Features
+
+### 3.1 Data Model Changes
+
+* **Couple Entity**: Introduce a `couples` table with:
+
+  * `id`: unique identifier.
+  * `subscription_id`: foreign key to Stripe subscription.
+  * `primary_user_id`: the user who pays.
+  * `partner_user_id`: nullable user ID for the invited partner.
+  * `status`: active, trialing, past_due, canceled.
+  * `created_at` / `updated_at` timestamps.
+
+* **Users**: Existing `users` table gains `couple_id` nullable foreign key linking them to a couple record.
+
+### 3.2 Subscription Flow
+
+1. **Create Couple & Subscription**:
+
+   * A logged‑in user clicks “Start Couple Plan”.
+   * System creates a `couple` record with `primary_user_id`.
+   * Initiate a Stripe Checkout session for the couple plan.
+   * On successful payment, store `stripe_subscription_id` in the couple record and set status to `active`.
+
+2. **Invite Partner**:
+
+   * Paying user enters partner’s email.
+   * System sends an invitation link with a unique token referencing the couple ID.
+   * Partner uses the link to sign up/log in; once verified, their `user.couple_id` is set to the couple ID and `couple.partner_user_id` is updated.
+
+3. **Access Control**:
+
+   * Middleware checks `user.couple_id`; if present and the couple status is `active` or `trialing`, grant premium access.
+   * If subscription is `past_due` or `canceled`, both users lose premium access.
+
+4. **Subscription Lifecycle**:
+
+   * Listen to Stripe webhooks (`invoice.paid`, `invoice.payment_failed`, `customer.subscription.deleted`) to update the `couples.status`.
+   * On `payment_failed`, set status to `past_due` and notify both users.
+   * On `subscription.deleted`, set status to `canceled` and revoke access.
+
+5. **Partner Management**:
+
+   * Paying user can remove partner. System sets `partner_user_id` to null and clears the partner’s `couple_id`.
+   * Paying user can invite a new partner using the same flow.
+
+### 3.3 Edge Cases
+
+* If the paying user closes their account, cancel the Stripe subscription and dissociate the partner.
+* If the partner tries to sign up for their own paid plan while part of a couple, prompt them to leave the couple first.
+
+---
+
+## 4. User Stories
+
+1. **As the primary user**, I can start a couple subscription and pay $19.99/month so my partner and I both have premium access.
+2. **As the primary user**, I can send an invitation to my partner’s email.
+3. **As the invited partner**, I can accept the invite and gain premium access without entering a credit card.
+4. **As the primary user**, I can remove my partner and invite someone else.
+5. **As any subscribed user**, I lose access if the subscription lapses and regain it once payment is resolved.
+
+---
+
+## 5. UX Considerations
+
+* Display the current subscription status and partner email in the account settings.
+* Provide clear messaging around who is paying and who has access.
+* Include safeguards to prevent someone accidentally removing their partner.
+
+---
+
+## 6. Open Questions
+
+* Should partners be able to see billing information, or only the primary user?
+* Do you allow a cool‑down period before a removed partner can be re‑invited?
+* How do trial periods behave for couple plans (e.g., 7‑day free trial for both users)?
+
+---
+
+By implementing a dedicated `couple` record linked to a single Stripe subscription, you cleanly separate billing from identity. Stripe handles the money; your database handles the relationships.
