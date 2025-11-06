@@ -2707,6 +2707,196 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // ===== 40DAYTWANGLE CHALLENGE ROUTES =====
+
+  // Get all challenges
+  app.get('/api/challenges', isAuthenticated, async (req: any, res) => {
+    try {
+      const challenges = await storage.getAllChallenges();
+      res.json(challenges);
+    } catch (error: any) {
+      console.error("Get challenges error:", error);
+      res.status(500).json({ message: "Failed to get challenges" });
+    }
+  });
+
+  // Get specific day challenge
+  app.get('/api/challenges/:day', isAuthenticated, async (req: any, res) => {
+    try {
+      const dayNumber = parseInt(req.params.day);
+      if (isNaN(dayNumber) || dayNumber < 1 || dayNumber > 40) {
+        return res.status(400).json({ message: "Invalid day number" });
+      }
+
+      const challenge = await storage.getChallengeByDay(dayNumber);
+      if (!challenge) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+
+      res.json(challenge);
+    } catch (error: any) {
+      console.error("Get challenge error:", error);
+      res.status(500).json({ message: "Failed to get challenge" });
+    }
+  });
+
+  // Start the challenge
+  app.post('/api/challenges/start', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+
+      // Check if user already has an active challenge
+      const existing = await storage.getUserChallengeProgress(userId);
+      if (existing) {
+        return res.json(existing);
+      }
+
+      // Create new challenge progress
+      const progress = await storage.createUserChallengeProgress({
+        userId,
+        currentDay: 1,
+        lastCompletedDay: 0,
+      });
+
+      res.json(progress);
+    } catch (error: any) {
+      console.error("Start challenge error:", error);
+      res.status(500).json({ message: "Failed to start challenge" });
+    }
+  });
+
+  // Get user progress
+  app.get('/api/challenges/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const progress = await storage.getUserChallengeProgress(userId);
+      
+      if (!progress) {
+        return res.json(null);
+      }
+
+      res.json(progress);
+    } catch (error: any) {
+      console.error("Get challenge progress error:", error);
+      res.status(500).json({ message: "Failed to get challenge progress" });
+    }
+  });
+
+  // Complete a day with reflection
+  app.post('/api/challenges/:day/complete', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const dayNumber = parseInt(req.params.day);
+      const { reflectionText } = req.body;
+
+      if (isNaN(dayNumber) || dayNumber < 1 || dayNumber > 40) {
+        return res.status(400).json({ message: "Invalid day number" });
+      }
+
+      if (!reflectionText || reflectionText.trim().length < 10) {
+        return res.status(400).json({ message: "Reflection must be at least 10 characters" });
+      }
+
+      // Get user progress
+      const progress = await storage.getUserChallengeProgress(userId);
+      if (!progress) {
+        return res.status(400).json({ message: "Challenge not started" });
+      }
+
+      // Verify they're completing the current day
+      if (dayNumber !== progress.currentDay) {
+        return res.status(400).json({ message: "Can only complete current day" });
+      }
+
+      // Check if already reflected today
+      const existing = await storage.getUserReflectionForDay(userId, dayNumber);
+      if (existing) {
+        return res.status(400).json({ message: "Day already completed" });
+      }
+
+      // Get challenge
+      const challenge = await storage.getChallengeByDay(dayNumber);
+      if (!challenge) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+
+      // Generate AI summary if OpenAI is available
+      let aiSummary = null;
+      try {
+        if (process.env.OPENAI_API_KEY) {
+          const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+          const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [{
+              role: "system",
+              content: "You are a supportive faith-based relationship coach. Provide a brief, encouraging 2-3 sentence response to this couple's reflection on their daily challenge. Be warm, affirming, and offer gentle guidance."
+            }, {
+              role: "user",
+              content: `Challenge: ${challenge.title} - ${challenge.actionPrompt}\n\nReflection: ${reflectionText}`
+            }],
+            max_tokens: 150,
+          });
+          
+          aiSummary = response.choices[0]?.message?.content || null;
+        }
+      } catch (aiError) {
+        console.error("AI summary generation error:", aiError);
+      }
+
+      // Create reflection
+      const reflection = await storage.createChallengeReflection({
+        userId,
+        challengeId: challenge.id,
+        dayNumber,
+        reflectionText,
+        aiSummary,
+      });
+
+      // Mark day as complete and advance
+      const updatedProgress = await storage.markDayComplete(userId, dayNumber);
+
+      res.json({
+        reflection,
+        progress: updatedProgress,
+      });
+    } catch (error: any) {
+      console.error("Complete day error:", error);
+      res.status(500).json({ message: "Failed to complete day" });
+    }
+  });
+
+  // Get all user reflections
+  app.get('/api/challenges/reflections', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const reflections = await storage.getAllUserReflections(userId);
+      res.json(reflections);
+    } catch (error: any) {
+      console.error("Get reflections error:", error);
+      res.status(500).json({ message: "Failed to get reflections" });
+    }
+  });
+
+  // Admin: Seed challenges (only if empty)
+  app.post('/api/admin/seed-challenges', isAuthenticated, async (req: any, res) => {
+    try {
+      const existing = await storage.getAllChallenges();
+      if (existing.length > 0) {
+        return res.json({ message: "Challenges already seeded", count: existing.length });
+      }
+
+      // Import and run seed
+      const { seed40dayTwangle } = await import('../seeds/40dayTwangle');
+      await seed40dayTwangle();
+      
+      const challenges = await storage.getAllChallenges();
+      res.json({ message: "Challenges seeded successfully", count: challenges.length });
+    } catch (error: any) {
+      console.error("Seed challenges error:", error);
+      res.status(500).json({ message: "Failed to seed challenges" });
+    }
+  });
+
   // ===== COUPLE SUBSCRIPTION ROUTES =====
   
   // Get current user's couple status
