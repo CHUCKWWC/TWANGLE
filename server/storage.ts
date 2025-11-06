@@ -53,6 +53,12 @@ import {
   type InsertMerchantSubscription,
   type Couple,
   type InsertCouple,
+  type Challenge,
+  type InsertChallenge,
+  type UserChallengeProgress,
+  type InsertUserChallengeProgress,
+  type ChallengeReflection,
+  type InsertChallengeReflection,
   users,
   subscriptions,
   chatSessions,
@@ -78,7 +84,10 @@ import {
   products,
   merchantCustomers,
   merchantSubscriptions,
-  couples
+  couples,
+  challenges,
+  userChallengeProgress,
+  challengeReflections
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -289,6 +298,22 @@ export interface IStorage {
   acceptPartnerInvite(token: string, userId: string): Promise<Couple | undefined>;
   cancelPartnerInvite(coupleId: string): Promise<Couple | undefined>;
   removePartner(coupleId: string): Promise<Couple | undefined>;
+  
+  // 40dayTwangle Challenge system
+  createChallenge(challenge: InsertChallenge): Promise<Challenge>;
+  getChallenge(id: string): Promise<Challenge | undefined>;
+  getChallengeByDay(dayNumber: number): Promise<Challenge | undefined>;
+  getAllChallenges(): Promise<Challenge[]>;
+  
+  createUserChallengeProgress(progress: InsertUserChallengeProgress): Promise<UserChallengeProgress>;
+  getUserChallengeProgress(userId: string): Promise<UserChallengeProgress | undefined>;
+  updateUserChallengeProgress(id: string, updates: Partial<UserChallengeProgress>): Promise<UserChallengeProgress | undefined>;
+  markDayComplete(userId: string, dayNumber: number): Promise<UserChallengeProgress | undefined>;
+  
+  createChallengeReflection(reflection: InsertChallengeReflection): Promise<ChallengeReflection>;
+  getChallengeReflection(id: string): Promise<ChallengeReflection | undefined>;
+  getUserReflectionForDay(userId: string, dayNumber: number): Promise<ChallengeReflection | undefined>;
+  getAllUserReflections(userId: string): Promise<ChallengeReflection[]>;
   
   // Session store for authentication
   sessionStore: any;
@@ -2493,6 +2518,98 @@ export class DbStorage implements IStorage {
       .returning();
 
     return result[0];
+  }
+
+  // 40dayTwangle Challenge system implementations
+  async createChallenge(challenge: InsertChallenge): Promise<Challenge> {
+    const result = await this.db.insert(challenges).values(challenge).returning();
+    return result[0];
+  }
+
+  async getChallenge(id: string): Promise<Challenge | undefined> {
+    const result = await this.db.select().from(challenges).where(eq(challenges.id, id));
+    return result[0];
+  }
+
+  async getChallengeByDay(dayNumber: number): Promise<Challenge | undefined> {
+    const result = await this.db.select().from(challenges).where(eq(challenges.dayNumber, dayNumber));
+    return result[0];
+  }
+
+  async getAllChallenges(): Promise<Challenge[]> {
+    return await this.db.select().from(challenges).orderBy(challenges.dayNumber);
+  }
+
+  async createUserChallengeProgress(progress: InsertUserChallengeProgress): Promise<UserChallengeProgress> {
+    const result = await this.db.insert(userChallengeProgress).values(progress).returning();
+    return result[0];
+  }
+
+  async getUserChallengeProgress(userId: string): Promise<UserChallengeProgress | undefined> {
+    const result = await this.db.select().from(userChallengeProgress)
+      .where(
+        and(
+          eq(userChallengeProgress.userId, userId),
+          eq(userChallengeProgress.isActive, 1)
+        )
+      )
+      .orderBy(desc(userChallengeProgress.startedAt));
+    return result[0];
+  }
+
+  async updateUserChallengeProgress(id: string, updates: Partial<UserChallengeProgress>): Promise<UserChallengeProgress | undefined> {
+    const result = await this.db
+      .update(userChallengeProgress)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(userChallengeProgress.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async markDayComplete(userId: string, dayNumber: number): Promise<UserChallengeProgress | undefined> {
+    const progress = await this.getUserChallengeProgress(userId);
+    if (!progress) return undefined;
+
+    const nextDay = dayNumber + 1;
+    const updates: Partial<UserChallengeProgress> = {
+      lastCompletedDay: dayNumber,
+      currentDay: nextDay <= 40 ? nextDay : 40,
+      lastActivityAt: new Date(),
+    };
+
+    if (dayNumber === 40) {
+      updates.completedAt = new Date();
+      updates.isActive = 0;
+    }
+
+    return await this.updateUserChallengeProgress(progress.id, updates);
+  }
+
+  async createChallengeReflection(reflection: InsertChallengeReflection): Promise<ChallengeReflection> {
+    const result = await this.db.insert(challengeReflections).values(reflection).returning();
+    return result[0];
+  }
+
+  async getChallengeReflection(id: string): Promise<ChallengeReflection | undefined> {
+    const result = await this.db.select().from(challengeReflections).where(eq(challengeReflections.id, id));
+    return result[0];
+  }
+
+  async getUserReflectionForDay(userId: string, dayNumber: number): Promise<ChallengeReflection | undefined> {
+    const result = await this.db.select().from(challengeReflections)
+      .where(
+        and(
+          eq(challengeReflections.userId, userId),
+          eq(challengeReflections.dayNumber, dayNumber)
+        )
+      );
+    return result[0];
+  }
+
+  async getAllUserReflections(userId: string): Promise<ChallengeReflection[]> {
+    return await this.db.select().from(challengeReflections)
+      .where(eq(challengeReflections.userId, userId))
+      .orderBy(challengeReflections.dayNumber);
   }
 }
 

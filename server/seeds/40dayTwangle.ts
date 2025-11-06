@@ -1,12 +1,23 @@
 import { storage } from "../storage";
-import challengesData from "../../attached_assets/40dayTwangle_Christian_Challenges_1762442158214.json";
+
+interface ChallengeData {
+  day_number: number;
+  title: string;
+  scripture: string;
+  summary: string;
+  action_prompt: string;
+  journal_question: string;
+  completed: boolean;
+}
+
+const challengesData: ChallengeData[] = require("../../attached_assets/40dayTwangle_Christian_Challenges_1762442158214.json");
 
 export async function seed40dayTwangle() {
   console.log("Seeding 40dayTwangle challenges...");
   
   try {
     // Check if challenges already exist
-    const existing = await storage.db.select().from(storage.schema.challenges).limit(1);
+    const existing = await storage.getAllChallenges();
     
     if (existing.length > 0) {
       console.log("Challenges already seeded, skipping...");
