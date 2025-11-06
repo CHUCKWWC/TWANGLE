@@ -13,7 +13,8 @@ import {
   TrendingUp,
   Calendar,
   CheckCircle2,
-  Utensils
+  Utensils,
+  BookOpen
 } from "lucide-react";
 
 interface UserStats {
@@ -134,7 +135,7 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="hover-elevate cursor-pointer transition-all" onClick={() => navigate("/assessment")} data-testid="action-assessment">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between gap-2 mb-3">
@@ -202,6 +203,25 @@ export default function Dashboard() {
                   {hasPlannedRetreat && (
                     <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
                   )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover-elevate cursor-pointer transition-all" onClick={() => navigate("/40day")} data-testid="action-40day">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <BookOpen className="w-6 h-6 text-primary" />
+                  </div>
+                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-1">40dayTwangle</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Faith-based 40-day relationship journey
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -42,6 +42,7 @@ import MerchantOnboard from "@/pages/MerchantOnboard";
 import MerchantProducts from "@/pages/MerchantProducts";
 import Storefront from "@/pages/Storefront";
 import StorefrontSuccess from "@/pages/StorefrontSuccess";
+import FortyDayTwangle from "@/pages/FortyDayTwangle";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -78,6 +79,7 @@ function Router() {
         <Route path="/journal" component={Journal} />
         <Route path="/conversations" component={Conversations} />
         <Route path="/insights" component={Insights} />
+        <Route path="/40day" component={FortyDayTwangle} />
         <Route path="/profile" component={Profile} />
         <Route path="/retreat/:id" component={RetreatItinerary} />
         <Route path="/paywall" component={PaywallCustom} />
