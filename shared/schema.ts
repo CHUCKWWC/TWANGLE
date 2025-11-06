@@ -662,6 +662,7 @@ export const couples = pgTable("couples", {
   priceId: varchar("price_id"), // Stripe price ID for couple plan
   currentPeriodEnd: timestamp("current_period_end"),
   cancelAtPeriodEnd: integer("cancel_at_period_end").default(0),
+  partnerInviteEmail: varchar("partner_invite_email"), // Email of invited partner
   partnerInviteToken: varchar("partner_invite_token"), // Token for partner invitation
   partnerInviteExpires: timestamp("partner_invite_expires"), // Invitation expiry
   partnerInvitedAt: timestamp("partner_invited_at"), // When partner was invited

@@ -23,16 +23,20 @@ interface UserStats {
   subscriptionTier: string;
 }
 
-interface CoupleData {
-  id: string;
-  primaryUserId: string;
-  partnerUserId: string | null;
-  status: string;
-  inviteEmail: string | null;
-  inviteToken: string | null;
-  primaryUserEmail: string;
-  partnerUserEmail: string | null;
-  stripeSubscriptionId: string | null;
+interface CoupleResponse {
+  couple: {
+    id: string;
+    primaryUserId: string;
+    partnerUserId: string | null;
+    status: string;
+    partnerInviteEmail: string | null;
+    partnerInviteToken: string | null;
+    stripeSubscriptionId: string | null;
+  } | null;
+  primaryUser: { email: string } | null;
+  partnerUser: { email: string } | null;
+  isPrimaryUser: boolean;
+  isPartnerUser: boolean;
 }
 
 export default function Profile() {
@@ -46,9 +50,11 @@ export default function Profile() {
     queryKey: ["/api/user/stats"],
   });
 
-  const { data: coupleData, isLoading: coupleLoading } = useQuery<CoupleData>({
-    queryKey: ["/api/couple/status"],
+  const { data: coupleResponse, isLoading: coupleLoading } = useQuery<CoupleResponse>({
+    queryKey: ["/api/couples/me"],
   });
+
+  const coupleData = coupleResponse?.couple;
 
   const updateProfileMutation = useMutation({
     mutationFn: async (displayName: string) => {
@@ -97,10 +103,10 @@ export default function Profile() {
 
   const invitePartnerMutation = useMutation({
     mutationFn: async (email: string) => {
-      return await apiRequest("POST", "/api/couple/invite", { partnerEmail: email });
+      return await apiRequest("POST", "/api/couples/invite", { partnerEmail: email });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/couple/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/couples/me"] });
       setPartnerEmail('');
       toast({
         title: "Invitation Sent",
@@ -121,7 +127,7 @@ export default function Profile() {
       return await apiRequest("POST", "/api/couples/cancel-invite", {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/couple/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/couples/me"] });
       toast({
         title: "Invitation Cancelled",
         description: "You can now invite a different partner.",
@@ -326,18 +332,18 @@ export default function Profile() {
                 <CardContent className="space-y-4">
                   {coupleLoading ? (
                     <Skeleton className="h-20 w-full" />
-                  ) : coupleData.partnerUserId ? (
+                  ) : coupleData?.partnerUserId ? (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                         <div>
                           <p className="text-sm font-medium">Partner</p>
                           <p className="text-sm text-muted-foreground" data-testid="text-partner-email">
-                            {coupleData.partnerUserEmail}
+                            {coupleResponse?.partnerUser?.email}
                           </p>
                         </div>
                         <Badge variant="default" data-testid="badge-couple-status">Connected</Badge>
                       </div>
-                      {coupleData.primaryUserId === user?.id && (
+                      {coupleResponse?.isPrimaryUser && (
                         <Button
                           variant="outline"
                           className="w-full"
@@ -350,18 +356,18 @@ export default function Profile() {
                         </Button>
                       )}
                     </div>
-                  ) : coupleData.inviteEmail ? (
+                  ) : coupleData?.partnerInviteEmail ? (
                     <div className="space-y-3">
                       <div className="p-3 rounded-lg bg-muted/50">
                         <p className="text-sm font-medium">Pending Invitation</p>
                         <p className="text-sm text-muted-foreground" data-testid="text-invite-email">
-                          {coupleData.inviteEmail}
+                          {coupleData.partnerInviteEmail}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           Waiting for your partner to accept
                         </p>
                       </div>
-                      {coupleData.primaryUserId === user?.id && (
+                      {coupleResponse?.isPrimaryUser && (
                         <div className="space-y-2">
                           <Button
                             variant="outline"

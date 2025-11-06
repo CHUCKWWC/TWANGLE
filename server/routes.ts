@@ -2796,7 +2796,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         });
       }
 
-      const { token, couple: updatedCouple } = await storage.generatePartnerInviteToken(couple.id, 72);
+      const { token, couple: updatedCouple } = await storage.generatePartnerInviteToken(couple.id, partnerEmail, 72);
 
       const inviteUrl = `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/couples/accept/${token}`;
       
