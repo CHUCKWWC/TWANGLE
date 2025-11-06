@@ -305,69 +305,67 @@ export default function Journal() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {entries.map((entry) => (
-              <Card key={entry.id} data-testid={`entry-${entry.id}`}>
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(entry.createdAt).toLocaleDateString(undefined, {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {entry.mood && (
-                        <Badge variant="secondary" className="gap-1">
-                          {getMoodIcon(entry.mood)}
-                          {entry.mood}
-                        </Badge>
-                      )}
-                      {entry.isPrivate ? (
-                        <Badge variant="outline" className="gap-1">
-                          <Lock className="h-3 w-3" />
-                          Private
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="gap-1">
-                          <Eye className="h-3 w-3" />
-                          Shared
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <p className="whitespace-pre-wrap">{entry.entry}</p>
-                  </div>
-
-                  {entry.aiInsights && entry.aiInsights.length > 0 && (
-                    <div className="border-t pt-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-medium">AI Insights</span>
+            {entries.map((entry) => {
+              const trimmedEntry = entry.entry.trim();
+              const firstLine = (trimmedEntry || entry.entry).split('\n')[0].substring(0, 100);
+              const entryDate = new Date(entry.createdAt);
+              
+              return (
+                <Card key={entry.id} data-testid={`entry-${entry.id}`} className="hover-elevate cursor-pointer">
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          <span data-testid="text-entry-date">
+                            {entryDate.toLocaleDateString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </span>
+                          <span className="text-xs" data-testid="text-entry-time">
+                            {entryDate.toLocaleTimeString(undefined, {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-base font-medium line-clamp-1" data-testid="text-entry-preview">
+                          {firstLine}
+                          {entry.entry.length > 100 && '...'}
+                        </p>
                       </div>
-                      <div className="space-y-2">
-                        {entry.aiInsights.map((insight, index) => (
-                          <div
-                            key={index}
-                            className="p-3 rounded-md bg-primary/5 border border-primary/10"
-                            data-testid={`insight-${index}`}
-                          >
-                            <p className="text-sm">{insight}</p>
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-2">
+                        {entry.mood && (
+                          <Badge variant="secondary" className="gap-1">
+                            {getMoodIcon(entry.mood)}
+                            {entry.mood}
+                          </Badge>
+                        )}
+                        {entry.isPrivate ? (
+                          <Badge variant="outline" className="gap-1">
+                            <Lock className="h-3 w-3" />
+                            Private
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="gap-1">
+                            <Eye className="h-3 w-3" />
+                            Shared
+                          </Badge>
+                        )}
+                        {entry.aiInsights && entry.aiInsights.length > 0 && (
+                          <Badge variant="outline" className="gap-1">
+                            <Sparkles className="h-3 w-3" />
+                            {entry.aiInsights.length}
+                          </Badge>
+                        )}
                       </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                  </CardHeader>
+                </Card>
+              );
+            })}
           </div>
         )}
           </TabsContent>
