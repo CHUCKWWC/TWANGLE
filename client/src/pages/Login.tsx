@@ -150,28 +150,16 @@ export default function Login() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={() => window.location.href = '/auth/google'}
-          data-testid="button-google-login"
-        >
-          <FaGoogle className="mr-2 h-4 w-4" />
-          Google
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={() => window.location.href = '/auth/facebook'}
-          data-testid="button-facebook-login"
-        >
-          <FaFacebook className="mr-2 h-4 w-4" />
-          Facebook
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={() => window.location.href = '/auth/google'}
+        data-testid="button-google-login"
+      >
+        <FaGoogle className="mr-2 h-4 w-4" />
+        Google
+      </Button>
     </div>
   );
 
