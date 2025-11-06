@@ -182,6 +182,7 @@ export default function MerchantProducts() {
                       <FormControl>
                         <Input
                           placeholder="e.g. Premium Widget"
+                          autoComplete="off"
                           data-testid="input-product-name"
                           {...field}
                         />
@@ -272,6 +273,7 @@ export default function MerchantProducts() {
                             <Input
                               type="number"
                               placeholder="0"
+                              autoComplete="off"
                               data-testid="input-trial-days"
                               {...field}
                               onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
@@ -298,6 +300,7 @@ export default function MerchantProducts() {
                           <Input
                             type="number"
                             placeholder="1000"
+                            autoComplete="off"
                             data-testid="input-price-cents"
                             {...field}
                             onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
