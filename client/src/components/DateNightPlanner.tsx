@@ -336,6 +336,7 @@ export default function DateNightPlanner({}: DateNightPlannerProps) {
                 placeholder="e.g., vegetarian, gluten-free, loves spicy food"
                 value={dietaryRestrictions}
                 onChange={(e) => setDietaryRestrictions(e.target.value)}
+                autoComplete="off"
                 data-testid="input-dietary"
               />
             </div>
@@ -347,6 +348,7 @@ export default function DateNightPlanner({}: DateNightPlannerProps) {
                 placeholder="e.g., walking, driving, public transit"
                 value={transportation}
                 onChange={(e) => setTransportation(e.target.value)}
+                autoComplete="off"
                 data-testid="input-transportation"
               />
             </div>
@@ -358,6 +360,7 @@ export default function DateNightPlanner({}: DateNightPlannerProps) {
                 placeholder="e.g., anniversary, birthday, just because"
                 value={specialOccasion}
                 onChange={(e) => setSpecialOccasion(e.target.value)}
+                autoComplete="off"
                 data-testid="input-occasion"
               />
             </div>

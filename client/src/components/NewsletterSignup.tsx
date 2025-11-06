@@ -67,6 +67,7 @@ export function NewsletterSignup() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="flex-1"
+                  autoComplete="email"
                   data-testid="input-newsletter-email"
                   disabled={subscribeMutation.isPending}
                 />

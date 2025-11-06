@@ -140,6 +140,7 @@ export function CoachDemo() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={sendMessageMutation.isPending}
+                autoComplete="off"
                 data-testid="input-demo-message"
               />
               <div className="flex items-center justify-between gap-2">
@@ -212,6 +213,7 @@ export function CoachDemo() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   disabled={sendMessageMutation.isPending}
+                  autoComplete="off"
                   data-testid="input-continue-demo"
                 />
                 <div className="flex items-center justify-between">

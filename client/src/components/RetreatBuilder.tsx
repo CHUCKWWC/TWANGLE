@@ -370,6 +370,7 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
                 value={retreatDestination}
                 onChange={(e) => setRetreatDestination(e.target.value)}
                 placeholder="e.g., Surfside Beach, TX"
+                autoComplete="address-line1"
                 data-testid="input-retreat-destination"
               />
               <p className="text-xs text-muted-foreground mt-1">Where your retreat will be</p>
@@ -384,6 +385,7 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
                   value={streetAddress}
                   onChange={(e) => setStreetAddress(e.target.value)}
                   placeholder="e.g., 123 Beach Drive"
+                  autoComplete="street-address"
                   data-testid="input-street-address"
                 />
                 <p className="text-xs text-muted-foreground mt-1">Address of your retreat location</p>
@@ -397,6 +399,7 @@ export default function RetreatBuilder({}: RetreatBuilderProps) {
                   value={travelDistance}
                   onChange={(e) => setTravelDistance(e.target.value)}
                   placeholder="e.g., 15 miles or 30 minutes"
+                  autoComplete="off"
                   data-testid="input-travel-distance"
                 />
                 <p className="text-xs text-muted-foreground mt-1">How far are you willing to travel?</p>
