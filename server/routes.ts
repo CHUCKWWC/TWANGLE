@@ -2824,6 +2824,36 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // Cancel pending partner invite
+  app.post('/api/couples/cancel-invite', isAuthenticated, logUserAccess, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+
+      const couple = await storage.getCoupleByPrimaryUser(userId);
+      if (!couple) {
+        return res.status(404).json({ message: "No couple subscription found" });
+      }
+
+      if (couple.primaryUserId !== userId) {
+        return res.status(403).json({ message: "Only the primary user can cancel invitations" });
+      }
+
+      if (!couple.partnerInviteToken) {
+        return res.status(400).json({ message: "No pending invitation to cancel" });
+      }
+
+      const updatedCouple = await storage.cancelPartnerInvite(couple.id);
+
+      res.json({ 
+        message: "Partner invitation cancelled successfully",
+        couple: updatedCouple,
+      });
+    } catch (error: any) {
+      console.error("Cancel partner invite error:", error);
+      res.status(500).json({ message: "Failed to cancel partner invite" });
+    }
+  });
+
   // Accept partner invite
   app.post('/api/couples/accept/:token', isAuthenticated, async (req: any, res) => {
     try {
