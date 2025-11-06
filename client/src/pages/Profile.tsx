@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { usePlan } from "@/hooks/usePlan";
 import { AppHeader } from "@/components/AppHeader";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +50,8 @@ export default function Profile() {
   const { data: stats, isLoading: statsLoading } = useQuery<UserStats>({
     queryKey: ["/api/user/stats"],
   });
+
+  const { tier, hasLifetimeAccess, onTrial, isActive, isLoading: planLoading } = usePlan();
 
   const { data: coupleResponse, isLoading: coupleLoading } = useQuery<CoupleResponse>({
     queryKey: ["/api/couples/me"],
@@ -175,9 +178,15 @@ export default function Profile() {
 
   const displayName = user?.displayName || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || 'User';
 
-  const getSubscriptionBadge = (tier: string, status: string) => {
-    if (status === 'active' && tier) {
-      return <Badge variant="default">{tier.charAt(0).toUpperCase() + tier.slice(1)}</Badge>;
+  const getSubscriptionBadge = () => {
+    if (hasLifetimeAccess) {
+      return <Badge variant="default">Lifetime Premium</Badge>;
+    }
+    if (onTrial) {
+      return <Badge variant="default">Premium (Trial)</Badge>;
+    }
+    if (isActive && tier === 'premium') {
+      return <Badge variant="default">Premium</Badge>;
     }
     return <Badge variant="secondary">Free</Badge>;
   };
@@ -223,11 +232,11 @@ export default function Profile() {
                     <Activity className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm">Subscription</span>
                   </div>
-                  {statsLoading ? (
+                  {planLoading ? (
                     <Skeleton className="h-6 w-20" />
                   ) : (
                     <span data-testid="badge-subscription">
-                      {getSubscriptionBadge(stats?.subscriptionTier || 'free', stats?.subscriptionStatus || 'none')}
+                      {getSubscriptionBadge()}
                     </span>
                   )}
                 </div>
@@ -376,7 +385,7 @@ export default function Profile() {
                             disabled={cancelInviteMutation.isPending}
                             data-testid="button-cancel-invite"
                           >
-                            {cancelInviteMutation.isPending ? 'Cancelling...' : 'Cancel & Invite Different Partner'}
+                            {cancelInviteMutation.isPending ? 'Resetting...' : 'Reset Email Address'}
                           </Button>
                           <Button
                             variant="outline"
