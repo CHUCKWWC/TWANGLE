@@ -116,6 +116,26 @@ export default function Profile() {
     },
   });
 
+  const cancelInviteMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/couples/cancel-invite", {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/couple/status"] });
+      toast({
+        title: "Invitation Cancelled",
+        description: "You can now invite a different partner.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel invitation.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const manageBillingMutation = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", "/api/billing/customer-portal", {});
@@ -342,16 +362,27 @@ export default function Profile() {
                         </p>
                       </div>
                       {coupleData.primaryUserId === user?.id && (
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => manageBillingMutation.mutate()}
-                          disabled={manageBillingMutation.isPending}
-                          data-testid="button-manage-billing"
-                        >
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          {manageBillingMutation.isPending ? 'Opening...' : 'Manage Billing'}
-                        </Button>
+                        <div className="space-y-2">
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => cancelInviteMutation.mutate()}
+                            disabled={cancelInviteMutation.isPending}
+                            data-testid="button-cancel-invite"
+                          >
+                            {cancelInviteMutation.isPending ? 'Cancelling...' : 'Cancel & Invite Different Partner'}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => manageBillingMutation.mutate()}
+                            disabled={manageBillingMutation.isPending}
+                            data-testid="button-manage-billing"
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            {manageBillingMutation.isPending ? 'Opening...' : 'Manage Billing'}
+                          </Button>
+                        </div>
                       )}
                     </div>
                   ) : (
