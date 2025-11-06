@@ -285,7 +285,7 @@ export interface IStorage {
   getCoupleByStripeSubscriptionId(stripeSubscriptionId: string): Promise<Couple | undefined>;
   getCoupleByInviteToken(token: string): Promise<Couple | undefined>;
   updateCouple(id: string, updates: Partial<Couple>): Promise<Couple | undefined>;
-  generatePartnerInviteToken(coupleId: string, expiresInHours?: number): Promise<{ token: string; couple: Couple }>;
+  generatePartnerInviteToken(coupleId: string, partnerEmail: string, expiresInHours?: number): Promise<{ token: string; couple: Couple }>;
   acceptPartnerInvite(token: string, userId: string): Promise<Couple | undefined>;
   cancelPartnerInvite(coupleId: string): Promise<Couple | undefined>;
   removePartner(coupleId: string): Promise<Couple | undefined>;
@@ -2414,7 +2414,7 @@ export class DbStorage implements IStorage {
     return result[0];
   }
 
-  async generatePartnerInviteToken(coupleId: string, expiresInHours: number = 72): Promise<{ token: string; couple: Couple }> {
+  async generatePartnerInviteToken(coupleId: string, partnerEmail: string, expiresInHours: number = 72): Promise<{ token: string; couple: Couple }> {
     const token = randomUUID();
     const expires = new Date();
     expires.setHours(expires.getHours() + expiresInHours);
@@ -2422,6 +2422,7 @@ export class DbStorage implements IStorage {
     const result = await this.db
       .update(couples)
       .set({
+        partnerInviteEmail: partnerEmail,
         partnerInviteToken: token,
         partnerInviteExpires: expires,
         partnerInvitedAt: new Date(),
@@ -2461,6 +2462,7 @@ export class DbStorage implements IStorage {
     const result = await this.db
       .update(couples)
       .set({
+        partnerInviteEmail: null,
         partnerInviteToken: null,
         partnerInviteExpires: null,
         partnerInvitedAt: null,
