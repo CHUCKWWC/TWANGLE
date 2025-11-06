@@ -684,3 +684,75 @@ export const insertCoupleSchema = createInsertSchema(couples).omit({
 
 export type InsertCouple = z.infer<typeof insertCoupleSchema>;
 export type Couple = typeof couples.$inferSelect;
+
+// 40dayTwangle: Master challenge content table
+export const challenges = pgTable("challenges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  dayNumber: integer("day_number").notNull().unique(),
+  title: varchar("title").notNull(),
+  scripture: varchar("scripture").notNull(),
+  summary: text("summary").notNull(),
+  actionPrompt: text("action_prompt").notNull(),
+  journalQuestion: text("journal_question").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_challenges_day_number").on(table.dayNumber),
+]);
+
+export const insertChallengeSchema = createInsertSchema(challenges).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertChallenge = z.infer<typeof insertChallengeSchema>;
+export type Challenge = typeof challenges.$inferSelect;
+
+// 40dayTwangle: User progress tracking
+export const userChallengeProgress = pgTable("user_challenge_progress", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  currentDay: integer("current_day").notNull().default(1),
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  lastCompletedDay: integer("last_completed_day").default(0),
+  lastActivityAt: timestamp("last_activity_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"), // When all 40 days completed
+  isActive: integer("is_active").default(1), // Active challenge or completed/abandoned
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_user_challenge_user").on(table.userId),
+  index("idx_user_challenge_active").on(table.isActive),
+]);
+
+export const insertUserChallengeProgressSchema = createInsertSchema(userChallengeProgress).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUserChallengeProgress = z.infer<typeof insertUserChallengeProgressSchema>;
+export type UserChallengeProgress = typeof userChallengeProgress.$inferSelect;
+
+// 40dayTwangle: Daily reflections/journal entries
+export const challengeReflections = pgTable("challenge_reflections", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  challengeId: varchar("challenge_id").notNull(), // References challenges.id
+  dayNumber: integer("day_number").notNull(),
+  reflectionText: text("reflection_text").notNull(),
+  aiSummary: text("ai_summary"), // AI-generated encouragement/summary
+  completedAt: timestamp("completed_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_challenge_reflections_user").on(table.userId),
+  index("idx_challenge_reflections_day").on(table.dayNumber),
+  index("idx_challenge_reflections_user_day").on(table.userId, table.dayNumber),
+]);
+
+export const insertChallengeReflectionSchema = createInsertSchema(challengeReflections).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertChallengeReflection = z.infer<typeof insertChallengeReflectionSchema>;
+export type ChallengeReflection = typeof challengeReflections.$inferSelect;

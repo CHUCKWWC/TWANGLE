@@ -1,0 +1,65 @@
+import json
+
+# Generate 40 Christian-principled relationship challenges formatted for Supabase import
+
+challenges = []
+themes = [
+    ("Patience", "1 Corinthians 13:4", "Show patience and understanding toward your partner today."),
+    ("Kindness", "Ephesians 4:32", "Do something kind and unexpected for your partner."),
+    ("Humility", "Philippians 2:3-4", "Put your partner’s needs ahead of your own today."),
+    ("Forgiveness", "Colossians 3:13", "Forgive a small offense quickly and without resentment."),
+    ("Encouragement", "1 Thessalonians 5:11", "Speak words that lift your partner up today."),
+    ("Gratitude", "1 Thessalonians 5:18", "Thank your partner for something specific they’ve done."),
+    ("Faithfulness", "Proverbs 3:3", "Reaffirm your commitment to your partner in word or deed."),
+    ("Listening", "James 1:19", "Listen fully before responding in conversation today."),
+    ("Service", "Mark 10:45", "Serve your partner in a tangible, practical way."),
+    ("Respect", "Romans 12:10", "Show respect in tone and action, especially when disagreeing."),
+    ("Peace", "Philippians 4:7", "Be the calm presence in your partnership today."),
+    ("Self-Control", "Galatians 5:22-23", "Respond gently even if provoked or frustrated."),
+    ("Joy", "John 15:11", "Do something together that brings shared joy."),
+    ("Gentleness", "Ephesians 4:2", "Handle your partner’s emotions with tenderness today."),
+    ("Trust", "Proverbs 3:5", "Choose to trust your partner’s intentions today."),
+    ("Unity", "Ecclesiastes 4:9-10", "Work on something together—showing you’re stronger united."),
+    ("Compassion", "Colossians 3:12", "Show empathy when your partner shares a struggle."),
+    ("Faith", "Hebrews 11:1", "Pray together and trust God’s plan for your relationship."),
+    ("Generosity", "2 Corinthians 9:7", "Give time or attention freely without expecting something back."),
+    ("Hope", "Romans 15:13", "Encourage your partner with hope about your shared future."),
+    ("Love in Action", "1 John 3:18", "Show love not just in words but through action today."),
+    ("Communication", "Proverbs 18:21", "Speak life—avoid sarcasm or harsh words."),
+    ("Reconciliation", "Matthew 5:9", "Make peace over a lingering disagreement."),
+    ("Patience in Trials", "Romans 12:12", "Respond with grace when plans go wrong."),
+    ("Joyful Giving", "Acts 20:35", "Do something generous together for someone else."),
+    ("Mutual Honor", "1 Peter 3:7", "Show your partner honor through small acts of respect."),
+    ("Kind Words", "Proverbs 16:24", "Speak only what is kind, healing, or helpful today."),
+    ("Faith in Each Other", "Galatians 6:9", "Believe in your partner’s growth and journey."),
+    ("Love that Endures", "1 Corinthians 13:7", "Commit to love even when feelings fluctuate."),
+    ("Gentle Correction", "Proverbs 27:6", "Offer truth with compassion if correction is needed."),
+    ("Rest Together", "Exodus 20:8-10", "Take a day of rest together, without distraction."),
+    ("Grace", "Ephesians 2:8", "Extend grace when your partner falls short."),
+    ("Courage", "Joshua 1:9", "Encourage your partner in facing something they fear."),
+    ("Purpose", "Jeremiah 29:11", "Discuss God’s vision for your partnership."),
+    ("Joy in Service", "Philippians 2:14", "Serve together with a joyful heart today."),
+    ("Peaceful Words", "Proverbs 15:1", "Choose peace over pride in every response today."),
+    ("Faith Renewal", "Isaiah 40:31", "Renew your faith together through prayer or scripture reading."),
+    ("Shared Vision", "Amos 3:3", "Talk about your shared goals for the next season of life."),
+    ("Perseverance", "James 1:12", "Stay steady in love even through stress or challenge."),
+    ("Covenant Love", "Ruth 1:16-17", "Reaffirm your devotion and commitment to your partner."),
+]
+
+for i, (title, verse, action) in enumerate(themes, start=1):
+    challenges.append({
+        "day_number": i,
+        "title": f"Day {i}: {title}",
+        "scripture": verse,
+        "summary": action,
+        "action_prompt": action,
+        "journal_question": f"How did you live out {title.lower()} with your partner today?",
+        "completed": False
+    })
+
+# Write to JSON file
+file_path = "/mnt/data/40dayTwangle_Christian_Challenges.json"
+with open(file_path, "w") as f:
+    json.dump(challenges, f, indent=2)
+
+file_path
