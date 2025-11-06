@@ -339,6 +339,7 @@ export default function PartnerConnection() {
                         <Input
                           type="email"
                           placeholder="partner@example.com"
+                          autoComplete="email"
                           data-testid="input-partner-email"
                           {...field}
                         />

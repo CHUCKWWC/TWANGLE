@@ -165,6 +165,7 @@ export default function ForgotPassword() {
                               type="email"
                               placeholder="you@example.com"
                               className="pl-10"
+                              autoComplete="email"
                               data-testid="input-reset-email"
                             />
                           </div>
@@ -203,6 +204,7 @@ export default function ForgotPassword() {
                               type="password"
                               placeholder="At least 8 characters"
                               className="pl-10"
+                              autoComplete="new-password"
                               data-testid="input-new-password"
                             />
                           </div>
@@ -226,6 +228,7 @@ export default function ForgotPassword() {
                               type="password"
                               placeholder="••••••••"
                               className="pl-10"
+                              autoComplete="new-password"
                               data-testid="input-confirm-password"
                             />
                           </div>

@@ -231,6 +231,7 @@ export default function Login() {
                                 type="email"
                                 placeholder="you@example.com"
                                 className="pl-10"
+                                autoComplete="email"
                                 data-testid="input-login-email"
                               />
                             </div>
@@ -254,6 +255,7 @@ export default function Login() {
                                 type="password"
                                 placeholder="••••••••"
                                 className="pl-10"
+                                autoComplete="current-password"
                                 data-testid="input-login-password"
                               />
                             </div>
@@ -304,6 +306,7 @@ export default function Login() {
                                   {...field}
                                   placeholder="Alex"
                                   className="pl-10"
+                                  autoComplete="given-name"
                                   data-testid="input-register-firstname"
                                 />
                               </div>
@@ -323,6 +326,7 @@ export default function Login() {
                               <Input
                                 {...field}
                                 placeholder="Smith"
+                                autoComplete="family-name"
                                 data-testid="input-register-lastname"
                               />
                             </FormControl>
@@ -346,6 +350,7 @@ export default function Login() {
                                 type="email"
                                 placeholder="you@example.com"
                                 className="pl-10"
+                                autoComplete="email"
                                 data-testid="input-register-email"
                               />
                             </div>
@@ -369,6 +374,7 @@ export default function Login() {
                                 type="password"
                                 placeholder="At least 8 characters"
                                 className="pl-10"
+                                autoComplete="new-password"
                                 data-testid="input-register-password"
                               />
                             </div>
@@ -392,6 +398,7 @@ export default function Login() {
                                 type="password"
                                 placeholder="••••••••"
                                 className="pl-10"
+                                autoComplete="new-password"
                                 data-testid="input-register-confirm-password"
                               />
                             </div>
