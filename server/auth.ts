@@ -145,12 +145,17 @@ export function setupAuth(app: Express) {
   }
 
   if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
+    const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
+    const isLocalhost = domain.startsWith('localhost') || domain.startsWith('127.0.0.1');
+    const protocol = isLocalhost ? 'http' : 'https';
+    const facebookCallbackURL = `${protocol}://${domain}/auth/facebook/callback`;
+    
     passport.use(
       new FacebookStrategy(
         {
           clientID: process.env.FACEBOOK_APP_ID,
           clientSecret: process.env.FACEBOOK_APP_SECRET,
-          callbackURL: "/auth/facebook/callback",
+          callbackURL: facebookCallbackURL,
           profileFields: ['id', 'emails', 'name', 'picture.type(large)'],
           enableProof: true,
           state: true,
