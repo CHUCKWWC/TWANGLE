@@ -102,7 +102,19 @@ export default function FortyDayTwangle() {
       // Get the updated progress to find the new current day
       const updatedProgress = await queryClient.fetchQuery({
         queryKey: ["/api/challenges/progress"],
-      }) as UserProgress;
+      }) as UserProgress | null;
+      
+      // Handle completion of final day (Day 40)
+      if (!updatedProgress || (selectedDay === 40)) {
+        toast({
+          title: "Journey Complete! 🎉",
+          description: "Congratulations! You've completed the entire 40-day journey!",
+        });
+        // Keep showing Day 40 for the completed view
+        setSelectedDay(40);
+        setActiveTab("today");
+        return;
+      }
       
       const nextDay = updatedProgress.currentDay;
       
@@ -112,9 +124,7 @@ export default function FortyDayTwangle() {
       
       toast({
         title: "Day Complete! 🎉",
-        description: nextDay <= 40 
-          ? `Excellent work! Moving to Day ${nextDay}...`
-          : "Congratulations! You've completed the 40-day journey!",
+        description: `Excellent work! Moving to Day ${nextDay}...`,
       });
     },
     onError: () => {

@@ -2720,26 +2720,6 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  // Get specific day challenge
-  app.get('/api/challenges/:day', isAuthenticated, async (req: any, res) => {
-    try {
-      const dayNumber = parseInt(req.params.day);
-      if (isNaN(dayNumber) || dayNumber < 1 || dayNumber > 40) {
-        return res.status(400).json({ message: "Invalid day number" });
-      }
-
-      const challenge = await storage.getChallengeByDay(dayNumber);
-      if (!challenge) {
-        return res.status(404).json({ message: "Challenge not found" });
-      }
-
-      res.json(challenge);
-    } catch (error: any) {
-      console.error("Get challenge error:", error);
-      res.status(500).json({ message: "Failed to get challenge" });
-    }
-  });
-
   // Start the challenge
   app.post('/api/challenges/start', isAuthenticated, async (req: any, res) => {
     try {
@@ -2765,7 +2745,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  // Get user progress
+  // Get user progress (must come before /:day route)
   app.get('/api/challenges/progress', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
@@ -2779,6 +2759,38 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     } catch (error: any) {
       console.error("Get challenge progress error:", error);
       res.status(500).json({ message: "Failed to get challenge progress" });
+    }
+  });
+
+  // Get user reflections (must come before /:day route)
+  app.get('/api/challenges/reflections', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const reflections = await storage.getAllUserReflections(userId);
+      res.json(reflections);
+    } catch (error: any) {
+      console.error("Get user reflections error:", error);
+      res.status(500).json({ message: "Failed to get user reflections" });
+    }
+  });
+
+  // Get specific day challenge (must come AFTER specific routes)
+  app.get('/api/challenges/:day', isAuthenticated, async (req: any, res) => {
+    try {
+      const dayNumber = parseInt(req.params.day);
+      if (isNaN(dayNumber) || dayNumber < 1 || dayNumber > 40) {
+        return res.status(400).json({ message: "Invalid day number" });
+      }
+
+      const challenge = await storage.getChallengeByDay(dayNumber);
+      if (!challenge) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+
+      res.json(challenge);
+    } catch (error: any) {
+      console.error("Get challenge error:", error);
+      res.status(500).json({ message: "Failed to get challenge" });
     }
   });
 
