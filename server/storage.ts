@@ -287,6 +287,7 @@ export interface IStorage {
   updateCouple(id: string, updates: Partial<Couple>): Promise<Couple | undefined>;
   generatePartnerInviteToken(coupleId: string, expiresInHours?: number): Promise<{ token: string; couple: Couple }>;
   acceptPartnerInvite(token: string, userId: string): Promise<Couple | undefined>;
+  cancelPartnerInvite(coupleId: string): Promise<Couple | undefined>;
   removePartner(coupleId: string): Promise<Couple | undefined>;
   
   // Session store for authentication
@@ -2453,6 +2454,20 @@ export class DbStorage implements IStorage {
       .set({ coupleId: couple.id })
       .where(eq(users.id, userId));
 
+    return result[0];
+  }
+
+  async cancelPartnerInvite(coupleId: string): Promise<Couple | undefined> {
+    const result = await this.db
+      .update(couples)
+      .set({
+        partnerInviteToken: null,
+        partnerInviteExpires: null,
+        partnerInvitedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(couples.id, coupleId))
+      .returning();
     return result[0];
   }
 
