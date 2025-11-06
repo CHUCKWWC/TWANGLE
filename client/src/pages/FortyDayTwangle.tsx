@@ -346,7 +346,7 @@ export default function FortyDayTwangle() {
                           onChange={(e) => setReflectionText(e.target.value)}
                           rows={6}
                           className="resize-none"
-                          data-testid="textarea-reflection"
+                          data-testid="input-reflection"
                         />
                         <Button
                           onClick={() =>
@@ -357,7 +357,7 @@ export default function FortyDayTwangle() {
                           }
                           disabled={!reflectionText.trim() || completeDayMutation.isPending}
                           className="w-full"
-                          data-testid="button-submit-reflection"
+                          data-testid="button-complete-day"
                         >
                           {completeDayMutation.isPending ? "Saving..." : "Complete Day " + currentChallenge.dayNumber}
                         </Button>
@@ -387,7 +387,12 @@ export default function FortyDayTwangle() {
                       isCurrent && "border-primary",
                       isLocked && "opacity-60"
                     )}
-                    onClick={() => !isLocked && setSelectedDay(challenge.dayNumber)}
+                    onClick={() => {
+                      if (!isLocked) {
+                        setSelectedDay(challenge.dayNumber);
+                        setActiveTab("today");
+                      }
+                    }}
                     data-testid={`card-day-${challenge.dayNumber}`}
                   >
                     <CardHeader className="py-4">
