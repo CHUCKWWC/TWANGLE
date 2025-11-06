@@ -1,0 +1,362 @@
+[
+  {
+    "day_number": 1,
+    "title": "Day 1: Patience",
+    "scripture": "1 Corinthians 13:4",
+    "summary": "Show patience and understanding toward your partner today.",
+    "action_prompt": "Show patience and understanding toward your partner today.",
+    "journal_question": "How did you express patience with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 2,
+    "title": "Day 2: Kindness",
+    "scripture": "Ephesians 4:32",
+    "summary": "Do something kind and unexpected for your partner.",
+    "action_prompt": "Do something kind and unexpected for your partner.",
+    "journal_question": "How did you express kindness with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 3,
+    "title": "Day 3: Humility",
+    "scripture": "Philippians 2:3-4",
+    "summary": "Put your partner\u2019s needs ahead of your own today.",
+    "action_prompt": "Put your partner\u2019s needs ahead of your own today.",
+    "journal_question": "How did you express humility with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 4,
+    "title": "Day 4: Forgiveness",
+    "scripture": "Colossians 3:13",
+    "summary": "Forgive a small offense quickly and without resentment.",
+    "action_prompt": "Forgive a small offense quickly and without resentment.",
+    "journal_question": "How did you express forgiveness with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 5,
+    "title": "Day 5: Encouragement",
+    "scripture": "1 Thessalonians 5:11",
+    "summary": "Speak words that lift your partner up today.",
+    "action_prompt": "Speak words that lift your partner up today.",
+    "journal_question": "How did you express encouragement with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 6,
+    "title": "Day 6: Gratitude",
+    "scripture": "1 Thessalonians 5:18",
+    "summary": "Thank your partner for something specific they\u2019ve done.",
+    "action_prompt": "Thank your partner for something specific they\u2019ve done.",
+    "journal_question": "How did you express gratitude with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 7,
+    "title": "Day 7: Faithfulness",
+    "scripture": "Proverbs 3:3",
+    "summary": "Reaffirm your commitment to your partner in word or deed.",
+    "action_prompt": "Reaffirm your commitment to your partner in word or deed.",
+    "journal_question": "How did you express faithfulness with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 8,
+    "title": "Day 8: Listening",
+    "scripture": "James 1:19",
+    "summary": "Listen fully before responding in conversation today.",
+    "action_prompt": "Listen fully before responding in conversation today.",
+    "journal_question": "How did you express listening with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 9,
+    "title": "Day 9: Service",
+    "scripture": "Mark 10:45",
+    "summary": "Serve your partner in a tangible, practical way.",
+    "action_prompt": "Serve your partner in a tangible, practical way.",
+    "journal_question": "How did you express service with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 10,
+    "title": "Day 10: Respect",
+    "scripture": "Romans 12:10",
+    "summary": "Show respect in tone and action, especially when disagreeing.",
+    "action_prompt": "Show respect in tone and action, especially when disagreeing.",
+    "journal_question": "How did you express respect with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 11,
+    "title": "Day 11: Peace",
+    "scripture": "Philippians 4:7",
+    "summary": "Be the calm presence in your partnership today.",
+    "action_prompt": "Be the calm presence in your partnership today.",
+    "journal_question": "How did you express peace with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 12,
+    "title": "Day 12: Self-Control",
+    "scripture": "Galatians 5:22-23",
+    "summary": "Respond gently even if provoked or frustrated.",
+    "action_prompt": "Respond gently even if provoked or frustrated.",
+    "journal_question": "How did you express self-control with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 13,
+    "title": "Day 13: Joy",
+    "scripture": "John 15:11",
+    "summary": "Do something together that brings shared joy.",
+    "action_prompt": "Do something together that brings shared joy.",
+    "journal_question": "How did you express joy with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 14,
+    "title": "Day 14: Gentleness",
+    "scripture": "Ephesians 4:2",
+    "summary": "Handle your partner\u2019s emotions with tenderness today.",
+    "action_prompt": "Handle your partner\u2019s emotions with tenderness today.",
+    "journal_question": "How did you express gentleness with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 15,
+    "title": "Day 15: Trust",
+    "scripture": "Proverbs 3:5",
+    "summary": "Choose to trust your partner\u2019s intentions today.",
+    "action_prompt": "Choose to trust your partner\u2019s intentions today.",
+    "journal_question": "How did you express trust with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 16,
+    "title": "Day 16: Unity",
+    "scripture": "Ecclesiastes 4:9-10",
+    "summary": "Work on something together\u2014showing you\u2019re stronger united.",
+    "action_prompt": "Work on something together\u2014showing you\u2019re stronger united.",
+    "journal_question": "How did you express unity with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 17,
+    "title": "Day 17: Compassion",
+    "scripture": "Colossians 3:12",
+    "summary": "Show empathy when your partner shares a struggle.",
+    "action_prompt": "Show empathy when your partner shares a struggle.",
+    "journal_question": "How did you express compassion with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 18,
+    "title": "Day 18: Faith",
+    "scripture": "Hebrews 11:1",
+    "summary": "Pray together and trust God\u2019s plan for your relationship.",
+    "action_prompt": "Pray together and trust God\u2019s plan for your relationship.",
+    "journal_question": "How did you express faith with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 19,
+    "title": "Day 19: Generosity",
+    "scripture": "2 Corinthians 9:7",
+    "summary": "Give time or attention freely without expecting something back.",
+    "action_prompt": "Give time or attention freely without expecting something back.",
+    "journal_question": "How did you express generosity with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 20,
+    "title": "Day 20: Hope",
+    "scripture": "Romans 15:13",
+    "summary": "Encourage your partner with hope about your shared future.",
+    "action_prompt": "Encourage your partner with hope about your shared future.",
+    "journal_question": "How did you express hope with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 21,
+    "title": "Day 21: Love in Action",
+    "scripture": "1 John 3:18",
+    "summary": "Show love not just in words but through action today.",
+    "action_prompt": "Show love not just in words but through action today.",
+    "journal_question": "How did you express love in action with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 22,
+    "title": "Day 22: Communication",
+    "scripture": "Proverbs 18:21",
+    "summary": "Speak life\u2014avoid sarcasm or harsh words.",
+    "action_prompt": "Speak life\u2014avoid sarcasm or harsh words.",
+    "journal_question": "How did you express communication with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 23,
+    "title": "Day 23: Reconciliation",
+    "scripture": "Matthew 5:9",
+    "summary": "Make peace over a lingering disagreement.",
+    "action_prompt": "Make peace over a lingering disagreement.",
+    "journal_question": "How did you express reconciliation with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 24,
+    "title": "Day 24: Patience in Trials",
+    "scripture": "Romans 12:12",
+    "summary": "Respond with grace when plans go wrong.",
+    "action_prompt": "Respond with grace when plans go wrong.",
+    "journal_question": "How did you express patience in trials with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 25,
+    "title": "Day 25: Joyful Giving",
+    "scripture": "Acts 20:35",
+    "summary": "Do something generous together for someone else.",
+    "action_prompt": "Do something generous together for someone else.",
+    "journal_question": "How did you express joyful giving with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 26,
+    "title": "Day 26: Mutual Honor",
+    "scripture": "1 Peter 3:7",
+    "summary": "Show your partner honor through small acts of respect.",
+    "action_prompt": "Show your partner honor through small acts of respect.",
+    "journal_question": "How did you express mutual honor with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 27,
+    "title": "Day 27: Kind Words",
+    "scripture": "Proverbs 16:24",
+    "summary": "Speak only what is kind, healing, or helpful today.",
+    "action_prompt": "Speak only what is kind, healing, or helpful today.",
+    "journal_question": "How did you express kind words with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 28,
+    "title": "Day 28: Faith in Each Other",
+    "scripture": "Galatians 6:9",
+    "summary": "Believe in your partner\u2019s growth and journey.",
+    "action_prompt": "Believe in your partner\u2019s growth and journey.",
+    "journal_question": "How did you express faith in each other with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 29,
+    "title": "Day 29: Love that Endures",
+    "scripture": "1 Corinthians 13:7",
+    "summary": "Commit to love even when feelings fluctuate.",
+    "action_prompt": "Commit to love even when feelings fluctuate.",
+    "journal_question": "How did you express love that endures with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 30,
+    "title": "Day 30: Gentle Correction",
+    "scripture": "Proverbs 27:6",
+    "summary": "Offer truth with compassion if correction is needed.",
+    "action_prompt": "Offer truth with compassion if correction is needed.",
+    "journal_question": "How did you express gentle correction with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 31,
+    "title": "Day 31: Rest Together",
+    "scripture": "Exodus 20:8-10",
+    "summary": "Take a day of rest together, without distraction.",
+    "action_prompt": "Take a day of rest together, without distraction.",
+    "journal_question": "How did you express rest together with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 32,
+    "title": "Day 32: Grace",
+    "scripture": "Ephesians 2:8",
+    "summary": "Extend grace when your partner falls short.",
+    "action_prompt": "Extend grace when your partner falls short.",
+    "journal_question": "How did you express grace with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 33,
+    "title": "Day 33: Courage",
+    "scripture": "Joshua 1:9",
+    "summary": "Encourage your partner in facing something they fear.",
+    "action_prompt": "Encourage your partner in facing something they fear.",
+    "journal_question": "How did you express courage with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 34,
+    "title": "Day 34: Purpose",
+    "scripture": "Jeremiah 29:11",
+    "summary": "Discuss God\u2019s vision for your partnership.",
+    "action_prompt": "Discuss God\u2019s vision for your partnership.",
+    "journal_question": "How did you express purpose with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 35,
+    "title": "Day 35: Joy in Service",
+    "scripture": "Philippians 2:14",
+    "summary": "Serve together with a joyful heart today.",
+    "action_prompt": "Serve together with a joyful heart today.",
+    "journal_question": "How did you express joy in service with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 36,
+    "title": "Day 36: Peaceful Words",
+    "scripture": "Proverbs 15:1",
+    "summary": "Choose peace over pride in every response today.",
+    "action_prompt": "Choose peace over pride in every response today.",
+    "journal_question": "How did you express peaceful words with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 37,
+    "title": "Day 37: Faith Renewal",
+    "scripture": "Isaiah 40:31",
+    "summary": "Renew your faith together through prayer or scripture reading.",
+    "action_prompt": "Renew your faith together through prayer or scripture reading.",
+    "journal_question": "How did you express faith renewal with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 38,
+    "title": "Day 38: Shared Vision",
+    "scripture": "Amos 3:3",
+    "summary": "Talk about your shared goals for the next season of life.",
+    "action_prompt": "Talk about your shared goals for the next season of life.",
+    "journal_question": "How did you express shared vision with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 39,
+    "title": "Day 39: Perseverance",
+    "scripture": "James 1:12",
+    "summary": "Stay steady in love even through stress or challenge.",
+    "action_prompt": "Stay steady in love even through stress or challenge.",
+    "journal_question": "How did you express perseverance with your partner today?",
+    "completed": false
+  },
+  {
+    "day_number": 40,
+    "title": "Day 40: Covenant Love",
+    "scripture": "Ruth 1:16-17",
+    "summary": "Reaffirm your devotion and commitment to your partner.",
+    "action_prompt": "Reaffirm your devotion and commitment to your partner.",
+    "journal_question": "How did you express covenant love with your partner today?",
+    "completed": false
+  }
+]
