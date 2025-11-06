@@ -280,6 +280,7 @@ export default function Profile() {
                         value={newDisplayName}
                         onChange={(e) => setNewDisplayName(e.target.value)}
                         disabled={updateProfileMutation.isPending}
+                        autoComplete="name"
                         data-testid="input-display-name"
                       />
                       <Button 
@@ -415,6 +416,7 @@ export default function Profile() {
                           value={partnerEmail}
                           onChange={(e) => setPartnerEmail(e.target.value)}
                           disabled={invitePartnerMutation.isPending}
+                          autoComplete="email"
                           data-testid="input-partner-email"
                         />
                         <Button
