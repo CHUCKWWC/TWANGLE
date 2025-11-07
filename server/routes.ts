@@ -33,7 +33,7 @@ const openai = new OpenAI({
 // IMPORTANT: API key must be provided in environment variables
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2025-10-29.clover", // Using latest Stripe API version
+      apiVersion: "2025-09-30.clover", // Using latest Stripe API version
     })
   : null;
 
@@ -52,7 +52,7 @@ const anonymousChatLimiter = rateLimit({
   skip: (req: any) => !!req.user?.id,
 });
 
-const SYSTEM_PROMPT = `You are Coach Charles, an expert relationship coach trained in research-backed methods including:
+const SYSTEM_PROMPT = `You are AI Coach Charles, an expert relationship coach trained in research-backed methods including:
 - The Gottman Method (Dr. John Gottman's research on relationship stability)
 - Emotionally Focused Therapy - EFT (Dr. Sue Johnson's attachment-based approach)
 - Attachment Theory (Bowlby, Ainsworth)
@@ -669,10 +669,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const conversationText = messages
-        .map((msg: any) => `${msg.role === 'user' ? 'User' : 'Coach Charles'}: ${msg.content}`)
+        .map((msg: any) => `${msg.role === 'user' ? 'User' : 'AI Coach Charles'}: ${msg.content}`)
         .join('\n\n');
 
-      const summaryPrompt = `As Coach Charles, analyze this coaching conversation and provide:
+      const summaryPrompt = `As AI Coach Charles, analyze this coaching conversation and provide:
 
 1. A concise summary of the main topics discussed and insights shared (2-3 paragraphs)
 2. A list of 3-5 specific, actionable steps this couple should work on during the upcoming week
@@ -695,7 +695,7 @@ ${conversationText}`;
         messages: [
           {
             role: "system",
-            content: "You are Coach Charles, an expert relationship coach. Generate summaries and action items in JSON format.",
+            content: "You are AI Coach Charles, an expert relationship coach. Generate summaries and action items in JSON format.",
           },
           {
             role: "user",
@@ -1434,7 +1434,7 @@ Use clear formatting with headers, bullet points, and emojis where appropriate t
         messages: [
           {
             role: "system",
-            content: "You are Coach Charles, an expert relationship coach who creates personalized retreat itineraries. Your itineraries blend research-backed relationship exercises from Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory with practical travel planning. Always cite these frameworks by name when suggesting exercises.",
+            content: "You are AI Coach Charles, an expert relationship coach who creates personalized retreat itineraries. Your itineraries blend research-backed relationship exercises from Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory with practical travel planning. Always cite these frameworks by name when suggesting exercises.",
           },
           {
             role: "user",
@@ -1565,7 +1565,7 @@ Use clear formatting with headers, bullet points, and a warm tone that feels lik
         messages: [
           {
             role: "system",
-            content: "You are Coach Charles, an expert relationship coach who creates personalized date night plans. Your plans blend romance with research-backed connection exercises, making every date both fun and meaningful for the couple's relationship.",
+            content: "You are AI Coach Charles, an expert relationship coach who creates personalized date night plans. Your plans blend romance with research-backed connection exercises, making every date both fun and meaningful for the couple's relationship.",
           },
           {
             role: "user",
@@ -2488,8 +2488,8 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         return res.status(400).json({ message: "Partnership invitation has expired", expired: true });
       }
 
-      // Check if already accepted
-      if (partnership.acceptedAt) {
+      // Check if already accepted (partnership status would be 'active')
+      if (partnership.status === 'active') {
         return res.status(400).json({ message: "This invitation has already been accepted", alreadyAccepted: true });
       }
 
@@ -2898,7 +2898,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
       }
 
       // Import and run seed
-      const { seed40dayTwangle } = await import('../seeds/40dayTwangle');
+      const { seed40dayTwangle } = await import('./seeds/40dayTwangle');
       await seed40dayTwangle();
       
       const challenges = await storage.getAllChallenges();
@@ -3009,8 +3009,8 @@ Make sure the percentages add up to 100. Base your analysis on established attac
 
       await storage.createEmailSendLog({
         userId: userId,
+        email: partnerEmail,
         emailType: 'couple_partner_invite',
-        recipientEmail: partnerEmail,
         status: 'sent',
       });
 

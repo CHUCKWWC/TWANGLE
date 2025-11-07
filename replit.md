@@ -21,7 +21,7 @@ The frontend is built with React 18 and TypeScript, utilizing Vite, Wouter for r
 
 ### Backend
 
-The backend is an Express.js application on Node.js with TypeScript, providing RESTful APIs for core functionalities such as chat, planning, assessments, billing, and reporting. API security includes JSON request/response validation, ownership verification, and IP-based rate limiting for anonymous endpoints. An AI Coach ("Coach Charles") uses strict system prompts to provide relationship-only advice. AI integration leverages OpenAI GPT for coaching, planning, and assessment analysis, using streaming responses and Zod-validated structured JSON.
+The backend is an Express.js application on Node.js with TypeScript, providing RESTful APIs for core functionalities such as chat, planning, assessments, billing, and reporting. API security includes JSON request/response validation, ownership verification, and IP-based rate limiting for anonymous endpoints. An AI Coach ("AI Coach Charles") uses strict system prompts to provide relationship-only advice. AI integration leverages OpenAI GPT for coaching, planning, and assessment analysis, using streaming responses and Zod-validated structured JSON.
 
 ### Data Storage
 

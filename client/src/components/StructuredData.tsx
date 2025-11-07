@@ -95,9 +95,9 @@ export const SERVICE_SCHEMA = {
 export const PERSON_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'Person',
-  name: 'Charles Watson',
-  jobTitle: 'Certified Relationship Coach',
-  description: 'Relationship coach specializing in Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory. Founder of Twangle, an AI-powered relationship coaching platform.',
+  name: 'AI Coach Charles',
+  jobTitle: 'AI Relationship Coach',
+  description: 'AI relationship coach specializing in Gottman Method, Emotionally Focused Therapy (EFT), and Attachment Theory. Part of Twangle, an AI-powered relationship coaching platform.',
   url: 'https://twangle.org/coach',
   worksFor: {
     '@type': 'Organization',
