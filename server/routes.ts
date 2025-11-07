@@ -2878,23 +2878,63 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
-  // Admin: Seed challenges (only if empty)
-  app.post('/api/admin/seed-challenges', isAuthenticated, async (req: any, res) => {
+  // Admin: Seed challenges (only if empty) - accessible to admin and lifetime users
+  app.post('/api/admin/seed-challenges', isAuthenticated, logUserAccess, async (req: any, res) => {
     try {
-      const existing = await storage.getAllChallenges();
-      if (existing.length > 0) {
-        return res.json({ message: "Challenges already seeded", count: existing.length });
+      // Check if user is admin or has lifetime access
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const isAdminOrLifetime = isAdminUser(user.email!) || user.hasLifetimeAccess === 1;
+      
+      if (!isAdminOrLifetime) {
+        return res.status(403).json({ 
+          message: "Access denied. This endpoint is only available to admin or lifetime users." 
+        });
       }
 
-      // Import and run seed
+      // Check if challenges already exist (idempotent operation)
+      const existing = await storage.getAllChallenges();
+      if (existing.length > 0) {
+        return res.json({ 
+          success: true,
+          message: "Challenges already exist in database", 
+          count: existing.length,
+          status: "already_seeded"
+        });
+      }
+
+      // Import and run seed function
+      console.log("Starting challenge seed process...");
       const { seed40dayTwangle } = await import('./seeds/40dayTwangle');
       await seed40dayTwangle();
       
+      // Verify challenges were seeded successfully
       const challenges = await storage.getAllChallenges();
-      res.json({ message: "Challenges seeded successfully", count: challenges.length });
+      
+      if (challenges.length === 0) {
+        throw new Error("Seeding completed but no challenges found in database");
+      }
+      
+      console.log(`Successfully seeded ${challenges.length} challenges`);
+      
+      res.json({ 
+        success: true,
+        message: "Challenges seeded successfully", 
+        count: challenges.length,
+        status: "seeded"
+      });
     } catch (error: any) {
       console.error("Seed challenges error:", error);
-      res.status(500).json({ message: "Failed to seed challenges" });
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to seed challenges",
+        error: error.message
+      });
     }
   });
 
