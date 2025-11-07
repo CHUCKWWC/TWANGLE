@@ -92,10 +92,10 @@ export const SEO_CONTENT = {
     keywords: 'attachment style test, attachment theory, relationship assessment, anxious attachment, avoidant attachment, secure attachment, fearful attachment',
   },
   coach: {
-    title: 'AI Relationship Coach - Get Expert Guidance with Coach Charles',
-    description: 'Chat with Coach Charles, your AI relationship coach trained in Gottman Method, Emotionally Focused Therapy, and Attachment Theory. Get personalized advice for your unique relationship challenges.',
+    title: 'AI Relationship Coach - Get Expert Guidance with AI Coach Charles',
+    description: 'Chat with AI Coach Charles, your AI relationship coach trained in Gottman Method, Emotionally Focused Therapy, and Attachment Theory. Get personalized advice for your unique relationship challenges.',
     keywords: 'relationship coach, AI therapist, couples counseling, Gottman Method, EFT therapy, relationship advice, marriage counseling',
-    author: 'Charles Watson, Certified Relationship Coach',
+    author: 'AI Coach Charles, AI Relationship Coach',
   },
   retreat: {
     title: 'DIY Couples Retreat Planner - Create Your Perfect Relationship Getaway',

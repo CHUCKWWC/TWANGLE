@@ -362,6 +362,7 @@ export const emailSendLogs = pgTable("email_send_logs", {
   index("idx_email_logs_sent_at").on(table.sentAt),
 ]);
 
+// Full insert schema including all fields needed by storage layer
 export const insertEmailSendLogSchema = createInsertSchema(emailSendLogs).omit({
   id: true,
   sentAt: true,
@@ -409,13 +410,22 @@ export const partnerships = pgTable("partnerships", {
   index("idx_partnerships_token").on(table.inviteToken),
 ]);
 
-export const insertPartnershipSchema = createInsertSchema(partnerships).omit({
+// Schema for validating client-supplied partnership data (used in route validation)
+export const partnershipRequestSchema = createInsertSchema(partnerships).omit({
   id: true,
   user1Id: true,
   user2Id: true,
   status: true,
   inviteToken: true,
   inviteExpiresAt: true,
+  connectedAt: true,
+  createdAt: true,
+});
+
+// Full insert schema including contextual fields (matches storage layer expectations)
+export const insertPartnershipSchema = createInsertSchema(partnerships).omit({
+  id: true,
+  status: true,
   connectedAt: true,
   createdAt: true,
 });
@@ -437,9 +447,16 @@ export const journalEntries = pgTable("journal_entries", {
   index("idx_journal_user_date").on(table.userId, table.createdAt),
 ]);
 
-export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit({
+// Schema for validating client-supplied journal entry data
+export const journalEntryRequestSchema = createInsertSchema(journalEntries).omit({
   id: true,
   userId: true,
+  createdAt: true,
+});
+
+// Full insert schema including userId (matches storage layer expectations)
+export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit({
+  id: true,
   createdAt: true,
 });
 
@@ -460,13 +477,21 @@ export const analyticsSnapshots = pgTable("analytics_snapshots", {
   index("idx_analytics_user_period").on(table.userId, table.period),
 ]);
 
-export const insertAnalyticsSnapshotSchema = createInsertSchema(analyticsSnapshots).omit({
+// Schema for validating request (no fields from client for analytics)
+export const analyticsSnapshotRequestSchema = createInsertSchema(analyticsSnapshots).omit({
   id: true,
   userId: true,
   period: true,
+  periodType: true,
   metrics: true,
   insights: true,
   benchmarks: true,
+  createdAt: true,
+});
+
+// Full insert schema including userId and computed fields (matches storage layer)
+export const insertAnalyticsSnapshotSchema = createInsertSchema(analyticsSnapshots).omit({
+  id: true,
   createdAt: true,
 });
 
@@ -507,9 +532,16 @@ export const conversationResponses = pgTable("conversation_responses", {
   index("idx_responses_user").on(table.userId, table.createdAt),
 ]);
 
-export const insertConversationResponseSchema = createInsertSchema(conversationResponses).omit({
+// Schema for validating client-supplied conversation response data
+export const conversationResponseRequestSchema = createInsertSchema(conversationResponses).omit({
   id: true,
   userId: true,
+  createdAt: true,
+});
+
+// Full insert schema including userId (matches storage layer expectations)
+export const insertConversationResponseSchema = createInsertSchema(conversationResponses).omit({
+  id: true,
   createdAt: true,
 });
 
@@ -584,9 +616,17 @@ export const products = pgTable("products", {
   index("idx_products_type").on(table.productType),
 ]);
 
-export const insertProductSchema = createInsertSchema(products).omit({
+// Schema for validating client-supplied product data
+export const productRequestSchema = createInsertSchema(products).omit({
   id: true,
   userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Full insert schema including userId (matches storage layer expectations)
+export const insertProductSchema = createInsertSchema(products).omit({
+  id: true,
   createdAt: true,
   updatedAt: true,
 });

@@ -13,11 +13,11 @@ export function CoachCredentials() {
           
           <div className="flex-1">
             <h3 className="text-lg font-semibold mb-2" data-testid="text-coach-name">
-              Coach Charles Watson
+              AI Coach Charles
             </h3>
             
             <p className="text-sm text-muted-foreground mb-3" data-testid="text-coach-title">
-              Certified Relationship Coach • Founder of Twangle
+              AI Relationship Coach • Powered by Twangle
             </p>
             
             <div className="flex flex-wrap gap-2 mb-3">
@@ -36,9 +36,9 @@ export function CoachCredentials() {
             </div>
             
             <p className="text-sm leading-relaxed" data-testid="text-coach-bio">
-              Coach Charles specializes in helping couples strengthen their relationships through evidence-based therapeutic approaches. 
+              AI Coach Charles specializes in helping couples strengthen their relationships through evidence-based therapeutic approaches. 
               With expertise in <strong>Gottman Method</strong>, <strong>Emotionally Focused Therapy (EFT)</strong>, and <strong>Attachment Theory</strong>, 
-              he provides personalized guidance grounded in research to help you build deeper connection, improve communication, and create lasting positive change.
+              Charles provides personalized guidance grounded in research to help you build deeper connection, improve communication, and create lasting positive change.
             </p>
           </div>
         </div>
