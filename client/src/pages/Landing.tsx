@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Brain, Users, Map, BookOpen, Shield, Sparkles, CheckCircle2, MessageSquare } from "lucide-react";
+import { Heart, Brain, Users, Map, BookOpen, Shield, Sparkles, CheckCircle2, MessageSquare, Calendar } from "lucide-react";
 import { FeatureCard } from "@/components/FeatureCard";
 import { SEO, SEO_CONTENT } from "@/components/SEO";
 import { StructuredData, ORGANIZATION_SCHEMA, SERVICE_SCHEMA } from "@/components/StructuredData";
@@ -211,6 +211,15 @@ export default function Landing() {
               destination="/conversations"
               isPremium={false}
               testId="card-conversations"
+            />
+
+            <FeatureCard
+              icon={Calendar}
+              title="40dayTwangle Challenge"
+              description="A transformative 40-day faith-based journey with daily scripture teachings, action prompts, and reflection questions. Strengthen your relationship one day at a time."
+              destination="/40daytwangle"
+              isPremium={true}
+              testId="card-40daytwangle"
             />
 
             <Card className="hover-elevate">
