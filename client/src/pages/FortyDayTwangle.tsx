@@ -12,6 +12,7 @@ import { BookOpen, Heart, Calendar, CheckCircle2, Lock, Sparkles } from "lucide-
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { AppHeader } from "@/components/AppHeader";
 
 interface Challenge {
   id: string;
@@ -150,10 +151,13 @@ export default function FortyDayTwangle() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your journey...</p>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container mx-auto p-6 pt-20 flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading your journey...</p>
+          </div>
         </div>
       </div>
     );
@@ -162,9 +166,11 @@ export default function FortyDayTwangle() {
   // Welcome screen for new users
   if (!progress) {
     return (
-      <div className="container mx-auto p-6 max-w-4xl">
-        <div className="min-h-screen flex items-center justify-center">
-          <Card className="w-full">
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container mx-auto p-6 pt-20 max-w-4xl">
+          <div className="min-h-screen flex items-center justify-center">
+            <Card className="w-full">
             <CardHeader className="text-center space-y-4">
               <div className="flex justify-center">
                 <div className="bg-primary/10 p-6 rounded-full">
@@ -220,6 +226,7 @@ export default function FortyDayTwangle() {
             </CardContent>
           </Card>
         </div>
+        </div>
       </div>
     );
   }
@@ -227,8 +234,10 @@ export default function FortyDayTwangle() {
   const progressPercentage = (progress.lastCompletedDay / 40) * 100;
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      {/* Header */}
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+      <div className="container mx-auto p-6 pt-20 max-w-6xl">
+        {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -429,6 +438,7 @@ export default function FortyDayTwangle() {
           </ScrollArea>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
