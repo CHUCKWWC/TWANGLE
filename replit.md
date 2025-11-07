@@ -8,6 +8,11 @@ Twangle is a couples' relationship wellness platform designed to provide psychol
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+- **40dayTwangle UI Redesign** (November 2025): Completely redesigned the interface with an interactive card-based layout featuring a prominent current day card, 3-day preview system, celebration effects with lucide-react icons (PartyPopper, Trophy), and visual progress tracking. Removed all emojis per design guidelines.
+- **Database Field Mapping Fix** (November 2025): Fixed missing content display in both 40dayTwangle and Daily Conversations by applying explicit field selection in all Drizzle ORM queries. This ensures proper camelCase mapping from database columns to JavaScript objects for fields like `summary`, `actionPrompt`, `journalQuestion`, `questionText`, and `therapyPrompt`.
+
 ## System Architecture
 
 ### Frontend

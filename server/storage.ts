@@ -2054,7 +2054,15 @@ export class DbStorage implements IStorage {
     }
 
     // Find all questions where both partners haven't responded
-    const allQuestions = await this.db.select().from(conversationQuestions)
+    const allQuestions = await this.db.select({
+      id: conversationQuestions.id,
+      category: conversationQuestions.category,
+      intensity: conversationQuestions.intensity,
+      questionText: conversationQuestions.questionText,
+      therapyPrompt: conversationQuestions.therapyPrompt,
+      active: conversationQuestions.active,
+      createdAt: conversationQuestions.createdAt,
+    }).from(conversationQuestions)
       .where(eq(conversationQuestions.active, 1))
       .orderBy(conversationQuestions.createdAt);
 
@@ -2079,7 +2087,15 @@ export class DbStorage implements IStorage {
       whereConditions.push(eq(conversationQuestions.category, category));
     }
 
-    const questions = await this.db.select().from(conversationQuestions)
+    const questions = await this.db.select({
+      id: conversationQuestions.id,
+      category: conversationQuestions.category,
+      intensity: conversationQuestions.intensity,
+      questionText: conversationQuestions.questionText,
+      therapyPrompt: conversationQuestions.therapyPrompt,
+      active: conversationQuestions.active,
+      createdAt: conversationQuestions.createdAt,
+    }).from(conversationQuestions)
       .where(and(...whereConditions));
       
     if (questions.length === 0) return undefined;
@@ -2090,7 +2106,15 @@ export class DbStorage implements IStorage {
 
   async getSoloQuestion(userId: string): Promise<ConversationQuestion | undefined> {
     // Get the first question that the solo user hasn't answered yet
-    const allQuestions = await this.db.select().from(conversationQuestions)
+    const allQuestions = await this.db.select({
+      id: conversationQuestions.id,
+      category: conversationQuestions.category,
+      intensity: conversationQuestions.intensity,
+      questionText: conversationQuestions.questionText,
+      therapyPrompt: conversationQuestions.therapyPrompt,
+      active: conversationQuestions.active,
+      createdAt: conversationQuestions.createdAt,
+    }).from(conversationQuestions)
       .where(eq(conversationQuestions.active, 1))
       .orderBy(conversationQuestions.createdAt);
 
@@ -2160,7 +2184,15 @@ export class DbStorage implements IStorage {
     // Get question details and check completion
     const history = [];
     for (const [questionId, responses] of questionMap.entries()) {
-      const question = await this.db.select().from(conversationQuestions)
+      const question = await this.db.select({
+        id: conversationQuestions.id,
+        category: conversationQuestions.category,
+        intensity: conversationQuestions.intensity,
+        questionText: conversationQuestions.questionText,
+        therapyPrompt: conversationQuestions.therapyPrompt,
+        active: conversationQuestions.active,
+        createdAt: conversationQuestions.createdAt,
+      }).from(conversationQuestions)
         .where(eq(conversationQuestions.id, questionId))
         .limit(1);
       
@@ -2208,7 +2240,15 @@ export class DbStorage implements IStorage {
     // Get question details
     const history = [];
     for (const [questionId, responses] of questionMap.entries()) {
-      const question = await this.db.select().from(conversationQuestions)
+      const question = await this.db.select({
+        id: conversationQuestions.id,
+        category: conversationQuestions.category,
+        intensity: conversationQuestions.intensity,
+        questionText: conversationQuestions.questionText,
+        therapyPrompt: conversationQuestions.therapyPrompt,
+        active: conversationQuestions.active,
+        createdAt: conversationQuestions.createdAt,
+      }).from(conversationQuestions)
         .where(eq(conversationQuestions.id, questionId))
         .limit(1);
       
