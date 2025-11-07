@@ -2809,8 +2809,9 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         return res.status(400).json({ message: "Invalid day number" });
       }
 
-      if (!reflectionText || reflectionText.trim().length < 10) {
-        return res.status(400).json({ message: "Reflection must be at least 10 characters" });
+      // Make reflection validation more lenient - just require non-empty text
+      if (!reflectionText || reflectionText.trim().length < 1) {
+        return res.status(400).json({ message: "Please enter your reflection" });
       }
 
       // Get user progress

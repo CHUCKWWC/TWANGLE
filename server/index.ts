@@ -411,6 +411,45 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Add CORS headers for production environment
+app.use((req, res, next) => {
+  // Allow credentials to be included in requests
+  const origin = req.headers.origin;
+  
+  // In production, allow the deployed domain and localhost for development
+  const allowedOrigins = [
+    'https://twangle.org',
+    'https://www.twangle.org', 
+    'https://*.replit.app',
+    'https://*.replit.dev',
+    'http://localhost:5000',
+    'http://localhost:3000'
+  ];
+  
+  // Check if origin matches any allowed pattern
+  const isAllowed = origin && allowedOrigins.some(allowed => {
+    if (allowed.includes('*')) {
+      const pattern = allowed.replace('*', '.*');
+      return new RegExp(pattern).test(origin);
+    }
+    return allowed === origin;
+  });
+  
+  if (isAllowed || !origin) { // Allow requests with no origin (server-side)
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  }
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
