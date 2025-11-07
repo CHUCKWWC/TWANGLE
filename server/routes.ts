@@ -282,17 +282,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Create a session by logging in the user with Passport
-        const sessionUser = {
-          claims: {
-            sub: user.id,
-            email: user.email,
-            first_name: user.firstName,
-            last_name: user.lastName,
-            profile_image_url: user.profileImageUrl,
-          }
-        };
-
-        req.logIn(sessionUser, (err: any) => {
+        // Pass the user object directly, not wrapped in claims
+        // This matches how standard login/registration works
+        req.logIn(user, (err: any) => {
           if (err) {
             console.error('Facebook login error:', err);
             return res.status(500).json({ message: "Failed to create session" });
@@ -328,17 +320,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create a session for the test reviewer
-      const sessionUser = {
-        claims: {
-          sub: user.id,
-          email: user.email,
-          first_name: user.firstName,
-          last_name: user.lastName,
-          profile_image_url: user.profileImageUrl,
-        }
-      };
-
-      req.logIn(sessionUser, (err: any) => {
+      // Pass the user object directly, not wrapped in claims
+      // This matches how standard login/registration works
+      req.logIn(user, (err: any) => {
         if (err) {
           console.error('Reviewer login error:', err);
           return res.status(500).json({ message: "Failed to create session" });
