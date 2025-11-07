@@ -43,6 +43,9 @@ const passwordResetLimiter = rateLimit({
 });
 
 export function setupAuth(app: Express) {
+  // Detect if we're in production environment (Replit sets REPL_ID in production)
+  const isProduction = process.env.NODE_ENV === 'production' || !!process.env.REPL_ID;
+  
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || 'fallback-secret-key-change-me',
     resave: false,
@@ -51,12 +54,17 @@ export function setupAuth(app: Express) {
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
+      // Only use secure cookies if we're actually in production with HTTPS
+      // Replit handles HTTPS termination at the proxy level
+      secure: isProduction && process.env.REPLIT_DEV !== '1',
+      sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-origin in production
+      // Set domain to allow cookies across subdomains if needed
+      domain: process.env.COOKIE_DOMAIN || undefined
     }
   };
 
-  app.set("trust proxy", 1);
+  // Trust the proxy to properly forward headers
+  app.set("trust proxy", true);
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
@@ -433,8 +441,33 @@ export function setupAuth(app: Express) {
 }
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: "Authentication required" });
+  // Log authentication details for debugging
+  const path = req.path;
+  const sessionId = (req as any).sessionID;
+  const user = (req as any).user;
+  const isAuth = req.isAuthenticated();
+  
+  // Log auth attempt for challenge routes in production
+  if (path.includes('/api/challenges') && process.env.NODE_ENV === 'production') {
+    console.log('[Auth Debug]', {
+      path,
+      method: req.method,
+      hasSession: !!sessionId,
+      hasUser: !!user,
+      isAuthenticated: isAuth,
+      userAgent: req.get('user-agent'),
+      origin: req.get('origin')
+    });
+  }
+  
+  if (!isAuth) {
+    return res.status(401).json({ 
+      message: "Authentication required",
+      debug: process.env.NODE_ENV === 'development' ? {
+        hasSession: !!sessionId,
+        hasUser: !!user
+      } : undefined
+    });
   }
   next();
 }
