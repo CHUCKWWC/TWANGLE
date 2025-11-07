@@ -69,13 +69,14 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function Conversations() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [responseText, setResponseText] = useState("");
   const [showHelpModal, setShowHelpModal] = useState(false);
 
   const { data: dailyData, isLoading, error } = useQuery<DailyQuestionData>({
     queryKey: ['/api/conversations/daily'],
     retry: false,
+    enabled: isAuthenticated, // Only fetch when user is authenticated
   });
 
   const { data: history } = useQuery<HistoryItem[]>({
@@ -123,7 +124,8 @@ export default function Conversations() {
 
   const isPaidUser = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trialing';
 
-  if (isLoading) {
+  // Show loading while checking authentication
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
@@ -131,6 +133,41 @@ export default function Conversations() {
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login prompt for unauthenticated users
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container max-w-4xl mx-auto p-6 pt-20">
+          <Card data-testid="card-login-required">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Login Required
+              </CardTitle>
+              <CardDescription>
+                Sign in to access Daily Conversations and deepen your connection with therapy-informed questions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Daily Conversations helps you and your partner explore important topics through carefully crafted questions based on research in relationships and therapy.
+              </p>
+              <div className="flex gap-3">
+                <Button onClick={() => window.location.href = '/login'} data-testid="button-login">
+                  Sign In
+                </Button>
+                <Button variant="outline" onClick={() => window.location.href = '/signup'} data-testid="button-signup">
+                  Create Account
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
