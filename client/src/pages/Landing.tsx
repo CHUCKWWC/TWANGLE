@@ -217,7 +217,7 @@ export default function Landing() {
               icon={Calendar}
               title="40dayTwangle Challenge"
               description="A transformative 40-day faith-based journey with daily scripture teachings, action prompts, and reflection questions. Strengthen your relationship one day at a time."
-              destination="/40daytwangle"
+              destination="/40day"
               isPremium={true}
               testId="card-40daytwangle"
             />

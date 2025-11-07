@@ -10,6 +10,11 @@ const ALLOWED_ROUTES = [
   '/datenight',
   '/profile',
   '/reports',
+  '/40day',
+  '/conversations',
+  '/health-score',
+  '/journal',
+  '/insights',
 ];
 
 /**
@@ -58,8 +63,8 @@ export function validateReturnToUrl(returnTo: string | null | undefined): string
 export function createLoginUrl(destination: string): string {
   const validatedDestination = validateReturnToUrl(destination);
   if (!validatedDestination) {
-    return '/api/login';
+    return '/login';
   }
   
-  return `/api/login?returnTo=${encodeURIComponent(validatedDestination)}`;
+  return `/login?returnTo=${encodeURIComponent(validatedDestination)}`;
 }
