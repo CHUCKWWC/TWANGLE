@@ -2527,17 +2527,44 @@ export class DbStorage implements IStorage {
   }
 
   async getChallenge(id: string): Promise<Challenge | undefined> {
-    const result = await this.db.select().from(challenges).where(eq(challenges.id, id));
+    const result = await this.db.select({
+      id: challenges.id,
+      dayNumber: challenges.dayNumber,
+      title: challenges.title,
+      scripture: challenges.scripture,
+      summary: challenges.summary,
+      actionPrompt: challenges.actionPrompt,
+      journalQuestion: challenges.journalQuestion,
+      createdAt: challenges.createdAt,
+    }).from(challenges).where(eq(challenges.id, id));
     return result[0];
   }
 
   async getChallengeByDay(dayNumber: number): Promise<Challenge | undefined> {
-    const result = await this.db.select().from(challenges).where(eq(challenges.dayNumber, dayNumber));
+    const result = await this.db.select({
+      id: challenges.id,
+      dayNumber: challenges.dayNumber,
+      title: challenges.title,
+      scripture: challenges.scripture,
+      summary: challenges.summary,
+      actionPrompt: challenges.actionPrompt,
+      journalQuestion: challenges.journalQuestion,
+      createdAt: challenges.createdAt,
+    }).from(challenges).where(eq(challenges.dayNumber, dayNumber));
     return result[0];
   }
 
   async getAllChallenges(): Promise<Challenge[]> {
-    return await this.db.select().from(challenges).orderBy(challenges.dayNumber);
+    return await this.db.select({
+      id: challenges.id,
+      dayNumber: challenges.dayNumber,
+      title: challenges.title,
+      scripture: challenges.scripture,
+      summary: challenges.summary,
+      actionPrompt: challenges.actionPrompt,
+      journalQuestion: challenges.journalQuestion,
+      createdAt: challenges.createdAt,
+    }).from(challenges).orderBy(challenges.dayNumber);
   }
 
   async createUserChallengeProgress(progress: InsertUserChallengeProgress): Promise<UserChallengeProgress> {
