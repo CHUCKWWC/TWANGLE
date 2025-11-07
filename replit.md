@@ -10,6 +10,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Schema Architecture Improvement** (November 2025): Fixed TypeScript type inconsistencies between insert schemas and storage layer. Introduced dual schema pattern:
+  - Request schemas (e.g., `partnershipRequestSchema`, `journalEntryRequestSchema`) for validating client-supplied data (omit contextual fields like userId)
+  - Full insert schemas (e.g., `insertPartnershipSchema`, `insertJournalEntrySchema`) for storage layer (include all required fields)
+  - This ensures type safety while maintaining clear separation between client validation and database insertion
+- **AI Coach Branding** (November 2025): Renamed all "Watson" references to "AI Coach Charles" throughout the platform for consistent brand identity
 - **40dayTwangle UI Redesign** (November 2025): Completely redesigned the interface with an interactive card-based layout featuring a prominent current day card, 3-day preview system, celebration effects with lucide-react icons (PartyPopper, Trophy), and visual progress tracking. Removed all emojis per design guidelines.
 - **Database Field Mapping Fix** (November 2025): Fixed missing content display in both 40dayTwangle and Daily Conversations by applying explicit field selection in all Drizzle ORM queries. This ensures proper camelCase mapping from database columns to JavaScript objects for fields like `summary`, `actionPrompt`, `journalQuestion`, `questionText`, and `therapyPrompt`.
 
