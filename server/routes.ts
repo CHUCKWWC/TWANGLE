@@ -18,7 +18,11 @@ import {
   insertDateNightSchema,
   type VisionPlanning,
   insertPartnershipSchema,
+  partnershipRequestSchema,
   insertJournalEntrySchema,
+  journalEntryRequestSchema,
+  insertConversationResponseSchema,
+  conversationResponseRequestSchema,
   insertAnalyticsSnapshotSchema
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
@@ -2394,8 +2398,8 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     try {
       const userId = req.user.id;
       
-      // Validate request
-      const validation = insertPartnershipSchema.safeParse(req.body);
+      // Validate request body (client-supplied fields only)
+      const validation = partnershipRequestSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ 
           message: "Invalid partnership data", 
@@ -2583,8 +2587,8 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     try {
       const userId = req.user.id;
       
-      // Validate request
-      const validation = insertJournalEntrySchema.safeParse(req.body);
+      // Validate request body (client-supplied fields only)
+      const validation = journalEntryRequestSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ 
           message: "Invalid journal entry", 
