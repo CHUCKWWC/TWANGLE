@@ -187,13 +187,15 @@ export async function seedConversationQuestions() {
   }
 }
 
-// Run immediately
-seedConversationQuestions()
-  .then(() => {
-    console.log("Seed completed successfully");
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error("Seed failed:", error);
-    process.exit(1);
-  });
+// Only run if this file is executed directly (not imported)
+if (require.main === module) {
+  seedConversationQuestions()
+    .then(() => {
+      console.log("Seed completed successfully");
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error("Seed failed:", error);
+      process.exit(1);
+    });
+}
