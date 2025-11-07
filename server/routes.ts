@@ -2938,6 +2938,68 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // Admin: Seed conversation questions (only if empty) - accessible to admin and lifetime users
+  app.post('/api/admin/seed-conversations', isAuthenticated, logUserAccess, async (req: any, res) => {
+    try {
+      // Check if user is admin or has lifetime access
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const isAdminOrLifetime = isAdminUser(user.email!) || user.hasLifetimeAccess === 1;
+      
+      if (!isAdminOrLifetime) {
+        return res.status(403).json({ 
+          message: "Access denied. This endpoint is only available to admin or lifetime users." 
+        });
+      }
+
+      // Check if conversation questions already exist (idempotent operation)
+      const existing = await storage.getAllConversationQuestions();
+      if (existing.length > 0) {
+        return res.json({ 
+          success: true,
+          message: "Conversation questions already exist in database", 
+          count: existing.length,
+          status: "already_seeded"
+        });
+      }
+
+      // Import and run seed function
+      console.log("Starting conversation questions seed process...");
+      const { seedConversationQuestions } = await import('./seedConversations');
+      await seedConversationQuestions();
+      
+      // Verify questions were seeded successfully
+      const questions = await storage.getAllConversationQuestions();
+      
+      if (questions.length === 0) {
+        throw new Error("Seeding completed but no conversation questions found in database");
+      }
+      
+      console.log(`Successfully seeded ${questions.length} conversation questions`);
+      
+      res.json({ 
+        success: true,
+        message: "Conversation questions seeded successfully", 
+        count: questions.length,
+        status: "seeded",
+        categories: [...new Set(questions.map(q => q.category))],
+        intensityLevels: [...new Set(questions.map(q => q.intensity))]
+      });
+    } catch (error: any) {
+      console.error("Seed conversation questions error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to seed conversation questions",
+        error: error.message
+      });
+    }
+  });
+
   // ===== COUPLE SUBSCRIPTION ROUTES =====
   
   // Get current user's couple status

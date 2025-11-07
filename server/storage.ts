@@ -240,6 +240,8 @@ export interface IStorage {
   getDailyQuestion(partnershipId: string): Promise<ConversationQuestion | undefined>;
   getSoloQuestion(userId: string): Promise<ConversationQuestion | undefined>;
   getRandomQuestion(category?: string): Promise<ConversationQuestion | undefined>;
+  getAllConversationQuestions(): Promise<ConversationQuestion[]>;
+  createConversationQuestion(question: InsertConversationQuestion): Promise<ConversationQuestion>;
   createConversationResponse(response: InsertConversationResponse): Promise<ConversationResponse>;
   getConversationResponses(partnershipId: string, questionId: string): Promise<ConversationResponse[]>;
   getSoloConversationResponses(userId: string, questionId: string): Promise<ConversationResponse[]>;
@@ -2127,6 +2129,24 @@ export class DbStorage implements IStorage {
 
     // If all questions completed, return a random one
     return this.getRandomQuestion();
+  }
+
+  async getAllConversationQuestions(): Promise<ConversationQuestion[]> {
+    return await this.db.select({
+      id: conversationQuestions.id,
+      category: conversationQuestions.category,
+      intensity: conversationQuestions.intensity,
+      questionText: conversationQuestions.questionText,
+      therapyPrompt: conversationQuestions.therapyPrompt,
+      active: conversationQuestions.active,
+      createdAt: conversationQuestions.createdAt,
+    }).from(conversationQuestions)
+      .orderBy(conversationQuestions.category, conversationQuestions.intensity);
+  }
+
+  async createConversationQuestion(question: InsertConversationQuestion): Promise<ConversationQuestion> {
+    const result = await this.db.insert(conversationQuestions).values(question).returning();
+    return result[0];
   }
 
   async createConversationResponse(response: InsertConversationResponse): Promise<ConversationResponse> {
