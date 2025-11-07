@@ -6,11 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { BookOpen, Heart, Calendar, CheckCircle2, Lock, Sparkles } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import { BookOpen, Heart, CheckCircle2, Sparkles, ChevronRight, Star, Trophy, PartyPopper } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/AppHeader";
 
@@ -45,9 +42,8 @@ interface ChallengeReflection {
 
 export default function FortyDayTwangle() {
   const { toast } = useToast();
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [reflectionText, setReflectionText] = useState("");
-  const [activeTab, setActiveTab] = useState<"today" | "all">("today");
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // Fetch user progress
   const { data: progress, isLoading: progressLoading } = useQuery<UserProgress | null>({
@@ -95,6 +91,10 @@ export default function FortyDayTwangle() {
       return response.json();
     },
     onSuccess: async (data: any) => {
+      // Show celebration animation
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 3000);
+      
       // Invalidate and wait for queries to refetch
       await queryClient.invalidateQueries({ queryKey: ["/api/challenges/progress"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/challenges/reflections"] });
@@ -105,27 +105,20 @@ export default function FortyDayTwangle() {
         queryKey: ["/api/challenges/progress"],
       }) as UserProgress | null;
       
+      const currentDay = updatedProgress?.currentDay || 1;
+      
       // Handle completion of final day (Day 40)
-      if (!updatedProgress || (selectedDay === 40)) {
+      if (currentDay > 40 || data.dayNumber === 40) {
         toast({
-          title: "Journey Complete! 🎉",
+          title: "Journey Complete!",
           description: "Congratulations! You've completed the entire 40-day journey!",
         });
-        // Keep showing Day 40 for the completed view
-        setSelectedDay(40);
-        setActiveTab("today");
         return;
       }
       
-      const nextDay = updatedProgress.currentDay;
-      
-      // Advance to the next day
-      setSelectedDay(nextDay);
-      setActiveTab("today");
-      
       toast({
-        title: "Day Complete! 🎉",
-        description: `Excellent work! Moving to Day ${nextDay}...`,
+        title: `Day ${data.dayNumber} Complete!`,
+        description: `Amazing work! Moving to Day ${currentDay}...`,
       });
     },
     onError: () => {
@@ -137,17 +130,36 @@ export default function FortyDayTwangle() {
     },
   });
 
-  // Auto-select current day when progress loads (but not when user manually selects a day)
-  useEffect(() => {
-    if (progress && !selectedDay) {
-      setSelectedDay(progress.currentDay);
-    }
-  }, [progress, selectedDay]);
-
-  const currentChallenge = challenges.find(c => c.dayNumber === (selectedDay || progress?.currentDay || 1));
-  const currentDayReflection = reflections.find(r => r.dayNumber === (selectedDay || progress?.currentDay || 1));
-
   const isLoading = progressLoading || challengesLoading;
+  const currentDay = progress?.currentDay || 1;
+  const lastCompletedDay = progress?.lastCompletedDay || 0;
+  const progressPercentage = (lastCompletedDay / 40) * 100;
+
+  // Get current and upcoming challenges
+  const currentChallenge = challenges.find(c => c.dayNumber === currentDay);
+  const upcomingChallenges = challenges
+    .filter(c => c.dayNumber > currentDay && c.dayNumber <= currentDay + 3)
+    .slice(0, 3);
+  
+  const currentDayReflection = reflections.find(r => r.dayNumber === currentDay);
+  const isCurrentDayComplete = !!currentDayReflection;
+
+  // Handle submission
+  const handleComplete = () => {
+    if (!reflectionText.trim() && !isCurrentDayComplete) {
+      toast({
+        title: "Reflection Required",
+        description: "Please write your reflection before completing the day.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    completeDayMutation.mutate({
+      day: currentDay,
+      reflection: reflectionText,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -178,19 +190,24 @@ export default function FortyDayTwangle() {
                 </div>
               </div>
               <div>
-                <CardTitle className="text-3xl font-display mb-2">40dayTwangle</CardTitle>
+                <CardTitle className="text-3xl mb-2">Welcome to 40dayTwangle</CardTitle>
                 <CardDescription className="text-lg">
-                  A faith-based journey to strengthen your relationship
+                  A transformative 40-day faith-based journey
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="prose prose-sm max-w-none">
                 <p className="text-center text-muted-foreground">
-                  Join us on a transformative 40-day journey grounded in scripture and designed to
-                  deepen your connection as a couple. Each day brings:
+                  Strengthen your relationship one day at a time with daily scripture teachings, 
+                  action prompts, and reflection questions designed to deepen your connection 
+                  with your partner and with God.
                 </p>
-                <ul className="space-y-2 my-6">
+              </div>
+
+              <div className="bg-muted rounded-lg p-6 space-y-4">
+                <h3 className="font-semibold text-center mb-4">What to Expect</h3>
+                <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <BookOpen className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                     <span><strong>Scripture Reading:</strong> Daily verses to reflect on together</span>
@@ -231,213 +248,219 @@ export default function FortyDayTwangle() {
     );
   }
 
-  const progressPercentage = (progress.lastCompletedDay / 40) * 100;
+  const isJourneyComplete = currentDay > 40;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
       <AppHeader />
-      <div className="container mx-auto p-6 pt-20 max-w-6xl">
-        {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-display font-bold">40dayTwangle</h1>
-            <p className="text-muted-foreground">Day {progress.currentDay} of 40</p>
+      
+      {/* Celebration Overlay */}
+      {showCelebration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm pointer-events-none">
+          <div className="text-center animate-in zoom-in-50 duration-500">
+            <div className="mb-4 flex justify-center">
+              <PartyPopper className="w-24 h-24 text-primary animate-bounce" />
+            </div>
+            <h2 className="text-4xl font-bold text-white mb-2">Day Complete!</h2>
+            <p className="text-xl text-white/80">Keep up the amazing work!</p>
           </div>
-          <Badge variant="outline" className="text-lg px-4 py-2">
-            <Calendar className="w-4 h-4 mr-2" />
-            {progress.lastCompletedDay} / 40 Complete
-          </Badge>
         </div>
+      )}
 
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <Progress value={progressPercentage} className="h-3" />
-          <p className="text-sm text-muted-foreground text-right">
-            {progressPercentage.toFixed(0)}% Complete
-          </p>
-        </div>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "today" | "all")}>
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="today" data-testid="tab-today">Today's Challenge</TabsTrigger>
-          <TabsTrigger value="all" data-testid="tab-all-days">All Days</TabsTrigger>
-        </TabsList>
-
-        {/* Today's Challenge Tab */}
-        <TabsContent value="today" className="space-y-6">
-          {currentChallenge && (
+      <div className="container mx-auto px-4 py-6 pt-20 max-w-6xl">
+        {/* Header Section */}
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Heart className="w-10 h-10 text-primary" />
+            <h1 className="text-4xl font-display font-bold">40dayTwangle</h1>
+          </div>
+          
+          {!isJourneyComplete ? (
             <>
-              <Card>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-2xl font-display">
-                        Day {currentChallenge.dayNumber}: {currentChallenge.title}
-                      </CardTitle>
-                      <CardDescription className="mt-2 text-base italic">
-                        {currentChallenge.scripture}
-                      </CardDescription>
+              <p className="text-lg text-muted-foreground mb-6">
+                Day {currentDay} of 40 • {40 - lastCompletedDay} days remaining
+              </p>
+              
+              {/* Progress Bar */}
+              <div className="max-w-2xl mx-auto space-y-2">
+                <Progress value={progressPercentage} className="h-3" />
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{lastCompletedDay} days completed</span>
+                  <span>{progressPercentage.toFixed(0)}%</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <Trophy className="w-20 h-20 text-primary animate-bounce" />
+              </div>
+              <p className="text-2xl font-bold text-primary">Journey Complete!</p>
+              <p className="text-muted-foreground">You've completed all 40 days! Congratulations!</p>
+            </div>
+          )}
+        </div>
+
+        {!isJourneyComplete && (
+          <>
+            {/* Current Day - Large Feature Card */}
+            <div className="mb-8" data-testid="current-day-card">
+              <Card className="border-2 border-primary/50 shadow-xl">
+                <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5">
+                  <div className="flex items-center justify-between">
+                    <Badge className="text-lg px-4 py-1">Today</Badge>
+                    <div className="flex items-center gap-2">
+                      {isCurrentDayComplete && (
+                        <Badge variant="outline" className="gap-1">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Completed
+                        </Badge>
+                      )}
                     </div>
-                    {currentDayReflection && (
-                      <Badge variant="default" className="ml-4">
-                        <CheckCircle2 className="w-4 h-4 mr-1" />
-                        Completed
-                      </Badge>
-                    )}
+                  </div>
+                  <div className="mt-4">
+                    <div className="flex items-baseline gap-3 mb-2">
+                      <span className="text-5xl font-bold text-primary">Day {currentDay}</span>
+                    </div>
+                    <CardTitle className="text-2xl mb-2">{currentChallenge?.title}</CardTitle>
+                    <CardDescription className="text-base flex items-center gap-2">
+                      <BookOpen className="w-4 h-4" />
+                      {currentChallenge?.scripture}
+                    </CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                
+                <CardContent className="pt-6 space-y-6">
+                  {/* Scripture Summary */}
+                  <div className="bg-muted/50 rounded-lg p-6">
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
                       <BookOpen className="w-5 h-5 text-primary" />
-                      Today's Reflection
+                      Today's Teaching
                     </h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {currentChallenge.summary}
+                    <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+                      {currentChallenge?.summary}
                     </p>
                   </div>
 
-                  <Separator />
-
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                  {/* Action Prompt */}
+                  <div className="bg-primary/5 border-l-4 border-primary rounded-r-lg p-6">
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
                       <CheckCircle2 className="w-5 h-5 text-primary" />
                       Action Prompt
                     </h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {currentChallenge.actionPrompt}
+                    <p className="text-foreground leading-relaxed">
+                      {currentChallenge?.actionPrompt}
                     </p>
                   </div>
 
-                  <Separator />
-
+                  {/* Journal Question */}
                   <div>
-                    <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
                       <Heart className="w-5 h-5 text-primary" />
-                      Journal Question
+                      Reflection Question
                     </h3>
-                    <p className="text-muted-foreground leading-relaxed mb-4">
-                      {currentChallenge.journalQuestion}
+                    <p className="text-muted-foreground mb-4 italic">
+                      {currentChallenge?.journalQuestion}
                     </p>
-
-                    {currentDayReflection ? (
-                      <div className="space-y-4">
-                        <Card className="bg-muted/50">
-                          <CardContent className="pt-6">
-                            <p className="text-sm italic">{currentDayReflection.reflectionText}</p>
-                            <p className="text-xs text-muted-foreground mt-2">
-                              Completed on {new Date(currentDayReflection.completedAt).toLocaleDateString()}
+                    
+                    {isCurrentDayComplete ? (
+                      <div className="bg-muted rounded-lg p-6">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Sparkles className="w-5 h-5 text-primary" />
+                          <h4 className="font-semibold">Your Reflection</h4>
+                        </div>
+                        <p className="text-foreground whitespace-pre-wrap">
+                          {currentDayReflection?.reflectionText}
+                        </p>
+                        {currentDayReflection?.aiSummary && (
+                          <div className="mt-4 pt-4 border-t border-border">
+                            <p className="text-sm font-medium mb-2">AI Encouragement:</p>
+                            <p className="text-sm text-muted-foreground">
+                              {currentDayReflection.aiSummary}
                             </p>
-                          </CardContent>
-                        </Card>
-
-                        {currentDayReflection.aiSummary && (
-                          <Card className="border-primary/20 bg-primary/5">
-                            <CardHeader>
-                              <CardTitle className="text-sm flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-primary" />
-                                AI Insight
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <p className="text-sm">{currentDayReflection.aiSummary}</p>
-                            </CardContent>
-                          </Card>
+                          </div>
                         )}
                       </div>
                     ) : (
                       <div className="space-y-4">
                         <Textarea
-                          placeholder="Write your reflection here..."
                           value={reflectionText}
                           onChange={(e) => setReflectionText(e.target.value)}
-                          rows={6}
-                          className="resize-none"
-                          data-testid="input-reflection"
+                          placeholder="Take a moment to reflect on today's teaching... Write your thoughts, feelings, and how you plan to apply this to your relationship."
+                          className="min-h-[150px] text-base"
+                          data-testid="textarea-reflection"
                         />
+                        
                         <Button
-                          onClick={() =>
-                            completeDayMutation.mutate({
-                              day: currentChallenge.dayNumber,
-                              reflection: reflectionText,
-                            })
-                          }
-                          disabled={!reflectionText.trim() || completeDayMutation.isPending}
-                          className="w-full"
+                          onClick={handleComplete}
+                          disabled={completeDayMutation.isPending || !reflectionText.trim()}
+                          size="lg"
+                          className="w-full text-lg py-6"
                           data-testid="button-complete-day"
                         >
-                          {completeDayMutation.isPending ? "Saving..." : "Complete Day " + currentChallenge.dayNumber}
+                          {completeDayMutation.isPending ? (
+                            "Completing..."
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-5 h-5 mr-2" />
+                              Complete Day {currentDay}
+                            </>
+                          )}
                         </Button>
                       </div>
                     )}
                   </div>
                 </CardContent>
               </Card>
-            </>
-          )}
-        </TabsContent>
-
-        {/* All Days Tab */}
-        <TabsContent value="all">
-          <ScrollArea className="h-[600px] pr-4">
-            <div className="grid gap-3">
-              {challenges.map((challenge) => {
-                const isCompleted = reflections.some(r => r.dayNumber === challenge.dayNumber);
-                const isCurrent = challenge.dayNumber === progress.currentDay;
-                const isLocked = challenge.dayNumber > progress.currentDay;
-
-                return (
-                  <Card
-                    key={challenge.id}
-                    className={cn(
-                      "cursor-pointer transition-colors",
-                      isCurrent && "border-primary",
-                      isLocked && "opacity-60"
-                    )}
-                    onClick={() => {
-                      if (!isLocked) {
-                        setSelectedDay(challenge.dayNumber);
-                        setActiveTab("today");
-                      }
-                    }}
-                    data-testid={`card-day-${challenge.dayNumber}`}
-                  >
-                    <CardHeader className="py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={cn(
-                            "flex items-center justify-center w-10 h-10 rounded-full",
-                            isCompleted ? "bg-primary text-primary-foreground" : "bg-muted"
-                          )}>
-                            {isCompleted ? (
-                              <CheckCircle2 className="w-5 h-5" />
-                            ) : isLocked ? (
-                              <Lock className="w-5 h-5" />
-                            ) : (
-                              <span className="font-semibold">{challenge.dayNumber}</span>
-                            )}
-                          </div>
-                          <div>
-                            <CardTitle className="text-base">
-                              Day {challenge.dayNumber}: {challenge.title}
-                            </CardTitle>
-                            <CardDescription className="text-sm">{challenge.scripture}</CardDescription>
-                          </div>
-                        </div>
-                        {isCurrent && (
-                          <Badge>Current</Badge>
-                        )}
-                      </div>
-                    </CardHeader>
-                  </Card>
-                );
-              })}
             </div>
-          </ScrollArea>
-        </TabsContent>
-      </Tabs>
+
+            {/* Upcoming Days Preview */}
+            {upcomingChallenges.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                  <h2 className="text-xl font-semibold">Coming Up Next</h2>
+                </div>
+                
+                <div className="grid md:grid-cols-3 gap-4">
+                  {upcomingChallenges.map((challenge, index) => (
+                    <Card key={challenge.id} className="relative overflow-hidden hover-elevate">
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-bl-full" />
+                      <CardHeader className="relative">
+                        <div className="flex items-center justify-between mb-2">
+                          <Badge variant="outline">Day {challenge.dayNumber}</Badge>
+                          <Star className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        <CardTitle className="text-lg line-clamp-2">{challenge.title}</CardTitle>
+                        <CardDescription className="text-sm line-clamp-1">
+                          {challenge.scripture}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground line-clamp-3">
+                          {challenge.summary}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Encouragement Message */}
+            <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-primary/20">
+              <CardContent className="p-6 text-center">
+                <Sparkles className="w-8 h-8 text-primary mx-auto mb-3" />
+                <p className="text-lg font-medium mb-2">
+                  You're doing great! 
+                </p>
+                <p className="text-muted-foreground">
+                  Every day is a step towards a stronger, more connected relationship. Keep going!
+                </p>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );
