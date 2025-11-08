@@ -43,6 +43,7 @@ import MerchantProducts from "@/pages/MerchantProducts";
 import Storefront from "@/pages/Storefront";
 import StorefrontSuccess from "@/pages/StorefrontSuccess";
 import FortyDayTwangle from "@/pages/FortyDayTwangle";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -96,6 +97,7 @@ function Router() {
         <Route path="/merchant/products" component={MerchantProducts} />
         <Route path="/storefront" component={Storefront} />
         <Route path="/storefront/success" component={StorefrontSuccess} />
+        <Route path="/admin" component={Admin} />
         <Route component={NotFound} />
       </Switch>
     </>
