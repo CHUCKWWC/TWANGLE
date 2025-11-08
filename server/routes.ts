@@ -2968,10 +2968,10 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         });
       }
 
-      // Import and run seed function
+      // Import and run seed function (using embedded version for production reliability)
       console.log("Starting conversation questions seed process...");
-      const { seedConversationQuestions } = await import('./seedConversations');
-      await seedConversationQuestions();
+      const { seedConversationQuestions } = await import('./seeds/conversationQuestions-embedded');
+      const result = await seedConversationQuestions();
       
       // Verify questions were seeded successfully
       const questions = await storage.getAllConversationQuestions();
