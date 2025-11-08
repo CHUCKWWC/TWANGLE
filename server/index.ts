@@ -534,11 +534,30 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
-    console.log('Starting server initialization...');
+    console.log('🚀 Starting server initialization...');
+    console.log('Environment:', process.env.NODE_ENV || 'production');
+    console.log('Node version:', process.version);
+    console.log('Port configuration:', process.env.PORT || '5000');
     
-    const server = await registerRoutes(app);
-    console.log('Routes registered successfully');
+    // Check critical environment variables
+    if (!process.env.DATABASE_URL) {
+      console.error('⚠️  DATABASE_URL not set - database features may be limited');
+    }
+    if (!process.env.SESSION_SECRET) {
+      console.warn('⚠️  SESSION_SECRET not set - using fallback (not recommended for production)');
+    }
+    
+    // Register routes with error handling
+    let server;
+    try {
+      server = await registerRoutes(app);
+      console.log('✅ Routes registered successfully');
+    } catch (routeError: any) {
+      console.error('❌ Failed to register routes:', routeError.message);
+      throw routeError;
+    }
 
+    // Global error handler middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
@@ -547,49 +566,79 @@ app.use((req, res, next) => {
       console.error('Request error:', err);
     });
 
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-      console.log('Development server (Vite) setup complete');
-    } else {
-      serveStatic(app);
-      console.log('Production static files configured');
+    // Setup static file serving based on environment
+    try {
+      if (app.get("env") === "development") {
+        await setupVite(app, server);
+        console.log('✅ Development server (Vite) setup complete');
+      } else {
+        serveStatic(app);
+        console.log('✅ Production static files configured');
+      }
+    } catch (staticError: any) {
+      console.error('⚠️  Failed to setup static files:', staticError.message);
+      // Continue anyway - the server can still handle API requests
     }
 
     // ALWAYS serve the app on the port specified in the environment variable PORT
     // Other ports are firewalled. Default to 5000 if not specified.
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
     const port = parseInt(process.env.PORT || '5000', 10);
     
-    server.listen({
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      console.log(`✅ Server is healthy and listening on 0.0.0.0:${port}`);
-      console.log(`Health check available at: http://0.0.0.0:${port}/health`);
+    // Create promise for server startup
+    const serverStartup = new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`Server startup timeout after 30 seconds`));
+      }, 30000);
       
-      // Log important configuration status
-      if (!stripe) {
-        console.warn('⚠️  Stripe payment features are disabled (STRIPE_SECRET_KEY not set)');
-      }
-      if (!process.env.STRIPE_WEBHOOK_SECRET) {
-        console.warn('⚠️  Stripe webhooks verification disabled (STRIPE_WEBHOOK_SECRET not set)');
-      }
+      server.listen({
+        port,
+        host: "0.0.0.0",
+        reusePort: true,
+      }, () => {
+        clearTimeout(timeout);
+        console.log('═══════════════════════════════════════════════════════════');
+        console.log(`✅ Server is healthy and listening on 0.0.0.0:${port}`);
+        console.log(`Health check available at: http://0.0.0.0:${port}/health`);
+        console.log('═══════════════════════════════════════════════════════════');
+        
+        // Log important configuration status
+        if (!stripe) {
+          console.warn('⚠️  Stripe payment features are disabled (STRIPE_SECRET_KEY not set)');
+        }
+        if (!process.env.STRIPE_WEBHOOK_SECRET) {
+          console.warn('⚠️  Stripe webhooks verification disabled (STRIPE_WEBHOOK_SECRET not set)');
+        }
+        
+        resolve();
+      });
+      
+      server.on('error', (error: any) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
     });
-  } catch (error: any) {
-    console.error('❌ Failed to start server:', error);
-    console.error('Stack trace:', error.stack);
     
-    // Log specific configuration issues
-    if (error.message?.includes('database')) {
-      console.error('Database connection issue. Check DATABASE_URL environment variable.');
+    await serverStartup;
+    
+  } catch (error: any) {
+    console.error('═══════════════════════════════════════════════════════════');
+    console.error('❌ CRITICAL: Failed to start server');
+    console.error('═══════════════════════════════════════════════════════════');
+    console.error('Error:', error.message);
+    console.error('Stack:', error.stack);
+    
+    // Provide specific diagnostic information
+    if (error.message?.includes('database') || error.message?.includes('DATABASE_URL')) {
+      console.error('➡️  Database issue detected. Ensure DATABASE_URL is properly set.');
     }
-    if (error.message?.includes('port')) {
-      console.error(`Port issue. Ensure port ${process.env.PORT || '5000'} is not in use.`);
+    if (error.message?.includes('EADDRINUSE')) {
+      console.error(`➡️  Port ${process.env.PORT || '5000'} is already in use.`);
+    }
+    if (error.message?.includes('EACCES')) {
+      console.error(`➡️  Permission denied for port ${process.env.PORT || '5000'}.`);
+    }
+    if (error.message?.includes('timeout')) {
+      console.error('➡️  Server startup timed out. Check for blocking operations.');
     }
     
     // Exit with error code to signal deployment failure

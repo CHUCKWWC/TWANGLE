@@ -1119,10 +1119,11 @@ export class MemStorage implements IStorage {
 export class DbStorage implements IStorage {
   private db;
   public sessionStore: any;
+  private isConnected: boolean = false;
 
   constructor() {
     if (!process.env.DATABASE_URL) {
-      throw new Error('DATABASE_URL environment variable is required');
+      throw new Error('DATABASE_URL environment variable is required for database storage');
     }
     
     const pool = new Pool({ 
@@ -1131,29 +1132,46 @@ export class DbStorage implements IStorage {
       max: 20, // Maximum number of clients in the pool
       idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
       connectionTimeoutMillis: 10000, // Return error after 10 seconds if connection cannot be acquired
+      // Don't reject unauthorized in production (Replit handles SSL termination)
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
     });
     
-    // Test the connection
-    pool.query('SELECT 1').then(() => {
-      console.log('✅ Database connection established');
-    }).catch((err) => {
-      console.error('❌ Database connection failed:', err);
-      // Don't throw here to allow the server to start
-    });
+    // Test the connection asynchronously
+    pool.query('SELECT 1')
+      .then(() => {
+        this.isConnected = true;
+        console.log('✅ Database connection established');
+      })
+      .catch((err) => {
+        this.isConnected = false;
+        console.error('⚠️  Database connection check failed:', err.message);
+        console.error('The server will continue running but database operations may fail.');
+      });
     
     this.db = drizzle(pool);
     
-    const PostgresSessionStore = connectPg(session);
-    this.sessionStore = new PostgresSessionStore({ 
-      pool, 
-      createTableIfMissing: true,
-      errorLog: (err: Error) => {
-        // Suppress benign "already exists" errors from session store initialization
-        if (!err.message?.includes('already exists')) {
-          console.error('Session store error:', err);
+    // Setup session store with error handling
+    try {
+      const PostgresSessionStore = connectPg(session);
+      this.sessionStore = new PostgresSessionStore({ 
+        pool, 
+        createTableIfMissing: true,
+        tableName: 'session', // Explicit table name
+        errorLog: (err: Error) => {
+          // Suppress benign "already exists" errors from session store initialization
+          if (!err.message?.includes('already exists')) {
+            console.error('Session store error:', err.message);
+          }
         }
-      }
-    });
+      });
+    } catch (sessionError: any) {
+      console.error('⚠️  Failed to initialize session store:', sessionError.message);
+      // Use a memory-based session store as fallback
+      this.sessionStore = new (require('memorystore')(session))({
+        checkPeriod: 86400000 // prune expired entries every 24h
+      });
+      console.log('Using in-memory session store as fallback');
+    }
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -2719,17 +2737,42 @@ export class DbStorage implements IStorage {
   }
 }
 
-// Create storage instance with error handling
+// Create storage instance with graceful fallback
 let storageInstance: IStorage;
 
-try {
-  console.log('Initializing database storage...');
-  storageInstance = new DbStorage();
-  console.log('Database storage initialized successfully');
-} catch (error: any) {
-  console.error('CRITICAL: Failed to initialize database storage:', error.message);
-  // Re-throw in production to prevent server from starting with broken database
-  throw error;
+// Determine if we should use database storage
+const shouldUseDatabase = process.env.DATABASE_URL && 
+                          process.env.NODE_ENV !== 'test' &&
+                          process.env.USE_MEMORY_STORAGE !== 'true';
+
+if (shouldUseDatabase) {
+  try {
+    console.log('🔄 Initializing database storage...');
+    storageInstance = new DbStorage();
+    console.log('✅ Database storage initialized');
+  } catch (error: any) {
+    console.error('⚠️  Failed to initialize database storage:', error.message);
+    
+    // In production, try to continue with limited functionality
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('⚠️  WARNING: Running with in-memory storage as fallback');
+      console.warn('⚠️  Data will not persist between restarts');
+      storageInstance = new MemStorage();
+    } else {
+      // In development, fail fast to catch issues early
+      throw error;
+    }
+  }
+} else {
+  console.log('📦 Using in-memory storage');
+  if (!process.env.DATABASE_URL) {
+    console.log('   Reason: DATABASE_URL not set');
+  } else if (process.env.NODE_ENV === 'test') {
+    console.log('   Reason: Test environment');
+  } else if (process.env.USE_MEMORY_STORAGE === 'true') {
+    console.log('   Reason: USE_MEMORY_STORAGE is true');
+  }
+  storageInstance = new MemStorage();
 }
 
 export const storage: IStorage = storageInstance;
