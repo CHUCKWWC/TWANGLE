@@ -1121,7 +1121,26 @@ export class DbStorage implements IStorage {
   public sessionStore: any;
 
   constructor() {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    if (!process.env.DATABASE_URL) {
+      throw new Error('DATABASE_URL environment variable is required');
+    }
+    
+    const pool = new Pool({ 
+      connectionString: process.env.DATABASE_URL,
+      // Add connection pool settings for production stability
+      max: 20, // Maximum number of clients in the pool
+      idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+      connectionTimeoutMillis: 10000, // Return error after 10 seconds if connection cannot be acquired
+    });
+    
+    // Test the connection
+    pool.query('SELECT 1').then(() => {
+      console.log('✅ Database connection established');
+    }).catch((err) => {
+      console.error('❌ Database connection failed:', err);
+      // Don't throw here to allow the server to start
+    });
+    
     this.db = drizzle(pool);
     
     const PostgresSessionStore = connectPg(session);
@@ -2700,4 +2719,17 @@ export class DbStorage implements IStorage {
   }
 }
 
-export const storage = new DbStorage();
+// Create storage instance with error handling
+let storageInstance: IStorage;
+
+try {
+  console.log('Initializing database storage...');
+  storageInstance = new DbStorage();
+  console.log('Database storage initialized successfully');
+} catch (error: any) {
+  console.error('CRITICAL: Failed to initialize database storage:', error.message);
+  // Re-throw in production to prevent server from starting with broken database
+  throw error;
+}
+
+export const storage: IStorage = storageInstance;
