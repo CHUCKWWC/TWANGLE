@@ -6,14 +6,58 @@ import { storage } from "./storage";
 
 const app = express();
 
+// Health check endpoint - MUST be first before any middleware
+app.get('/health', async (_req, res) => {
+  try {
+    // Basic health info
+    const health: any = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'production',
+      port: process.env.PORT || '5000',
+      nodeVersion: process.version,
+      services: {
+        stripe: !!stripe,
+        database: false
+      }
+    };
+    
+    // Check database connectivity
+    try {
+      // Quick database ping
+      await storage.getUser('health-check-test-id');
+      health.services.database = true;
+    } catch (dbError) {
+      // Database may not be fully ready yet, but server is running
+      health.services.database = false;
+      health.warnings = ['Database connectivity check failed'];
+    }
+    
+    res.status(200).json(health);
+  } catch (error: any) {
+    // Even if health check has issues, respond with minimal health info
+    res.status(200).json({ 
+      status: 'degraded',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
+});
+
 // Gracefully handle missing Stripe key (warn but don't crash)
 let stripe: Stripe | null = null;
 if (process.env.STRIPE_SECRET_KEY) {
-  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2025-09-30.clover",
-  });
+  try {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-09-30.clover",
+    });
+    console.log('✅ Stripe initialized successfully');
+  } catch (error) {
+    console.error('⚠️  Failed to initialize Stripe:', error);
+    stripe = null;
+  }
 } else {
-  console.warn('WARNING: STRIPE_SECRET_KEY not configured. Payment features will be disabled.');
+  console.warn('⚠️  STRIPE_SECRET_KEY not configured. Payment features will be disabled.');
 }
 
 // Helper function to determine plan tier from price ID
@@ -414,17 +458,6 @@ app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), async (r
     console.error('Webhook handler error:', error);
     res.status(500).json({ error: error.message });
   }
-});
-
-// Health check endpoint - must be before other middleware
-app.get('/health', (_req, res) => {
-  res.status(200).json({ 
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'production',
-    stripeConfigured: !!stripe,
-    databaseConnected: true // PostgreSQL connection is managed by Drizzle/Neon
-  });
 });
 
 app.use(express.json());
