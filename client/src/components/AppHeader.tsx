@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, Heart, Users, Activity, Sparkles, MessageSquare } from "lucide-react";
+import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, Heart, Users, Activity, Sparkles, MessageSquare, Shield } from "lucide-react";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
@@ -148,6 +148,13 @@ export function AppHeader() {
           <div className="px-4 py-2 mt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Admin
           </div>
+          <MobileNavLink 
+            href="/admin" 
+            icon={Shield} 
+            label="Admin Panel"
+            badge={{ text: "NEW", variant: "destructive" }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
           <MobileNavLink 
             href="/reports" 
             icon={BarChart3} 
@@ -326,9 +333,19 @@ export function AppHeader() {
                       Admin
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
+                  <DropdownMenuContent align="start" className="w-56">
                     <DropdownMenuLabel>Admin Tools</DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <Link href="/admin">
+                      <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-admin">
+                        <Shield className="h-4 w-4 text-primary" />
+                        <div className="flex-1">
+                          <div className="font-medium">Admin Panel</div>
+                          <div className="text-xs text-muted-foreground">Database seeding</div>
+                        </div>
+                        <Badge variant="destructive" className="text-xs">NEW</Badge>
+                      </DropdownMenuItem>
+                    </Link>
                     <Link href="/reports">
                       <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-reports">
                         <BarChart3 className="h-4 w-4" />
