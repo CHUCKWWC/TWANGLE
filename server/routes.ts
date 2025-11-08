@@ -2908,10 +2908,10 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         });
       }
 
-      // Import and run seed function
+      // Import and run seed function (using embedded version for production reliability)
       console.log("Starting challenge seed process...");
-      const { seed40dayTwangle } = await import('./seeds/40dayTwangle');
-      await seed40dayTwangle();
+      const { seed40dayTwangle } = await import('./seeds/40dayTwangle-embedded');
+      const result = await seed40dayTwangle();
       
       // Verify challenges were seeded successfully
       const challenges = await storage.getAllChallenges();
