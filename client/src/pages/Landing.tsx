@@ -51,17 +51,13 @@ export default function Landing() {
         />
         
         <div className="relative z-10 max-w-4xl mx-auto px-6 py-20 text-center">
-          <div className="flex items-center justify-center mb-8" aria-hidden="true">
-            <Heart className="w-16 h-16 text-primary" />
+          <div className="flex items-center justify-center mb-8">
+            <img 
+              src="/twangle-logo.png" 
+              alt="Twangle - Two Tangled Together" 
+              className="h-40 md:h-48 w-auto"
+            />
           </div>
-
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 text-foreground font-[Poppins]">
-            Twangle
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-muted-foreground mb-4 font-[Poppins] font-medium">
-            Two Tangled Together
-          </p>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Strengthen your relationship with AI-powered coaching, personalized retreats, and science-backed tools. 
