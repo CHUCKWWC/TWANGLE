@@ -206,10 +206,14 @@ export function AppHeader() {
           <div className="flex items-center gap-4">
             <Link 
               href="/" 
-              className="font-display font-semibold text-xl text-primary hover-elevate px-2 py-1 rounded shrink-0" 
+              className="hover-elevate px-2 py-1 rounded shrink-0 flex items-center gap-2" 
               data-testid="link-home"
             >
-              Twangle
+              <img 
+                src="/twangle-logo.png" 
+                alt="Twangle - Two Tangled Together" 
+                className="h-8 w-auto"
+              />
             </Link>
             
             {/* Mobile hamburger menu */}
