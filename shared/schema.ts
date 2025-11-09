@@ -731,10 +731,9 @@ export const challenges = pgTable("challenges", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   dayNumber: integer("day_number").notNull().unique(),
   title: varchar("title").notNull(),
-  scripture: varchar("scripture").notNull(),
-  scriptureText: text("scripture_text"), // Full scripture text from The Message translation
-  translation: varchar("translation").default("The Message"), // Translation version
-  summary: text("summary").notNull(),
+  scripture: varchar("scripture").notNull(), // Reference (e.g., "1 Corinthians 13:4") - not displayed
+  passage: text("passage").notNull(), // The actual verse text from The Message - displayed as "Scripture"
+  explanation: text("explanation").notNull(), // Displayed as "Inspiration"
   actionPrompt: text("action_prompt").notNull(),
   journalQuestion: text("journal_question").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
