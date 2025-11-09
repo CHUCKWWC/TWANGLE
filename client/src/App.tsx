@@ -38,7 +38,6 @@ import Journal from "@/pages/Journal";
 import Insights from "@/pages/Insights";
 import PartnerInvite from "@/pages/PartnerInvite";
 import Conversations from "@/pages/Conversations";
-import Reflections from "@/pages/Reflections";
 import MerchantOnboard from "@/pages/MerchantOnboard";
 import MerchantProducts from "@/pages/MerchantProducts";
 import Storefront from "@/pages/Storefront";
@@ -80,7 +79,6 @@ function Router() {
         <Route path="/partner-connection" component={PartnerConnection} />
         <Route path="/journal" component={Journal} />
         <Route path="/conversations" component={Conversations} />
-        <Route path="/reflections" component={Reflections} />
         <Route path="/insights" component={Insights} />
         <Route path="/40day" component={FortyDayTwangle} />
         <Route path="/profile" component={Profile} />
