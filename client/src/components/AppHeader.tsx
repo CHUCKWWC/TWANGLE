@@ -23,8 +23,8 @@ export function AppHeader() {
   const [location] = useLocation();
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const isWelcome = location === "/";
   const isAnonymous = (user as any)?.isAnonymous;
+  const isWelcome = location === "/" && isAnonymous;
   const showReports = isAdminUser(user?.email);
 
   const NavButton = ({ href, icon: Icon, label, badge }: any) => {
