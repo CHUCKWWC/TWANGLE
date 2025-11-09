@@ -10,6 +10,8 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Twangle Logo Integration** (November 2025): Replaced all placeholder icons and text-based branding with the actual Twangle logo (interlocking hearts gradient design). Logo now appears in AppHeader navigation, Login page, Landing page hero section, favicon, and all SEO meta tags. Fixed header visibility bug where logo was hidden for authenticated users on dashboard.
+- **Daily Conversations Category Selection** (November 2025): Implemented interactive category selection system allowing partners to choose the topic for their next conversation question. Features 7 themed categories (Emotional Intimacy, Communication & Conflict, Physical Intimacy, Finances & Planning, Values & Spiritual, Play & Adventure, Trust & Boundaries) plus "Surprise Me" option. Category choice synchronized between partners and automatically clears after use.
 - **Schema Architecture Improvement** (November 2025): Fixed TypeScript type inconsistencies between insert schemas and storage layer. Introduced dual schema pattern:
   - Request schemas (e.g., `partnershipRequestSchema`, `journalEntryRequestSchema`) for validating client-supplied data (omit contextual fields like userId)
   - Full insert schemas (e.g., `insertPartnershipSchema`, `insertJournalEntrySchema`) for storage layer (include all required fields)
