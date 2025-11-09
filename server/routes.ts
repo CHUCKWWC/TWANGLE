@@ -3516,6 +3516,7 @@ Make sure the percentages add up to 100. Base your analysis on established attac
         remainingResponses,
         isLimitReached,
         isSoloMode: !hasPartnership,
+        chosenCategory: hasPartnership ? partnership.nextQuestionCategory : null,
       });
     } catch (error: any) {
       console.error("Get daily question error:", error);
@@ -3614,6 +3615,51 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     } catch (error: any) {
       console.error("Create response error:", error);
       res.status(500).json({ message: "Failed to create response" });
+    }
+  });
+
+  // Choose category for next conversation question (partnered users only)
+  app.post('/api/conversations/choose-category', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { category } = req.body;
+
+      // Validate category
+      const validCategories = [
+        'emotional_intimacy',
+        'communication_conflict',
+        'physical_intimacy',
+        'finances_planning',
+        'values_spiritual',
+        'play_adventure',
+        'trust_boundaries'
+      ];
+
+      if (category && !validCategories.includes(category)) {
+        return res.status(400).json({ message: "Invalid category" });
+      }
+
+      // Get user's active partnership
+      const partnership = await storage.getActivePartnership(userId);
+      if (!partnership || partnership.status !== 'active') {
+        return res.status(400).json({ message: "No active partnership found. Category selection is only available for partnered users." });
+      }
+
+      // Update the partnership's nextQuestionCategory
+      await storage.updatePartnership(partnership.id, {
+        nextQuestionCategory: category || null
+      });
+
+      res.json({
+        success: true,
+        category: category || null,
+        message: category 
+          ? `Category set to ${category}. Your next question will be from this category.`
+          : "Category preference cleared. Your next question will be random."
+      });
+    } catch (error: any) {
+      console.error("Choose category error:", error);
+      res.status(500).json({ message: "Failed to set category preference" });
     }
   });
 

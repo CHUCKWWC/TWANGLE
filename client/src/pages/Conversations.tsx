@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, MessageCircle, HelpCircle, Lock, Unlock, Loader2, Sparkles, Crown } from "lucide-react";
+import { Heart, MessageCircle, HelpCircle, Lock, Unlock, Loader2, Sparkles, Crown, Users, TrendingUp, DollarSign, Compass, Shield, Shuffle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { HelpMeOutModal } from "@/components/HelpMeOutModal";
 import { AppHeader } from "@/components/AppHeader";
@@ -39,6 +39,7 @@ interface DailyQuestionData {
   remainingResponses?: number;
   isLimitReached?: boolean;
   isSoloMode?: boolean;
+  chosenCategory?: string | null;
 }
 
 interface HistoryItem {
@@ -67,6 +68,16 @@ const CATEGORY_COLORS: Record<string, string> = {
   trust_boundaries: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
 };
 
+const CATEGORY_ICONS: Record<string, any> = {
+  emotional_intimacy: Heart,
+  communication_conflict: MessageCircle,
+  physical_intimacy: Heart,
+  finances_planning: DollarSign,
+  values_spiritual: Compass,
+  play_adventure: Sparkles,
+  trust_boundaries: Shield,
+};
+
 export default function Conversations() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -87,7 +98,7 @@ export default function Conversations() {
     mutationFn: async (data: { questionId: string; responseText: string; partnershipId?: string | null }) => {
       return await apiRequest('POST', '/api/conversations/respond', data);
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/conversations/daily'] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations/history'] });
       
@@ -99,6 +110,26 @@ export default function Conversations() {
           : "Your response has been saved. Your partner's answer will appear once they respond.",
       });
       setResponseText("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const chooseCategoryMutation = useMutation({
+    mutationFn: async (category: string | null) => {
+      return await apiRequest('POST', '/api/conversations/choose-category', { category });
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations/daily'] });
+      toast({
+        title: data.category ? "Category Selected" : "Random Selection",
+        description: data.message,
+      });
     },
     onError: (error: Error) => {
       toast({
@@ -122,7 +153,8 @@ export default function Conversations() {
     });
   };
 
-  const isPaidUser = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trialing';
+  // Check if user is a paid user based on limit status from backend
+  const isPaidUser = !dailyData?.isLimitReached && dailyData?.remainingResponses !== undefined && dailyData.remainingResponses > 900;
 
   // Show loading while checking authentication
   if (authLoading || isLoading) {
@@ -359,6 +391,64 @@ export default function Conversations() {
             )}
           </CardContent>
         </Card>
+
+        {/* Category Selection - Show when both partners have answered or in solo mode after answering */}
+        {!isSoloMode && bothAnswered && (
+          <Card data-testid="card-category-selection">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                Choose Your Next Conversation Topic
+              </CardTitle>
+              <CardDescription>
+                Either partner can select a category for your next question. Your choice will be synchronized automatically.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {Object.entries(CATEGORY_LABELS).map(([key, label]) => {
+                  const IconComponent = CATEGORY_ICONS[key];
+                  const isSelected = dailyData.chosenCategory === key;
+                  return (
+                    <Button
+                      key={key}
+                      variant={isSelected ? "default" : "outline"}
+                      className={`h-auto py-3 px-3 flex flex-col items-center gap-2 ${
+                        !isSelected ? CATEGORY_COLORS[key] : ""
+                      }`}
+                      onClick={() => chooseCategoryMutation.mutate(key)}
+                      disabled={chooseCategoryMutation.isPending}
+                      data-testid={`button-category-${key}`}
+                    >
+                      {IconComponent && <IconComponent className="h-5 w-5" />}
+                      <span className="text-xs text-center font-medium">{label}</span>
+                    </Button>
+                  );
+                })}
+                <Button
+                  variant={dailyData.chosenCategory === null ? "default" : "outline"}
+                  className="h-auto py-3 px-3 flex flex-col items-center gap-2"
+                  onClick={() => chooseCategoryMutation.mutate(null)}
+                  disabled={chooseCategoryMutation.isPending}
+                  data-testid="button-category-random"
+                >
+                  <Shuffle className="h-5 w-5" />
+                  <span className="text-xs text-center font-medium">Surprise Me</span>
+                </Button>
+              </div>
+              {dailyData.chosenCategory && (
+                <div className="bg-muted/50 rounded-md p-3 flex items-center gap-2" data-testid="text-category-chosen">
+                  <Badge className={CATEGORY_COLORS[dailyData.chosenCategory]}>
+                    {CATEGORY_LABELS[dailyData.chosenCategory]}
+                  </Badge>
+                  <p className="text-sm text-muted-foreground">
+                    Your next question will be from this category
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Conversation History */}
         {history && history.length > 0 && (

@@ -403,6 +403,7 @@ export const partnerships = pgTable("partnerships", {
   sharedAssessments: integer("shared_assessments").default(1), // Allow sharing assessments
   sharedProgress: integer("shared_progress").default(1), // Allow sharing progress metrics
   sharedJournal: integer("shared_journal").default(0), // Allow partner to see journal (default private)
+  nextQuestionCategory: varchar("next_question_category"), // Category chosen for next conversation question
   connectedAt: timestamp("connected_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
