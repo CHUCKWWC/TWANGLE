@@ -129,7 +129,7 @@ export default function Conversations() {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <div className="container max-w-4xl mx-auto p-6 pt-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:max-w-4xl pt-16 sm:pt-20">
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
@@ -143,7 +143,7 @@ export default function Conversations() {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <div className="container max-w-4xl mx-auto p-6 pt-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:max-w-4xl pt-16 sm:pt-20">
           <Card data-testid="card-login-required">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -158,11 +158,11 @@ export default function Conversations() {
               <p className="text-muted-foreground">
                 Daily Conversations helps you and your partner explore important topics through carefully crafted questions based on research in relationships and therapy.
               </p>
-              <div className="flex gap-3">
-                <Button onClick={() => window.location.href = '/login'} data-testid="button-login">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button onClick={() => window.location.href = '/login'} className="w-full sm:w-auto" data-testid="button-login">
                   Sign In
                 </Button>
-                <Button variant="outline" onClick={() => window.location.href = '/signup'} data-testid="button-signup">
+                <Button variant="outline" onClick={() => window.location.href = '/signup'} className="w-full sm:w-auto" data-testid="button-signup">
                   Create Account
                 </Button>
               </div>
@@ -177,9 +177,9 @@ export default function Conversations() {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <div className="container max-w-4xl mx-auto p-6 pt-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:max-w-4xl pt-16 sm:pt-20">
           <Card>
-            <CardContent className="p-8 text-center">
+            <CardContent className="p-4 sm:p-8 text-center">
               <p className="text-muted-foreground">Failed to load daily conversation. Please try again.</p>
             </CardContent>
           </Card>
@@ -192,9 +192,9 @@ export default function Conversations() {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <div className="container max-w-4xl mx-auto p-6 pt-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:max-w-4xl pt-16 sm:pt-20">
           <Card>
-            <CardContent className="p-8 text-center">
+            <CardContent className="p-4 sm:p-8 text-center">
               <p className="text-muted-foreground">No question available at the moment.</p>
             </CardContent>
           </Card>
@@ -208,16 +208,16 @@ export default function Conversations() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <div className="container max-w-4xl mx-auto p-6 pt-20 space-y-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold" data-testid="text-page-title">Daily Conversations</h1>
-            <p className="text-muted-foreground mt-1">
+      <div className="container mx-auto px-4 sm:px-6 lg:max-w-4xl pt-16 sm:pt-20 space-y-4 sm:space-y-6 pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold" data-testid="text-page-title">Daily Conversations</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
               Deepen your connection with therapy-informed questions
             </p>
           </div>
           {!isPaidUser && remainingResponses !== undefined && (
-            <Badge variant="secondary" className="text-sm" data-testid="badge-remaining-responses">
+            <Badge variant="secondary" className="self-start text-xs sm:text-sm whitespace-nowrap" data-testid="badge-remaining-responses">
               {remainingResponses} free {remainingResponses === 1 ? 'question' : 'questions'} left
             </Badge>
           )}
@@ -247,17 +247,19 @@ export default function Conversations() {
         {/* Daily Question Card */}
         <Card data-testid="card-daily-question">
           <CardHeader>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageCircle className="h-5 w-5" />
-                  <CardTitle className="text-lg">Today's Question</CardTitle>
-                  <Badge className={CATEGORY_COLORS[question.category] || "bg-gray-100"} data-testid="badge-category">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="h-5 w-5 flex-shrink-0" />
+                    <CardTitle className="text-base sm:text-lg">Today's Question</CardTitle>
+                  </div>
+                  <Badge className={`${CATEGORY_COLORS[question.category] || "bg-gray-100"} text-xs sm:text-sm`} data-testid="badge-category">
                     {CATEGORY_LABELS[question.category] || question.category}
                   </Badge>
                 </div>
                 {question.therapyPrompt && (
-                  <CardDescription className="italic text-sm mt-1" data-testid="text-therapy-prompt">
+                  <CardDescription className="italic text-xs sm:text-sm mt-1" data-testid="text-therapy-prompt">
                     {question.therapyPrompt}
                   </CardDescription>
                 )}
@@ -267,24 +269,25 @@ export default function Conversations() {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowHelpModal(true)}
+                  className="self-start sm:self-auto"
                   data-testid="button-help-me-out"
                 >
-                  <HelpCircle className="h-4 w-4 mr-2" />
-                  Help Me Out
+                  <HelpCircle className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="text-xs sm:text-sm">Help Me Out</span>
                 </Button>
               )}
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="text-lg font-medium" data-testid="text-question">
+            <div className="text-base sm:text-lg font-medium" data-testid="text-question">
               {question.questionText}
             </div>
 
             {!hasUserAnswered ? (
               isLimitReached && !isPaidUser ? (
-                <div className="p-6 border-2 border-dashed rounded-lg text-center space-y-3" data-testid="div-limit-reached">
-                  <Lock className="h-8 w-8 mx-auto text-muted-foreground" />
-                  <p className="text-sm font-medium">Upgrade to answer more questions</p>
+                <div className="p-4 sm:p-6 border-2 border-dashed rounded-lg text-center space-y-3" data-testid="div-limit-reached">
+                  <Lock className="h-6 sm:h-8 w-6 sm:w-8 mx-auto text-muted-foreground" />
+                  <p className="text-xs sm:text-sm font-medium">Upgrade to answer more questions</p>
                   <p className="text-xs text-muted-foreground">Get unlimited daily conversations with a premium subscription</p>
                 </div>
               ) : (
@@ -294,12 +297,13 @@ export default function Conversations() {
                     value={responseText}
                     onChange={(e) => setResponseText(e.target.value)}
                     rows={4}
-                    className="resize-none"
+                    className="resize-none text-sm sm:text-base"
                     data-testid="textarea-response"
                   />
                   <Button
                     onClick={handleSubmitResponse}
                     disabled={!responseText.trim() || respondMutation.isPending}
+                    className="w-full sm:w-auto"
                     data-testid="button-submit-response"
                   >
                     {respondMutation.isPending ? (
@@ -318,11 +322,11 @@ export default function Conversations() {
                 {/* User's Response */}
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-medium">Your Response</span>
+                    <span className="text-xs sm:text-sm font-medium">Your Response</span>
                   </div>
                   <Card className="bg-muted/50">
-                    <CardContent className="p-4">
-                      <p className="text-sm" data-testid="text-user-response">{userResponse?.responseText}</p>
+                    <CardContent className="p-3 sm:p-4">
+                      <p className="text-xs sm:text-sm" data-testid="text-user-response">{userResponse?.responseText}</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -332,20 +336,20 @@ export default function Conversations() {
                   bothAnswered && partnerResponse ? (
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm font-medium">Partner's Response</span>
+                        <span className="text-xs sm:text-sm font-medium">Partner's Response</span>
                         <Unlock className="h-4 w-4 text-green-600" />
                       </div>
                       <Card className="bg-primary/5 border-primary/20">
-                        <CardContent className="p-4">
-                          <p className="text-sm" data-testid="text-partner-response">{partnerResponse.responseText}</p>
+                        <CardContent className="p-3 sm:p-4">
+                          <p className="text-xs sm:text-sm" data-testid="text-partner-response">{partnerResponse.responseText}</p>
                         </CardContent>
                       </Card>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30 border border-dashed" data-testid="div-waiting-partner">
-                      <Lock className="h-5 w-5 text-muted-foreground" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Waiting for your partner...</p>
+                    <div className="flex items-center gap-3 p-3 sm:p-4 rounded-lg bg-muted/30 border border-dashed" data-testid="div-waiting-partner">
+                      <Lock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm font-medium">Waiting for your partner...</p>
                         <p className="text-xs text-muted-foreground">Their response will appear here once they answer</p>
                       </div>
                     </div>
@@ -360,8 +364,8 @@ export default function Conversations() {
         {history && history.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Past Conversations</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-base sm:text-lg">Past Conversations</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 {isSoloMode ? "Review your personal responses" : "Review your shared responses"}
               </CardDescription>
             </CardHeader>
@@ -370,20 +374,20 @@ export default function Conversations() {
                 <div key={item.question.id}>
                   {index > 0 && <Separator className="my-4" />}
                   <div className="space-y-3">
-                    <div className="flex items-start gap-2">
-                      <Badge className={CATEGORY_COLORS[item.question.category] || "bg-gray-100"} variant="outline">
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+                      <Badge className={`${CATEGORY_COLORS[item.question.category] || "bg-gray-100"} self-start text-xs`} variant="outline">
                         {CATEGORY_LABELS[item.question.category]}
                       </Badge>
-                      <p className="text-sm font-medium flex-1">{item.question.questionText}</p>
+                      <p className="text-xs sm:text-sm font-medium flex-1">{item.question.questionText}</p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                       {item.responses.map((response) => (
                         <Card key={response.id} className="bg-muted/30">
-                          <CardContent className="p-3">
+                          <CardContent className="p-2 sm:p-3">
                             <p className="text-xs text-muted-foreground mb-1">
                               {new Date(response.createdAt).toLocaleDateString()}
                             </p>
-                            <p className="text-sm">{response.responseText}</p>
+                            <p className="text-xs sm:text-sm break-words">{response.responseText}</p>
                           </CardContent>
                         </Card>
                       ))}
