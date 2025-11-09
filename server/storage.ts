@@ -101,7 +101,7 @@ import {
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { Pool, neonConfig } from "@neondatabase/serverless";
-import { eq, and, or, desc, sql, isNull } from "drizzle-orm";
+import { eq, and, or, desc, sql, isNull, isNotNull } from "drizzle-orm";
 import ws from "ws";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -452,6 +452,9 @@ export class MemStorage implements IStorage {
     const user: User = {
       id: userData.id!,
       email: userData.email ?? null,
+      password: userData.password ?? null,
+      authProvider: userData.authProvider ?? 'local',
+      authProviderId: userData.authProviderId ?? null,
       firstName: userData.firstName ?? null,
       lastName: userData.lastName ?? null,
       displayName: userData.displayName ?? null,
@@ -459,13 +462,16 @@ export class MemStorage implements IStorage {
       stripeCustomerId: userData.stripeCustomerId ?? null,
       hasLifetimeAccess: userData.hasLifetimeAccess ?? 0,
       userNumber: userData.userNumber ?? null,
-      emailVerified: 0,
-      emailVerificationToken: null,
-      emailVerificationExpires: null,
-      newsletterSubscribed: 0,
-      trialStartedAt: null,
-      trialEndsAt: null,
-      isAdmin: 0,
+      emailVerified: userData.emailVerified ?? 0,
+      emailVerificationToken: userData.emailVerificationToken ?? null,
+      emailVerificationExpires: userData.emailVerificationExpires ?? null,
+      passwordResetToken: userData.passwordResetToken ?? null,
+      passwordResetExpires: userData.passwordResetExpires ?? null,
+      newsletterSubscribed: userData.newsletterSubscribed ?? 0,
+      conversationResponseCount: userData.conversationResponseCount ?? 0,
+      coupleId: userData.coupleId ?? null,
+      trialStartedAt: userData.trialStartedAt ?? null,
+      trialEndsAt: userData.trialEndsAt ?? null,
       createdAt: now,
       updatedAt: null,
     };
@@ -485,6 +491,9 @@ export class MemStorage implements IStorage {
     const user: User = { 
       id,
       email: insertUser.email ?? null,
+      password: insertUser.password ?? null,
+      authProvider: insertUser.authProvider ?? 'local',
+      authProviderId: insertUser.authProviderId ?? null,
       firstName: insertUser.firstName ?? null,
       lastName: insertUser.lastName ?? null,
       displayName: insertUser.displayName ?? null,
@@ -492,13 +501,16 @@ export class MemStorage implements IStorage {
       stripeCustomerId: insertUser.stripeCustomerId ?? null,
       hasLifetimeAccess: insertUser.hasLifetimeAccess ?? 0,
       userNumber: insertUser.userNumber ?? null,
-      emailVerified: 0,
-      emailVerificationToken: null,
-      emailVerificationExpires: null,
-      newsletterSubscribed: 0,
-      trialStartedAt: null,
-      trialEndsAt: null,
-      isAdmin: 0,
+      emailVerified: insertUser.emailVerified ?? 0,
+      emailVerificationToken: insertUser.emailVerificationToken ?? null,
+      emailVerificationExpires: insertUser.emailVerificationExpires ?? null,
+      passwordResetToken: insertUser.passwordResetToken ?? null,
+      passwordResetExpires: insertUser.passwordResetExpires ?? null,
+      newsletterSubscribed: insertUser.newsletterSubscribed ?? 0,
+      conversationResponseCount: insertUser.conversationResponseCount ?? 0,
+      coupleId: insertUser.coupleId ?? null,
+      trialStartedAt: insertUser.trialStartedAt ?? null,
+      trialEndsAt: insertUser.trialEndsAt ?? null,
       createdAt: now,
       updatedAt: null,
     };
@@ -959,6 +971,8 @@ export class MemStorage implements IStorage {
       eventType: event.eventType,
       status: event.status ?? null,
       priceId: event.priceId ?? null,
+      amount: event.amount ?? null,
+      currentPeriodStart: event.currentPeriodStart ?? null,
       currentPeriodEnd: event.currentPeriodEnd ?? null,
       cancelAtPeriodEnd: event.cancelAtPeriodEnd ?? null,
       canceledAt: event.canceledAt ?? null,
@@ -1073,13 +1087,13 @@ export class MemStorage implements IStorage {
       user1Id: partnership.user1Id,
       user2Id: partnership.user2Id ?? null,
       user2Email: partnership.user2Email ?? null,
-      status: partnership.status ?? 'pending',
+      status: 'pending', // Default value, not from input
       inviteToken: partnership.inviteToken ?? null,
       inviteExpiresAt: partnership.inviteExpiresAt ?? null,
       sharedAssessments: partnership.sharedAssessments ?? 1,
       sharedProgress: partnership.sharedProgress ?? 1,
       sharedJournal: partnership.sharedJournal ?? 0,
-      connectedAt: partnership.connectedAt ?? null,
+      connectedAt: null, // Default value, not from input
       createdAt: new Date(),
     };
   }
@@ -1157,6 +1171,595 @@ export class MemStorage implements IStorage {
   async getLatestAnalyticsSnapshot(userId: string, periodType: string): Promise<AnalyticsSnapshot | undefined> {
     return undefined;
   }
+
+  // Missing authentication-related methods
+  async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
+    return undefined;
+  }
+
+  async sendVerificationEmail(email: string, token: string): Promise<void> {
+    // Stub - no email sending in memory storage
+  }
+
+  async sendPasswordResetEmail(email: string, token: string): Promise<void> {
+    // Stub - no email sending in memory storage
+  }
+
+  async getSubscriptionEventsByType(eventType: string, limit?: number): Promise<SubscriptionEvent[]> {
+    return [];
+  }
+
+  // Conversation questions and responses (stub implementations)
+  async getDailyQuestion(partnershipId: string): Promise<ConversationQuestion | undefined> {
+    return undefined;
+  }
+
+  async getSoloQuestion(userId: string): Promise<ConversationQuestion | undefined> {
+    return undefined;
+  }
+
+  async getRandomQuestion(category?: string): Promise<ConversationQuestion | undefined> {
+    return undefined;
+  }
+
+  async getAllConversationQuestions(): Promise<ConversationQuestion[]> {
+    return [];
+  }
+
+  async createConversationQuestion(question: InsertConversationQuestion): Promise<ConversationQuestion> {
+    const id = randomUUID();
+    return {
+      id,
+      category: question.category,
+      intensity: question.intensity,
+      questionText: question.questionText,
+      therapyPrompt: question.therapyPrompt ?? null,
+      active: question.active !== undefined ? question.active : 1,
+      createdAt: new Date(),
+    };
+  }
+
+  async createConversationResponse(response: InsertConversationResponse): Promise<ConversationResponse> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: response.userId,
+      partnershipId: response.partnershipId ?? null,
+      questionId: response.questionId,
+      responseText: response.responseText,
+      createdAt: new Date(),
+    };
+  }
+
+  async getConversationResponses(partnershipId: string, questionId: string): Promise<ConversationResponse[]> {
+    return [];
+  }
+
+  async getSoloConversationResponses(userId: string, questionId: string): Promise<ConversationResponse[]> {
+    return [];
+  }
+
+  async getConversationHistory(partnershipId: string, limit?: number): Promise<Array<{
+    question: ConversationQuestion;
+    responses: ConversationResponse[];
+    isComplete: boolean;
+  }>> {
+    return [];
+  }
+
+  async getSoloConversationHistory(userId: string, limit?: number): Promise<Array<{
+    question: ConversationQuestion;
+    responses: ConversationResponse[];
+    isComplete: boolean;
+  }>> {
+    return [];
+  }
+
+  async createConversationHelpEvent(event: InsertConversationHelpEvent): Promise<ConversationHelpEvent> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: event.userId,
+      questionId: event.questionId,
+      actionType: event.actionType,
+      aiResponse: event.aiResponse ?? null,
+      createdAt: new Date(),
+    };
+  }
+
+  async incrementConversationResponseCount(userId: string): Promise<void> {
+    // Stub - no-op in memory storage
+  }
+
+  // Stripe Connect stubs
+  async createConnectedAccount(account: InsertConnectedAccount): Promise<ConnectedAccount> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: account.userId,
+      stripeAccountId: account.stripeAccountId,
+      chargesEnabled: account.chargesEnabled ?? 0,
+      payoutsEnabled: account.payoutsEnabled ?? 0,
+      detailsSubmitted: account.detailsSubmitted ?? 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
+  async getConnectedAccountByUserId(userId: string): Promise<ConnectedAccount | undefined> {
+    return undefined;
+  }
+
+  async getConnectedAccountByStripeId(stripeAccountId: string): Promise<ConnectedAccount | undefined> {
+    return undefined;
+  }
+
+  async getAllConnectedAccounts(): Promise<ConnectedAccount[]> {
+    return [];
+  }
+
+  async updateConnectedAccount(id: string, updates: Partial<ConnectedAccount>): Promise<ConnectedAccount | undefined> {
+    return undefined;
+  }
+
+  // Products
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const id = randomUUID();
+    return {
+      id,
+      connectedAccountId: product.connectedAccountId,
+      userId: product.userId,
+      name: product.name,
+      description: product.description ?? null,
+      stripeProductId: product.stripeProductId,
+      stripePriceId: product.stripePriceId,
+      priceInCents: product.priceInCents,
+      currency: product.currency ?? 'usd',
+      productType: product.productType ?? 'one_time',
+      billingInterval: product.billingInterval ?? null,
+      trialDays: product.trialDays ?? 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
+  async getProduct(id: string): Promise<Product | undefined> {
+    return undefined;
+  }
+
+  async getProductsByUserId(userId: string): Promise<Product[]> {
+    return [];
+  }
+
+  async getProductsByConnectedAccount(connectedAccountId: string): Promise<Product[]> {
+    return [];
+  }
+
+  async getAllProducts(): Promise<Product[]> {
+    return [];
+  }
+
+  async updateProduct(id: string, updates: Partial<Product>): Promise<Product | undefined> {
+    return undefined;
+  }
+
+  // Merchant Customers
+  async createMerchantCustomer(customer: InsertMerchantCustomer): Promise<MerchantCustomer> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: customer.userId,
+      connectedAccountId: customer.connectedAccountId,
+      stripeCustomerId: customer.stripeCustomerId,
+      createdAt: new Date(),
+    };
+  }
+
+  async getMerchantCustomer(userId: string, connectedAccountId: string): Promise<MerchantCustomer | undefined> {
+    return undefined;
+  }
+
+  async getMerchantCustomersByUser(userId: string): Promise<MerchantCustomer[]> {
+    return [];
+  }
+
+  // Merchant Subscriptions
+  async createMerchantSubscription(subscription: InsertMerchantSubscription): Promise<MerchantSubscription> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: subscription.userId,
+      productId: subscription.productId,
+      connectedAccountId: subscription.connectedAccountId,
+      stripeSubscriptionId: subscription.stripeSubscriptionId,
+      stripeCustomerId: subscription.stripeCustomerId,
+      status: subscription.status,
+      currentPeriodStart: subscription.currentPeriodStart ?? null,
+      currentPeriodEnd: subscription.currentPeriodEnd ?? null,
+      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd ?? 0,
+      canceledAt: subscription.canceledAt ?? null,
+      endedAt: subscription.endedAt ?? null,
+      lastPaymentAt: subscription.lastPaymentAt ?? null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
+  async getMerchantSubscription(id: string): Promise<MerchantSubscription | undefined> {
+    return undefined;
+  }
+
+  async getMerchantSubscriptionByStripeId(stripeSubscriptionId: string): Promise<MerchantSubscription | undefined> {
+    return undefined;
+  }
+
+  async getMerchantSubscriptionsByUser(userId: string): Promise<MerchantSubscription[]> {
+    return [];
+  }
+
+  async getMerchantSubscriptionsByProduct(productId: string): Promise<MerchantSubscription[]> {
+    return [];
+  }
+
+  async getMerchantSubscriptionsByAccount(connectedAccountId: string): Promise<MerchantSubscription[]> {
+    return [];
+  }
+
+  async updateMerchantSubscription(id: string, updates: Partial<MerchantSubscription>): Promise<MerchantSubscription | undefined> {
+    return undefined;
+  }
+
+  async updateMerchantSubscriptionByStripeId(stripeSubscriptionId: string, updates: Partial<MerchantSubscription>): Promise<MerchantSubscription | undefined> {
+    return undefined;
+  }
+
+  // Couple subscription management
+  async createCouple(couple: InsertCouple): Promise<Couple> {
+    const id = randomUUID();
+    return {
+      id,
+      primaryUserId: couple.primaryUserId,
+      partnerUserId: couple.partnerUserId ?? null,
+      stripeSubscriptionId: couple.stripeSubscriptionId ?? null,
+      status: couple.status ?? 'trialing',
+      priceId: couple.priceId ?? null,
+      currentPeriodEnd: couple.currentPeriodEnd ?? null,
+      cancelAtPeriodEnd: couple.cancelAtPeriodEnd ?? 0,
+      partnerInviteEmail: couple.partnerInviteEmail ?? null,
+      partnerInviteToken: couple.partnerInviteToken ?? null,
+      partnerInviteExpires: couple.partnerInviteExpires ?? null,
+      partnerInvitedAt: couple.partnerInvitedAt ?? null,
+      partnerJoinedAt: couple.partnerJoinedAt ?? null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
+  async getCouple(id: string): Promise<Couple | undefined> {
+    return undefined;
+  }
+
+  async getCoupleByPrimaryUser(userId: string): Promise<Couple | undefined> {
+    return undefined;
+  }
+
+  async getCoupleByPartnerUser(userId: string): Promise<Couple | undefined> {
+    return undefined;
+  }
+
+  async getCoupleByStripeSubscriptionId(stripeSubscriptionId: string): Promise<Couple | undefined> {
+    return undefined;
+  }
+
+  async getCoupleByInviteToken(token: string): Promise<Couple | undefined> {
+    return undefined;
+  }
+
+  async updateCouple(id: string, updates: Partial<Couple>): Promise<Couple | undefined> {
+    return undefined;
+  }
+
+  async generatePartnerInviteToken(coupleId: string, partnerEmail: string, expiresInHours?: number): Promise<{ token: string; couple: Couple }> {
+    return { token: '', couple: {} as Couple };
+  }
+
+  async acceptPartnerInvite(token: string, userId: string): Promise<Couple | undefined> {
+    return undefined;
+  }
+
+  async cancelPartnerInvite(coupleId: string): Promise<Couple | undefined> {
+    return undefined;
+  }
+
+  async removePartner(coupleId: string): Promise<Couple | undefined> {
+    return undefined;
+  }
+
+  // 40dayTwangle Challenge system
+  async createChallenge(challenge: InsertChallenge): Promise<Challenge> {
+    const id = randomUUID();
+    return {
+      id,
+      dayNumber: challenge.dayNumber,
+      title: challenge.title,
+      scripture: challenge.scripture,
+      summary: challenge.summary,
+      actionPrompt: challenge.actionPrompt,
+      journalQuestion: challenge.journalQuestion,
+      createdAt: new Date(),
+    };
+  }
+
+  async getChallenge(id: string): Promise<Challenge | undefined> {
+    return undefined;
+  }
+
+  async getChallengeByDay(dayNumber: number): Promise<Challenge | undefined> {
+    return undefined;
+  }
+
+  async getAllChallenges(): Promise<Challenge[]> {
+    return [];
+  }
+
+  async createUserChallengeProgress(progress: InsertUserChallengeProgress): Promise<UserChallengeProgress> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: progress.userId,
+      currentDay: progress.currentDay ?? 1,
+      startedAt: progress.startedAt ?? new Date(),
+      lastCompletedDay: progress.lastCompletedDay ?? 0,
+      lastActivityAt: progress.lastActivityAt ?? new Date(),
+      completedAt: progress.completedAt ?? null,
+      isActive: progress.isActive ?? 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
+  async getUserChallengeProgress(userId: string): Promise<UserChallengeProgress | undefined> {
+    return undefined;
+  }
+
+  async updateUserChallengeProgress(id: string, updates: Partial<UserChallengeProgress>): Promise<UserChallengeProgress | undefined> {
+    return undefined;
+  }
+
+  async markDayComplete(userId: string, dayNumber: number): Promise<UserChallengeProgress | undefined> {
+    return undefined;
+  }
+
+  async createChallengeReflection(reflection: InsertChallengeReflection): Promise<ChallengeReflection> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: reflection.userId,
+      challengeId: reflection.challengeId,
+      dayNumber: reflection.dayNumber,
+      reflectionText: reflection.reflectionText,
+      aiSummary: reflection.aiSummary ?? null,
+      completedAt: reflection.completedAt ?? new Date(),
+      createdAt: new Date(),
+    };
+  }
+
+  async getChallengeReflection(id: string): Promise<ChallengeReflection | undefined> {
+    return undefined;
+  }
+
+  async getUserReflectionForDay(userId: string, dayNumber: number): Promise<ChallengeReflection | undefined> {
+    return undefined;
+  }
+
+  async getAllUserReflections(userId: string): Promise<ChallengeReflection[]> {
+    return [];
+  }
+
+  // Relationship Reflections System
+  async createReflectionPrompt(prompt: InsertReflectionPrompt): Promise<ReflectionPrompt> {
+    const id = randomUUID();
+    return {
+      id,
+      promptType: prompt.promptType,
+      promptText: prompt.promptText,
+      category: prompt.category,
+      intensity: prompt.intensity ?? 1,
+      weeklyTheme: prompt.weeklyTheme ?? null,
+      weekNumber: prompt.weekNumber ?? null,
+      dayOfWeek: prompt.dayOfWeek ?? null,
+      followUpPrompts: prompt.followUpPrompts ?? null,
+      mediaType: prompt.mediaType ?? null,
+      promptTags: prompt.promptTags ?? null,
+      isActive: prompt.isActive ?? 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
+  async getReflectionPrompt(id: string): Promise<ReflectionPrompt | undefined> {
+    return undefined;
+  }
+
+  async getTodayReflectionPrompt(userId?: string): Promise<ReflectionPrompt | undefined> {
+    return undefined;
+  }
+
+  async getWeeklyPrompts(weekNumber: number): Promise<ReflectionPrompt[]> {
+    return [];
+  }
+
+  async getPromptsByCategory(category: string, limit?: number): Promise<ReflectionPrompt[]> {
+    return [];
+  }
+
+  async updateReflectionPrompt(id: string, updates: Partial<ReflectionPrompt>): Promise<ReflectionPrompt | undefined> {
+    return undefined;
+  }
+
+  async generateWeeklyTheme(weekNumber: number): Promise<{ theme: string; prompts: ReflectionPrompt[] }> {
+    return { theme: '', prompts: [] };
+  }
+
+  async createRelationshipReflection(reflection: InsertRelationshipReflection): Promise<RelationshipReflection> {
+    const id = randomUUID();
+    return {
+      id,
+      userId: reflection.userId,
+      coupleId: reflection.coupleId ?? null,
+      promptId: reflection.promptId ?? null,
+      responseType: reflection.responseType,
+      textResponse: reflection.textResponse ?? null,
+      voiceNoteUrl: reflection.voiceNoteUrl ?? null,
+      imageUrl: reflection.imageUrl ?? null,
+      mood: reflection.mood ?? null,
+      tags: reflection.tags ?? null,
+      shareMode: reflection.shareMode,
+      shareDelayHours: reflection.shareDelayHours ?? null,
+      sharedAt: reflection.sharedAt ?? null,
+      partnerViewedAt: reflection.partnerViewedAt ?? null,
+      partnerReactionEmoji: reflection.partnerReactionEmoji ?? null,
+      partnerResponseId: reflection.partnerResponseId ?? null,
+      isHighlight: reflection.isHighlight ?? 0,
+      metadata: reflection.metadata ?? null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
+  async getRelationshipReflection(id: string): Promise<RelationshipReflection | undefined> {
+    return undefined;
+  }
+
+  async getUserReflections(userId: string, limit?: number): Promise<RelationshipReflection[]> {
+    return [];
+  }
+
+  async getCoupleReflections(coupleId: string, onlyShared?: boolean): Promise<RelationshipReflection[]> {
+    return [];
+  }
+
+  async getReflectionTimeline(coupleId: string, startDate?: Date, endDate?: Date): Promise<RelationshipReflection[]> {
+    return [];
+  }
+
+  async updateReflection(id: string, updates: Partial<RelationshipReflection>): Promise<RelationshipReflection | undefined> {
+    return undefined;
+  }
+
+  async revealDelayedReflection(id: string): Promise<RelationshipReflection | undefined> {
+    return undefined;
+  }
+
+  async markReflectionViewed(id: string, viewerId: string): Promise<RelationshipReflection | undefined> {
+    return undefined;
+  }
+
+  async addPartnerReaction(id: string, emoji: string): Promise<RelationshipReflection | undefined> {
+    return undefined;
+  }
+
+  async getUnviewedReflections(userId: string): Promise<RelationshipReflection[]> {
+    return [];
+  }
+
+  async highlightReflection(id: string): Promise<RelationshipReflection | undefined> {
+    return undefined;
+  }
+
+  async processDelayedReflections(): Promise<RelationshipReflection[]> {
+    return [];
+  }
+
+  // Reflection Insights Generation
+  async createReflectionInsight(insight: InsertReflectionInsight): Promise<ReflectionInsight> {
+    const id = randomUUID();
+    return {
+      id,
+      coupleId: insight.coupleId,
+      insightType: insight.insightType,
+      insightTitle: insight.insightTitle,
+      insightContent: insight.insightContent,
+      reflectionIds: insight.reflectionIds ?? null,
+      strengthsIdentified: insight.strengthsIdentified ?? null,
+      growthOpportunities: insight.growthOpportunities ?? null,
+      suggestedActions: insight.suggestedActions ?? null,
+      insightPeriodStart: insight.insightPeriodStart ?? null,
+      insightPeriodEnd: insight.insightPeriodEnd ?? null,
+      sentimentScore: insight.sentimentScore ?? null,
+      connectionScore: insight.connectionScore ?? null,
+      viewedByUser1: insight.viewedByUser1 ?? 0,
+      viewedByUser2: insight.viewedByUser2 ?? 0,
+      createdAt: new Date(),
+    };
+  }
+
+  async getReflectionInsight(id: string): Promise<ReflectionInsight | undefined> {
+    return undefined;
+  }
+
+  async getCoupleInsights(coupleId: string, limit?: number): Promise<ReflectionInsight[]> {
+    return [];
+  }
+
+  async getInsightsByType(coupleId: string, insightType: string): Promise<ReflectionInsight[]> {
+    return [];
+  }
+
+  async markInsightViewed(id: string, userId: string): Promise<ReflectionInsight | undefined> {
+    return undefined;
+  }
+
+  async generateWeeklyInsight(coupleId: string): Promise<ReflectionInsight> {
+    const id = randomUUID();
+    return {
+      id,
+      coupleId,
+      insightType: 'weekly',
+      insightTitle: '',
+      insightContent: '',
+      reflectionIds: null,
+      strengthsIdentified: null,
+      growthOpportunities: null,
+      suggestedActions: null,
+      insightPeriodStart: null,
+      insightPeriodEnd: null,
+      sentimentScore: null,
+      connectionScore: null,
+      viewedByUser1: 0,
+      viewedByUser2: 0,
+      createdAt: new Date(),
+    };
+  }
+
+  async generateMonthlyInsight(coupleId: string): Promise<ReflectionInsight> {
+    const id = randomUUID();
+    return {
+      id,
+      coupleId,
+      insightType: 'monthly',
+      insightTitle: '',
+      insightContent: '',
+      reflectionIds: null,
+      strengthsIdentified: null,
+      growthOpportunities: null,
+      suggestedActions: null,
+      insightPeriodStart: null,
+      insightPeriodEnd: null,
+      sentimentScore: null,
+      connectionScore: null,
+      viewedByUser1: 0,
+      viewedByUser2: 0,
+      createdAt: new Date(),
+    };
+  }
+
+  async getLatestInsight(coupleId: string): Promise<ReflectionInsight | undefined> {
+    return undefined;
+  }
+
+  // Session store for authentication
+  sessionStore: any = null;
 }
 
 export class DbStorage implements IStorage {
@@ -1240,7 +1843,7 @@ export class DbStorage implements IStorage {
       .where(
         and(
           sql`${users.email} IS NOT NULL`,
-          eq(users.emailVerified, true),
+          eq(users.emailVerified, 1),
           sql`${users.trialStartedAt} IS NOT NULL`,
           sql`${users.trialEndsAt} IS NOT NULL`,
           sql`${users.trialEndsAt} > ${now.toISOString()}`
@@ -2283,7 +2886,7 @@ export class DbStorage implements IStorage {
 
     // Get question details and check completion
     const history = [];
-    for (const [questionId, responses] of questionMap.entries()) {
+    for (const [questionId, responses] of Array.from(questionMap.entries())) {
       const question = await this.db.select({
         id: conversationQuestions.id,
         category: conversationQuestions.category,
@@ -2297,8 +2900,8 @@ export class DbStorage implements IStorage {
         .limit(1);
       
       if (question[0]) {
-        const user1Responded = responses.some(r => r.userId === partnership.user1Id);
-        const user2Responded = responses.some(r => r.userId === partnership.user2Id);
+        const user1Responded = responses.some((r: any) => r.userId === partnership.user1Id);
+        const user2Responded = responses.some((r: any) => r.userId === partnership.user2Id);
         
         history.push({
           question: question[0],
@@ -2339,7 +2942,7 @@ export class DbStorage implements IStorage {
 
     // Get question details
     const history = [];
-    for (const [questionId, responses] of questionMap.entries()) {
+    for (const [questionId, responses] of Array.from(questionMap.entries())) {
       const question = await this.db.select({
         id: conversationQuestions.id,
         category: conversationQuestions.category,
@@ -2885,23 +3488,24 @@ export class DbStorage implements IStorage {
   }
 
   async getCoupleReflections(coupleId: string, onlyShared: boolean = false): Promise<RelationshipReflection[]> {
-    let query = this.db.select().from(relationshipReflections)
-      .where(eq(relationshipReflections.coupleId, coupleId));
-    
     if (onlyShared) {
-      query = query.where(and(
-        eq(relationshipReflections.coupleId, coupleId),
-        isNull(relationshipReflections.sharedAt).not()
-      ));
+      return await this.db.select().from(relationshipReflections)
+        .where(and(
+          eq(relationshipReflections.coupleId, coupleId),
+          isNotNull(relationshipReflections.sharedAt)
+        ))
+        .orderBy(desc(relationshipReflections.createdAt));
     }
     
-    return await query.orderBy(desc(relationshipReflections.createdAt));
+    return await this.db.select().from(relationshipReflections)
+      .where(eq(relationshipReflections.coupleId, coupleId))
+      .orderBy(desc(relationshipReflections.createdAt));
   }
 
   async getReflectionTimeline(coupleId: string, startDate?: Date, endDate?: Date): Promise<RelationshipReflection[]> {
-    let conditions = [
+    let conditions: any[] = [
       eq(relationshipReflections.coupleId, coupleId),
-      isNull(relationshipReflections.sharedAt).not()
+      isNotNull(relationshipReflections.sharedAt)
     ];
     
     if (startDate) {
@@ -2963,7 +3567,7 @@ export class DbStorage implements IStorage {
       .where(and(
         eq(relationshipReflections.coupleId, user.coupleId),
         sql`${relationshipReflections.userId} != ${userId}`,
-        isNull(relationshipReflections.sharedAt).not(),
+        isNotNull(relationshipReflections.sharedAt),
         isNull(relationshipReflections.partnerViewedAt)
       ))
       .orderBy(desc(relationshipReflections.sharedAt));
