@@ -89,11 +89,9 @@ export function AppHeader() {
         onClick={() => setMobileMenuOpen(false)}
       />
       
-      {!isAnonymous && (
-        <>
-          <div className="px-4 py-2 mt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Programs & Activities
-          </div>
+      <div className="px-4 py-2 mt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        Programs & Activities
+      </div>
           <MobileNavLink 
             href="/datenight" 
             icon={Heart} 
@@ -165,8 +163,6 @@ export function AppHeader() {
             badge={{ text: "FREE", variant: "secondary" }}
             onClick={() => setMobileMenuOpen(false)}
           />
-        </>
-      )}
 
       {showReports && (
         <>
@@ -251,9 +247,7 @@ export function AppHeader() {
                 badge={{ text: "FREE", variant: "secondary" }}
               />
 
-              {!isAnonymous && (
-                <>
-                  <DropdownMenu>
+              <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button 
                         variant="ghost" 
@@ -396,8 +390,6 @@ export function AppHeader() {
                       </Link>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </>
-              )}
 
               {showReports && (
                 <DropdownMenu>
