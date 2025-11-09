@@ -144,6 +144,63 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* Daily Conversations Featured Card */}
+      <div className="py-16 px-6 bg-background">
+        <div className="max-w-4xl mx-auto">
+          <a href="/conversations" className="block" data-testid="card-daily-conversations-featured">
+            <Card className="hover-elevate overflow-hidden border-primary/20">
+              <CardContent className="p-0">
+                <div className="grid md:grid-cols-2 gap-0">
+                  <div className="p-8 md:p-10 flex flex-col justify-center">
+                    <Badge variant="secondary" className="w-fit mb-4">
+                      FREE Feature
+                    </Badge>
+                    <h2 className="text-3xl font-bold mb-4 font-[Poppins]">
+                      Daily Conversations
+                    </h2>
+                    <p className="text-muted-foreground mb-6 text-lg">
+                      Answer therapy-informed questions together with your partner. Choose from 7 categories including Emotional Intimacy, Communication, Values, and more. Deepen connection through honest, double-blind responses.
+                    </p>
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <CheckCircle2 className="w-4 h-4 text-primary" />
+                        </div>
+                        <span className="text-sm">140 therapy-informed questions</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <CheckCircle2 className="w-4 h-4 text-primary" />
+                        </div>
+                        <span className="text-sm">7 themed categories to choose from</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <CheckCircle2 className="w-4 h-4 text-primary" />
+                        </div>
+                        <span className="text-sm">Double-blind system for honest answers</span>
+                      </div>
+                    </div>
+                    <Button size="lg" className="w-full md:w-auto" data-testid="button-try-conversations">
+                      Try Daily Conversations Free
+                    </Button>
+                  </div>
+                  <div className="bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-8 md:p-10 flex items-center justify-center">
+                    <div className="text-center space-y-6">
+                      <MessageSquare className="w-24 h-24 mx-auto text-primary" />
+                      <div className="space-y-2">
+                        <p className="text-2xl font-bold">Start Today</p>
+                        <p className="text-muted-foreground">3 free questions, then unlock unlimited with premium</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </a>
+        </div>
+      </div>
+
       {/* Features Section */}
       <div className="py-20 px-6 bg-card">
         <div className="max-w-6xl mx-auto">
