@@ -15,10 +15,9 @@ interface Challenge {
   id: string;
   dayNumber: number;
   title: string;
-  scripture: string;
-  scriptureText?: string;
-  translation?: string;
-  summary: string;
+  scripture: string; // Reference like "1 Corinthians 13:4" - not displayed
+  passage: string; // The actual verse text - displayed as "Scripture"
+  explanation: string; // Displayed as "Inspiration"
   actionPrompt: string;
   journalQuestion: string;
 }
@@ -325,40 +324,29 @@ export default function FortyDayTwangle() {
                       <span className="text-5xl font-bold text-primary">Day {currentDay}</span>
                     </div>
                     <CardTitle className="text-2xl mb-2">{currentChallenge?.title}</CardTitle>
-                    <CardDescription className="text-base flex items-center gap-2">
-                      <BookOpen className="w-4 h-4" />
-                      {currentChallenge?.scripture}
-                    </CardDescription>
                   </div>
                 </CardHeader>
                 
                 <CardContent className="pt-6 space-y-6">
-                  {/* Scripture Text */}
-                  {currentChallenge?.scriptureText && (
-                    <div className="bg-muted/50 rounded-lg p-6">
-                      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                        <BookOpen className="w-5 h-5 text-primary" />
-                        Scripture
-                      </h3>
-                      <div className="space-y-3">
-                        <p className="text-foreground leading-relaxed text-base italic">
-                          "{currentChallenge.scriptureText}"
-                        </p>
-                        <p className="text-sm text-muted-foreground text-right">
-                          {currentChallenge.scripture} {currentChallenge.translation || "The Message"}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Scripture Summary */}
+                  {/* Scripture */}
                   <div className="bg-muted/50 rounded-lg p-6">
                     <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
                       <BookOpen className="w-5 h-5 text-primary" />
-                      Today's Teaching
+                      Scripture
+                    </h3>
+                    <p className="text-foreground leading-relaxed text-base italic">
+                      "{currentChallenge?.passage}"
+                    </p>
+                  </div>
+
+                  {/* Inspiration */}
+                  <div className="bg-muted/50 rounded-lg p-6">
+                    <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-primary" />
+                      Inspiration
                     </h3>
                     <p className="text-foreground leading-relaxed whitespace-pre-wrap">
-                      {currentChallenge?.summary}
+                      {currentChallenge?.explanation}
                     </p>
                   </div>
 
@@ -458,7 +446,7 @@ export default function FortyDayTwangle() {
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-muted-foreground line-clamp-3">
-                          {challenge.summary}
+                          {challenge.explanation}
                         </p>
                       </CardContent>
                     </Card>
