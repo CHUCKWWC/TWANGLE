@@ -49,7 +49,7 @@ export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || 'fallback-secret-key-change-me',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Changed to true to ensure sessions are created
     store: storage.sessionStore,
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -218,9 +218,16 @@ export function setupAuth(app: Express) {
   
   passport.deserializeUser(async (id: string, done) => {
     try {
+      console.log('[Auth Debug] Attempting to deserialize user with ID:', id);
       const user = await storage.getUser(id);
+      if (!user) {
+        console.log('[Auth Debug] No user found for ID:', id);
+      } else {
+        console.log('[Auth Debug] User deserialized successfully:', user.email);
+      }
       done(null, user);
     } catch (error) {
+      console.error('[Auth Debug] Error deserializing user:', error);
       done(error);
     }
   });
