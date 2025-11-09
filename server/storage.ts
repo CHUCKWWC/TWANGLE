@@ -59,6 +59,12 @@ import {
   type InsertUserChallengeProgress,
   type ChallengeReflection,
   type InsertChallengeReflection,
+  type ReflectionPrompt,
+  type InsertReflectionPrompt,
+  type RelationshipReflection,
+  type InsertRelationshipReflection,
+  type ReflectionInsight,
+  type InsertReflectionInsight,
   users,
   subscriptions,
   chatSessions,
@@ -87,7 +93,10 @@ import {
   couples,
   challenges,
   userChallengeProgress,
-  challengeReflections
+  challengeReflections,
+  reflectionPrompts,
+  relationshipReflections,
+  reflectionInsights
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -316,6 +325,40 @@ export interface IStorage {
   getChallengeReflection(id: string): Promise<ChallengeReflection | undefined>;
   getUserReflectionForDay(userId: string, dayNumber: number): Promise<ChallengeReflection | undefined>;
   getAllUserReflections(userId: string): Promise<ChallengeReflection[]>;
+  
+  // ============= NEW RELATIONSHIP REFLECTIONS SYSTEM =============
+  // Reflection Prompts Management
+  createReflectionPrompt(prompt: InsertReflectionPrompt): Promise<ReflectionPrompt>;
+  getReflectionPrompt(id: string): Promise<ReflectionPrompt | undefined>;
+  getTodayReflectionPrompt(userId?: string): Promise<ReflectionPrompt | undefined>;
+  getWeeklyPrompts(weekNumber: number): Promise<ReflectionPrompt[]>;
+  getPromptsByCategory(category: string, limit?: number): Promise<ReflectionPrompt[]>;
+  updateReflectionPrompt(id: string, updates: Partial<ReflectionPrompt>): Promise<ReflectionPrompt | undefined>;
+  generateWeeklyTheme(weekNumber: number): Promise<{ theme: string; prompts: ReflectionPrompt[] }>;
+  
+  // Relationship Reflections CRUD
+  createRelationshipReflection(reflection: InsertRelationshipReflection): Promise<RelationshipReflection>;
+  getRelationshipReflection(id: string): Promise<RelationshipReflection | undefined>;
+  getUserReflections(userId: string, limit?: number): Promise<RelationshipReflection[]>;
+  getCoupleReflections(coupleId: string, onlyShared?: boolean): Promise<RelationshipReflection[]>;
+  getReflectionTimeline(coupleId: string, startDate?: Date, endDate?: Date): Promise<RelationshipReflection[]>;
+  updateReflection(id: string, updates: Partial<RelationshipReflection>): Promise<RelationshipReflection | undefined>;
+  revealDelayedReflection(id: string): Promise<RelationshipReflection | undefined>;
+  markReflectionViewed(id: string, viewerId: string): Promise<RelationshipReflection | undefined>;
+  addPartnerReaction(id: string, emoji: string): Promise<RelationshipReflection | undefined>;
+  getUnviewedReflections(userId: string): Promise<RelationshipReflection[]>;
+  highlightReflection(id: string): Promise<RelationshipReflection | undefined>;
+  processDelayedReflections(): Promise<RelationshipReflection[]>; // Process all reflections ready to be shared
+  
+  // Reflection Insights Generation
+  createReflectionInsight(insight: InsertReflectionInsight): Promise<ReflectionInsight>;
+  getReflectionInsight(id: string): Promise<ReflectionInsight | undefined>;
+  getCoupleInsights(coupleId: string, limit?: number): Promise<ReflectionInsight[]>;
+  getInsightsByType(coupleId: string, insightType: string): Promise<ReflectionInsight[]>;
+  markInsightViewed(id: string, userId: string): Promise<ReflectionInsight | undefined>;
+  generateWeeklyInsight(coupleId: string): Promise<ReflectionInsight>;
+  generateMonthlyInsight(coupleId: string): Promise<ReflectionInsight>;
+  getLatestInsight(coupleId: string): Promise<ReflectionInsight | undefined>;
   
   // Session store for authentication
   sessionStore: any;
@@ -2734,6 +2777,329 @@ export class DbStorage implements IStorage {
     return await this.db.select().from(challengeReflections)
       .where(eq(challengeReflections.userId, userId))
       .orderBy(challengeReflections.dayNumber);
+  }
+
+  // ============= NEW RELATIONSHIP REFLECTIONS SYSTEM IMPLEMENTATION =============
+  
+  // Reflection Prompts Management
+  async createReflectionPrompt(prompt: InsertReflectionPrompt): Promise<ReflectionPrompt> {
+    const [createdPrompt] = await this.db.insert(reflectionPrompts).values(prompt).returning();
+    return createdPrompt;
+  }
+
+  async getReflectionPrompt(id: string): Promise<ReflectionPrompt | undefined> {
+    const [prompt] = await this.db.select().from(reflectionPrompts)
+      .where(eq(reflectionPrompts.id, id));
+    return prompt;
+  }
+
+  async getTodayReflectionPrompt(userId?: string): Promise<ReflectionPrompt | undefined> {
+    const now = new Date();
+    const weekNumber = Math.ceil((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
+    const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay(); // Convert Sunday (0) to 7
+    
+    const [prompt] = await this.db.select().from(reflectionPrompts)
+      .where(and(
+        eq(reflectionPrompts.weekNumber, weekNumber),
+        eq(reflectionPrompts.dayOfWeek, dayOfWeek),
+        eq(reflectionPrompts.isActive, 1)
+      ))
+      .limit(1);
+    
+    // If no prompt for today, get a random active prompt
+    if (!prompt) {
+      const [randomPrompt] = await this.db.select().from(reflectionPrompts)
+        .where(eq(reflectionPrompts.isActive, 1))
+        .orderBy(sql`RANDOM()`)
+        .limit(1);
+      return randomPrompt;
+    }
+    
+    return prompt;
+  }
+
+  async getWeeklyPrompts(weekNumber: number): Promise<ReflectionPrompt[]> {
+    return await this.db.select().from(reflectionPrompts)
+      .where(and(
+        eq(reflectionPrompts.weekNumber, weekNumber),
+        eq(reflectionPrompts.isActive, 1)
+      ))
+      .orderBy(reflectionPrompts.dayOfWeek);
+  }
+
+  async getPromptsByCategory(category: string, limit: number = 10): Promise<ReflectionPrompt[]> {
+    return await this.db.select().from(reflectionPrompts)
+      .where(and(
+        eq(reflectionPrompts.category, category),
+        eq(reflectionPrompts.isActive, 1)
+      ))
+      .limit(limit);
+  }
+
+  async updateReflectionPrompt(id: string, updates: Partial<ReflectionPrompt>): Promise<ReflectionPrompt | undefined> {
+    const [updated] = await this.db.update(reflectionPrompts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(reflectionPrompts.id, id))
+      .returning();
+    return updated;
+  }
+
+  async generateWeeklyTheme(weekNumber: number): Promise<{ theme: string; prompts: ReflectionPrompt[] }> {
+    // Generate a theme based on the week number (cycles through themes)
+    const themes = [
+      "Building Trust Together",
+      "Deepening Emotional Connection", 
+      "Celebrating Each Other",
+      "Navigating Challenges",
+      "Growing in Intimacy",
+      "Creating Shared Dreams",
+      "Practicing Gratitude",
+      "Strengthening Communication"
+    ];
+    
+    const themeIndex = (weekNumber - 1) % themes.length;
+    const theme = themes[themeIndex];
+    
+    const prompts = await this.getWeeklyPrompts(weekNumber);
+    
+    return { theme, prompts };
+  }
+
+  // Relationship Reflections CRUD
+  async createRelationshipReflection(reflection: InsertRelationshipReflection): Promise<RelationshipReflection> {
+    const [created] = await this.db.insert(relationshipReflections).values(reflection).returning();
+    return created;
+  }
+
+  async getRelationshipReflection(id: string): Promise<RelationshipReflection | undefined> {
+    const [reflection] = await this.db.select().from(relationshipReflections)
+      .where(eq(relationshipReflections.id, id));
+    return reflection;
+  }
+
+  async getUserReflections(userId: string, limit: number = 50): Promise<RelationshipReflection[]> {
+    return await this.db.select().from(relationshipReflections)
+      .where(eq(relationshipReflections.userId, userId))
+      .orderBy(desc(relationshipReflections.createdAt))
+      .limit(limit);
+  }
+
+  async getCoupleReflections(coupleId: string, onlyShared: boolean = false): Promise<RelationshipReflection[]> {
+    let query = this.db.select().from(relationshipReflections)
+      .where(eq(relationshipReflections.coupleId, coupleId));
+    
+    if (onlyShared) {
+      query = query.where(and(
+        eq(relationshipReflections.coupleId, coupleId),
+        isNull(relationshipReflections.sharedAt).not()
+      ));
+    }
+    
+    return await query.orderBy(desc(relationshipReflections.createdAt));
+  }
+
+  async getReflectionTimeline(coupleId: string, startDate?: Date, endDate?: Date): Promise<RelationshipReflection[]> {
+    let conditions = [
+      eq(relationshipReflections.coupleId, coupleId),
+      isNull(relationshipReflections.sharedAt).not()
+    ];
+    
+    if (startDate) {
+      conditions.push(sql`${relationshipReflections.sharedAt} >= ${startDate}`);
+    }
+    if (endDate) {
+      conditions.push(sql`${relationshipReflections.sharedAt} <= ${endDate}`);
+    }
+    
+    return await this.db.select().from(relationshipReflections)
+      .where(and(...conditions))
+      .orderBy(desc(relationshipReflections.sharedAt));
+  }
+
+  async updateReflection(id: string, updates: Partial<RelationshipReflection>): Promise<RelationshipReflection | undefined> {
+    const [updated] = await this.db.update(relationshipReflections)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(relationshipReflections.id, id))
+      .returning();
+    return updated;
+  }
+
+  async revealDelayedReflection(id: string): Promise<RelationshipReflection | undefined> {
+    const [revealed] = await this.db.update(relationshipReflections)
+      .set({ sharedAt: new Date(), updatedAt: new Date() })
+      .where(and(
+        eq(relationshipReflections.id, id),
+        eq(relationshipReflections.shareMode, 'delayed')
+      ))
+      .returning();
+    return revealed;
+  }
+
+  async markReflectionViewed(id: string, viewerId: string): Promise<RelationshipReflection | undefined> {
+    const reflection = await this.getRelationshipReflection(id);
+    if (!reflection || reflection.userId === viewerId) return reflection;
+    
+    const [updated] = await this.db.update(relationshipReflections)
+      .set({ partnerViewedAt: new Date(), updatedAt: new Date() })
+      .where(eq(relationshipReflections.id, id))
+      .returning();
+    return updated;
+  }
+
+  async addPartnerReaction(id: string, emoji: string): Promise<RelationshipReflection | undefined> {
+    const [updated] = await this.db.update(relationshipReflections)
+      .set({ partnerReactionEmoji: emoji, updatedAt: new Date() })
+      .where(eq(relationshipReflections.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getUnviewedReflections(userId: string): Promise<RelationshipReflection[]> {
+    // Get user's couple ID first
+    const user = await this.getUser(userId);
+    if (!user?.coupleId) return [];
+    
+    return await this.db.select().from(relationshipReflections)
+      .where(and(
+        eq(relationshipReflections.coupleId, user.coupleId),
+        sql`${relationshipReflections.userId} != ${userId}`,
+        isNull(relationshipReflections.sharedAt).not(),
+        isNull(relationshipReflections.partnerViewedAt)
+      ))
+      .orderBy(desc(relationshipReflections.sharedAt));
+  }
+
+  async highlightReflection(id: string): Promise<RelationshipReflection | undefined> {
+    const [highlighted] = await this.db.update(relationshipReflections)
+      .set({ isHighlight: 1, updatedAt: new Date() })
+      .where(eq(relationshipReflections.id, id))
+      .returning();
+    return highlighted;
+  }
+
+  async processDelayedReflections(): Promise<RelationshipReflection[]> {
+    const now = new Date();
+    
+    // Find all delayed reflections that are ready to be shared
+    const delayedReflections = await this.db.select().from(relationshipReflections)
+      .where(and(
+        eq(relationshipReflections.shareMode, 'delayed'),
+        isNull(relationshipReflections.sharedAt),
+        sql`${relationshipReflections.createdAt} + INTERVAL '${relationshipReflections.shareDelayHours} hours' <= ${now}`
+      ));
+    
+    const revealed = [];
+    for (const reflection of delayedReflections) {
+      const [updated] = await this.db.update(relationshipReflections)
+        .set({ sharedAt: now, updatedAt: now })
+        .where(eq(relationshipReflections.id, reflection.id))
+        .returning();
+      if (updated) revealed.push(updated);
+    }
+    
+    return revealed;
+  }
+
+  // Reflection Insights Generation
+  async createReflectionInsight(insight: InsertReflectionInsight): Promise<ReflectionInsight> {
+    const [created] = await this.db.insert(reflectionInsights).values(insight).returning();
+    return created;
+  }
+
+  async getReflectionInsight(id: string): Promise<ReflectionInsight | undefined> {
+    const [insight] = await this.db.select().from(reflectionInsights)
+      .where(eq(reflectionInsights.id, id));
+    return insight;
+  }
+
+  async getCoupleInsights(coupleId: string, limit: number = 10): Promise<ReflectionInsight[]> {
+    return await this.db.select().from(reflectionInsights)
+      .where(eq(reflectionInsights.coupleId, coupleId))
+      .orderBy(desc(reflectionInsights.createdAt))
+      .limit(limit);
+  }
+
+  async getInsightsByType(coupleId: string, insightType: string): Promise<ReflectionInsight[]> {
+    return await this.db.select().from(reflectionInsights)
+      .where(and(
+        eq(reflectionInsights.coupleId, coupleId),
+        eq(reflectionInsights.insightType, insightType)
+      ))
+      .orderBy(desc(reflectionInsights.createdAt));
+  }
+
+  async markInsightViewed(id: string, userId: string): Promise<ReflectionInsight | undefined> {
+    const insight = await this.getReflectionInsight(id);
+    if (!insight) return undefined;
+    
+    // Determine which user field to update
+    const updateField = insight.viewedByUser1 === 0 ? 'viewedByUser1' : 'viewedByUser2';
+    
+    const [updated] = await this.db.update(reflectionInsights)
+      .set({ [updateField]: 1 })
+      .where(eq(reflectionInsights.id, id))
+      .returning();
+    return updated;
+  }
+
+  async generateWeeklyInsight(coupleId: string): Promise<ReflectionInsight> {
+    // Get reflections from the past week
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    const reflections = await this.getReflectionTimeline(coupleId, weekAgo, new Date());
+    
+    // Basic analysis (in production, this would use AI)
+    const insight: InsertReflectionInsight = {
+      coupleId,
+      insightType: 'weekly',
+      insightTitle: 'Your Weekly Connection Summary',
+      insightContent: `You shared ${reflections.length} meaningful reflections this week.`,
+      reflectionIds: reflections.map(r => r.id),
+      strengthsIdentified: ['Regular sharing', 'Emotional openness'],
+      growthOpportunities: ['Deeper vulnerability', 'More frequent check-ins'],
+      suggestedActions: ['Schedule a weekly reflection date', 'Try voice notes for deeper sharing'],
+      insightPeriodStart: weekAgo,
+      insightPeriodEnd: new Date(),
+      sentimentScore: 7,
+      connectionScore: 8
+    };
+    
+    return this.createReflectionInsight(insight);
+  }
+
+  async generateMonthlyInsight(coupleId: string): Promise<ReflectionInsight> {
+    // Get reflections from the past month
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    
+    const reflections = await this.getReflectionTimeline(coupleId, monthAgo, new Date());
+    
+    // Basic analysis (in production, this would use AI)
+    const insight: InsertReflectionInsight = {
+      coupleId,
+      insightType: 'monthly',
+      insightTitle: 'Your Monthly Relationship Growth',
+      insightContent: `This month, you've shared ${reflections.length} reflections and grown closer through consistent connection.`,
+      reflectionIds: reflections.map(r => r.id),
+      strengthsIdentified: ['Consistency', 'Mutual support', 'Growth mindset'],
+      growthOpportunities: ['Conflict resolution', 'Quality time planning'],
+      suggestedActions: ['Plan a monthly relationship review', 'Set shared goals for next month'],
+      insightPeriodStart: monthAgo,
+      insightPeriodEnd: new Date(),
+      sentimentScore: 8,
+      connectionScore: 8
+    };
+    
+    return this.createReflectionInsight(insight);
+  }
+
+  async getLatestInsight(coupleId: string): Promise<ReflectionInsight | undefined> {
+    const [latest] = await this.db.select().from(reflectionInsights)
+      .where(eq(reflectionInsights.coupleId, coupleId))
+      .orderBy(desc(reflectionInsights.createdAt))
+      .limit(1);
+    return latest;
   }
 }
 

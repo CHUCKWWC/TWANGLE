@@ -796,3 +796,116 @@ export const insertChallengeReflectionSchema = createInsertSchema(challengeRefle
 
 export type InsertChallengeReflection = z.infer<typeof insertChallengeReflectionSchema>;
 export type ChallengeReflection = typeof challengeReflections.$inferSelect;
+
+// ================== NEW RELATIONSHIP REFLECTIONS SYSTEM ==================
+// This system replaces the Daily Conversations with a more engaging multimedia experience
+
+// Reflection prompts to replace conversationQuestions
+export const reflectionPrompts = pgTable("reflection_prompts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  promptType: varchar("prompt_type").notNull(), // 'question' | 'activity' | 'challenge'
+  promptText: text("prompt_text").notNull(),
+  category: varchar("category").notNull(),
+  intensity: integer("intensity").default(1), // 1-5 scale
+  weeklyTheme: varchar("weekly_theme"), // Theme for the week
+  weekNumber: integer("week_number"), // Week in the year
+  dayOfWeek: integer("day_of_week"), // 1-7 (Monday-Sunday)
+  followUpPrompts: text("follow_up_prompts").array(), // Additional prompts for deeper exploration
+  mediaType: varchar("media_type"), // Suggested media type: 'text' | 'voice' | 'image' | 'any'
+  promptTags: text("prompt_tags").array(), // Tags for filtering/categorization
+  isActive: integer("is_active").default(1),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_reflection_prompts_week").on(table.weekNumber),
+  index("idx_reflection_prompts_category").on(table.category),
+  index("idx_reflection_prompts_active").on(table.isActive),
+]);
+
+export const insertReflectionPromptSchema = createInsertSchema(reflectionPrompts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertReflectionPrompt = z.infer<typeof insertReflectionPromptSchema>;
+export type ReflectionPrompt = typeof reflectionPrompts.$inferSelect;
+
+// Relationship reflections - multimedia responses with flexible sharing
+export const relationshipReflections = pgTable("relationship_reflections", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  coupleId: varchar("couple_id"),
+  promptId: varchar("prompt_id"),
+  responseType: varchar("response_type").notNull(), // 'text' | 'voice' | 'image' | 'mixed'
+  textResponse: text("text_response"),
+  voiceNoteUrl: varchar("voice_note_url"),
+  imageUrl: varchar("image_url"),
+  mood: varchar("mood"), // Current emotional state
+  tags: text("tags").array(), // User-defined tags
+  shareMode: varchar("share_mode").notNull().default("immediate"), // 'immediate' | 'delayed' | 'weekly' | 'private'
+  shareDelayHours: integer("share_delay_hours"), // If delayed, how many hours
+  sharedAt: timestamp("shared_at"), // When it was actually shared
+  partnerViewedAt: timestamp("partner_viewed_at"), // When partner viewed it
+  partnerReactionEmoji: varchar("partner_reaction_emoji"), // Partner's reaction
+  partnerResponseId: varchar("partner_response_id"), // Link to partner's reflection on same prompt
+  isHighlight: integer("is_highlight").default(0), // Mark special reflections
+  metadata: jsonb("metadata"), // Additional flexible data
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_relationship_reflections_user").on(table.userId),
+  index("idx_relationship_reflections_couple").on(table.coupleId),
+  index("idx_relationship_reflections_shared").on(table.sharedAt),
+  index("idx_relationship_reflections_prompt").on(table.promptId),
+]);
+
+export const insertRelationshipReflectionSchema = createInsertSchema(relationshipReflections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  responseType: z.enum(["text", "voice", "image", "mixed"]),
+  shareMode: z.enum(["immediate", "delayed", "weekly", "private"]),
+  mood: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export type InsertRelationshipReflection = z.infer<typeof insertRelationshipReflectionSchema>;
+export type RelationshipReflection = typeof relationshipReflections.$inferSelect;
+
+// AI-generated insights based on reflections
+export const reflectionInsights = pgTable("reflection_insights", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  coupleId: varchar("couple_id").notNull(),
+  insightType: varchar("insight_type").notNull(), // 'weekly' | 'monthly' | 'milestone' | 'pattern'
+  insightTitle: varchar("insight_title").notNull(),
+  insightContent: text("insight_content").notNull(),
+  reflectionIds: text("reflection_ids").array(), // References to reflections used for this insight
+  strengthsIdentified: text("strengths_identified").array(),
+  growthOpportunities: text("growth_opportunities").array(),
+  suggestedActions: text("suggested_actions").array(),
+  insightPeriodStart: timestamp("insight_period_start"),
+  insightPeriodEnd: timestamp("insight_period_end"),
+  sentimentScore: integer("sentiment_score"), // Overall sentiment 1-10
+  connectionScore: integer("connection_score"), // Connection quality 1-10
+  viewedByUser1: integer("viewed_by_user1").default(0),
+  viewedByUser2: integer("viewed_by_user2").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_reflection_insights_couple").on(table.coupleId),
+  index("idx_reflection_insights_period").on(table.insightPeriodStart, table.insightPeriodEnd),
+  index("idx_reflection_insights_type").on(table.insightType),
+]);
+
+export const insertReflectionInsightSchema = createInsertSchema(reflectionInsights).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  insightType: z.enum(["weekly", "monthly", "milestone", "pattern"]),
+  sentimentScore: z.number().int().min(1).max(10).optional(),
+  connectionScore: z.number().int().min(1).max(10).optional(),
+});
+
+export type InsertReflectionInsight = z.infer<typeof insertReflectionInsightSchema>;
+export type ReflectionInsight = typeof reflectionInsights.$inferSelect;

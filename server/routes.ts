@@ -3243,6 +3243,202 @@ Make sure the percentages add up to 100. Base your analysis on established attac
     }
   });
 
+  // ===== NEW RELATIONSHIP REFLECTIONS SYSTEM ROUTES =====
+  
+  // Get today's reflection prompt
+  app.get('/api/reflections/prompt', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const prompt = await storage.getTodayReflectionPrompt(userId);
+      
+      if (!prompt) {
+        return res.status(404).json({ message: "No reflection prompt available for today" });
+      }
+      
+      res.json(prompt);
+    } catch (error: any) {
+      console.error("Get reflection prompt error:", error);
+      res.status(500).json({ message: "Failed to get reflection prompt" });
+    }
+  });
+  
+  // Submit a reflection with multimedia support
+  app.post('/api/reflections/respond', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      const {
+        promptId,
+        responseType = 'text',
+        textResponse,
+        voiceNoteUrl,
+        imageUrl,
+        mood,
+        tags,
+        shareMode = 'immediate',
+        shareDelayHours = 0
+      } = req.body;
+      
+      // Validate that at least one response type is provided
+      if (!textResponse && !voiceNoteUrl && !imageUrl) {
+        return res.status(400).json({ 
+          message: "At least one response (text, voice, or image) is required" 
+        });
+      }
+      
+      // Create the reflection
+      const reflection = await storage.createRelationshipReflection({
+        userId,
+        coupleId: user?.coupleId || null,
+        promptId,
+        responseType,
+        textResponse,
+        voiceNoteUrl,
+        imageUrl,
+        mood,
+        tags,
+        shareMode,
+        shareDelayHours,
+        sharedAt: shareMode === 'immediate' ? new Date() : null
+      });
+      
+      // If AI insights requested and OpenAI is configured
+      if (req.body.generateInsight && textResponse && openai) {
+        try {
+          const insightCompletion = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              {
+                role: "system",
+                content: `You are a relationship coach analyzing a partner's reflection. Provide a brief, supportive insight about what this reveals about their emotional state or relationship needs. Be encouraging and constructive. Format as a single paragraph.`
+              },
+              {
+                role: "user",
+                content: `Mood: ${mood || 'not specified'}\nReflection: ${textResponse}`
+              }
+            ],
+            max_tokens: 200,
+          });
+          
+          const aiInsight = insightCompletion.choices[0]?.message?.content;
+          if (aiInsight && reflection.metadata) {
+            // Update reflection with AI insight
+            await storage.updateReflection(reflection.id, {
+              metadata: { ...reflection.metadata, aiInsight }
+            });
+            reflection.metadata = { ...reflection.metadata, aiInsight };
+          }
+        } catch (aiError) {
+          console.error("AI insight generation error:", aiError);
+          // Continue without AI insight
+        }
+      }
+      
+      res.json(reflection);
+    } catch (error: any) {
+      console.error("Create reflection error:", error);
+      res.status(500).json({ message: "Failed to create reflection" });
+    }
+  });
+  
+  // Get couple's shared timeline
+  app.get('/api/reflections/timeline', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.coupleId) {
+        // Return user's solo reflections if not coupled
+        const soloReflections = await storage.getUserReflections(userId, 30);
+        return res.json(soloReflections);
+      }
+      
+      // Get couple's shared reflections
+      const { startDate, endDate } = req.query;
+      const start = startDate ? new Date(startDate as string) : undefined;
+      const end = endDate ? new Date(endDate as string) : undefined;
+      
+      const timeline = await storage.getReflectionTimeline(user.coupleId, start, end);
+      
+      // Mark partner's reflections as viewed
+      for (const reflection of timeline) {
+        if (reflection.userId !== userId && !reflection.partnerViewedAt) {
+          await storage.markReflectionViewed(reflection.id, userId);
+        }
+      }
+      
+      res.json(timeline);
+    } catch (error: any) {
+      console.error("Get reflection timeline error:", error);
+      res.status(500).json({ message: "Failed to get reflection timeline" });
+    }
+  });
+  
+  // Manually reveal a delayed reflection
+  app.post('/api/reflections/reveal', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { reflectionId } = req.body;
+      
+      if (!reflectionId) {
+        return res.status(400).json({ message: "Reflection ID is required" });
+      }
+      
+      // Get reflection and verify ownership
+      const reflection = await storage.getRelationshipReflection(reflectionId);
+      if (!reflection) {
+        return res.status(404).json({ message: "Reflection not found" });
+      }
+      
+      if (reflection.userId !== userId) {
+        return res.status(403).json({ message: "Not authorized to reveal this reflection" });
+      }
+      
+      if (reflection.shareMode !== 'delayed') {
+        return res.status(400).json({ message: "Only delayed reflections can be manually revealed" });
+      }
+      
+      // Reveal the reflection
+      const revealed = await storage.revealDelayedReflection(reflectionId);
+      res.json(revealed);
+    } catch (error: any) {
+      console.error("Reveal reflection error:", error);
+      res.status(500).json({ message: "Failed to reveal reflection" });
+    }
+  });
+  
+  // Get AI-generated insights
+  app.get('/api/reflections/insights', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.coupleId) {
+        return res.status(400).json({ message: "Insights are only available for coupled users" });
+      }
+      
+      const { insightType, limit = 5 } = req.query;
+      
+      let insights;
+      if (insightType) {
+        insights = await storage.getInsightsByType(user.coupleId, insightType as string);
+      } else {
+        insights = await storage.getCoupleInsights(user.coupleId, Number(limit));
+      }
+      
+      // Mark insights as viewed
+      for (const insight of insights) {
+        await storage.markInsightViewed(insight.id, userId);
+      }
+      
+      res.json(insights);
+    } catch (error: any) {
+      console.error("Get insights error:", error);
+      res.status(500).json({ message: "Failed to get insights" });
+    }
+  });
+
   // ===== CONVERSATION ROUTES =====
   
   // Get daily question (works for both solo and partnered users)
