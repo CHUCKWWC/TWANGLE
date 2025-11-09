@@ -169,14 +169,12 @@ export default function Login() {
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="flex justify-center">
-            <div className="bg-primary/10 p-4 rounded-full">
-              <Heart className="w-12 h-12 text-primary" />
-            </div>
+            <img 
+              src="/twangle-logo.png" 
+              alt="Twangle - Two Tangled Together" 
+              className="h-32 w-auto"
+            />
           </div>
-          
-          <h1 className="font-display font-bold text-4xl text-foreground">
-            Twangle
-          </h1>
           
           <p className="text-lg text-muted-foreground">
             Your AI-powered relationship coach
