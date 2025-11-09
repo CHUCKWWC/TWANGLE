@@ -1093,6 +1093,7 @@ export class MemStorage implements IStorage {
       sharedAssessments: partnership.sharedAssessments ?? 1,
       sharedProgress: partnership.sharedProgress ?? 1,
       sharedJournal: partnership.sharedJournal ?? 0,
+      nextQuestionCategory: null,
       connectedAt: null, // Default value, not from input
       createdAt: new Date(),
     };
@@ -2738,6 +2739,15 @@ export class DbStorage implements IStorage {
       return undefined;
     }
 
+    // Check if partners have chosen a specific category for the next question
+    const chosenCategory = partnership.nextQuestionCategory;
+    
+    // Build where conditions for question query
+    const whereConditions = [eq(conversationQuestions.active, 1)];
+    if (chosenCategory) {
+      whereConditions.push(eq(conversationQuestions.category, chosenCategory));
+    }
+
     // Find all questions where both partners haven't responded
     const allQuestions = await this.db.select({
       id: conversationQuestions.id,
@@ -2748,7 +2758,7 @@ export class DbStorage implements IStorage {
       active: conversationQuestions.active,
       createdAt: conversationQuestions.createdAt,
     }).from(conversationQuestions)
-      .where(eq(conversationQuestions.active, 1))
+      .where(and(...whereConditions))
       .orderBy(conversationQuestions.createdAt);
 
     for (const question of allQuestions) {
@@ -2757,8 +2767,19 @@ export class DbStorage implements IStorage {
       const user2Responded = responses.some(r => r.userId === partnership.user2Id);
       
       if (!user1Responded || !user2Responded) {
+        // Clear the category preference after finding a question
+        if (chosenCategory) {
+          await this.updatePartnership(partnershipId, { nextQuestionCategory: null });
+        }
         return question;
       }
+    }
+
+    // If no unanswered questions in chosen category, clear preference and try any category
+    if (chosenCategory) {
+      await this.updatePartnership(partnershipId, { nextQuestionCategory: null });
+      // Recursively call without category filter
+      return this.getDailyQuestion(partnershipId);
     }
 
     // If all questions completed, return a random one
