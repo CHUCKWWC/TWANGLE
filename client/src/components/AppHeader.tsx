@@ -1,5 +1,5 @@
 import { useLocation, Link } from "wouter";
-import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, Heart, Users, Activity, Sparkles, MessageSquare, Shield } from "lucide-react";
+import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, Heart, Users, Activity, Sparkles, MessageSquare, Shield, Calendar, Mountain, Zap } from "lucide-react";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
@@ -92,7 +92,32 @@ export function AppHeader() {
       {!isAnonymous && (
         <>
           <div className="px-4 py-2 mt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Track Progress
+            Programs & Activities
+          </div>
+          <MobileNavLink 
+            href="/datenight" 
+            icon={Heart} 
+            label="Date Night Planner" 
+            badge={{ text: "FREE", variant: "secondary" }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <MobileNavLink 
+            href="/40day" 
+            icon={Zap} 
+            label="40-Day Twangle" 
+            badge={{ text: "NEW", variant: "destructive" }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <MobileNavLink 
+            href="/retreat" 
+            icon={Mountain} 
+            label="Retreat Builder" 
+            badge={{ text: "PREMIUM", variant: "default" }}
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          
+          <div className="px-4 py-2 mt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Track & Analyze
           </div>
           <MobileNavLink 
             href="/health-score" 
@@ -117,7 +142,7 @@ export function AppHeader() {
           />
           
           <div className="px-4 py-2 mt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Relationship Tools
+            Connect & Share
           </div>
           <MobileNavLink 
             href="/partner-connection" 
@@ -137,14 +162,7 @@ export function AppHeader() {
             href="/conversations" 
             icon={MessageSquare} 
             label="Daily Conversations" 
-            badge={{ text: "3 FREE", variant: "default" }}
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <MobileNavLink 
-            href="/reflections" 
-            icon={Sparkles} 
-            label="Reflections" 
-            badge={{ text: "NEW", variant: "destructive" }}
+            badge={{ text: "FREE", variant: "secondary" }}
             onClick={() => setMobileMenuOpen(false)}
           />
         </>
@@ -241,40 +259,43 @@ export function AppHeader() {
                         variant="ghost" 
                         size="sm" 
                         className="gap-2 text-muted-foreground hover:text-foreground"
-                        data-testid="dropdown-progress"
+                        data-testid="dropdown-programs"
                       >
-                        <TrendingUp className="h-4 w-4" />
-                        Progress
+                        <Zap className="h-4 w-4" />
+                        Programs & Activities
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-56">
-                      <DropdownMenuLabel>Track Your Growth</DropdownMenuLabel>
+                      <DropdownMenuLabel>Build Your Journey</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <Link href="/health-score">
-                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-health-score">
+                      <Link href="/datenight">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-datenight">
                           <Heart className="h-4 w-4 text-primary" />
                           <div className="flex-1">
-                            <div className="font-medium">Health Score</div>
-                            <div className="text-xs text-muted-foreground">Track wellness</div>
+                            <div className="font-medium">Date Night Planner</div>
+                            <div className="text-xs text-muted-foreground">Create memorable experiences</div>
                           </div>
+                          <Badge variant="secondary" className="text-xs">FREE</Badge>
                         </DropdownMenuItem>
                       </Link>
-                      <Link href="/insights">
-                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-insights">
-                          <Sparkles className="h-4 w-4 text-primary" />
+                      <Link href="/40day">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-40day">
+                          <Zap className="h-4 w-4 text-primary" />
                           <div className="flex-1">
-                            <div className="font-medium">Insights</div>
-                            <div className="text-xs text-muted-foreground">AI analytics</div>
+                            <div className="font-medium">40-Day Twangle</div>
+                            <div className="text-xs text-muted-foreground">Daily growth challenges</div>
                           </div>
+                          <Badge variant="destructive" className="text-xs">NEW</Badge>
                         </DropdownMenuItem>
                       </Link>
-                      <Link href="/summaries">
-                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-summaries">
-                          <FileText className="h-4 w-4 text-primary" />
+                      <Link href="/retreat">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-retreat">
+                          <Mountain className="h-4 w-4 text-primary" />
                           <div className="flex-1">
-                            <div className="font-medium">Summaries</div>
-                            <div className="text-xs text-muted-foreground">Weekly recaps</div>
+                            <div className="font-medium">Retreat Builder</div>
+                            <div className="text-xs text-muted-foreground">Plan your getaway</div>
                           </div>
+                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
                         </DropdownMenuItem>
                       </Link>
                     </DropdownMenuContent>
@@ -286,31 +307,81 @@ export function AppHeader() {
                         variant="ghost" 
                         size="sm" 
                         className="gap-2 text-muted-foreground hover:text-foreground"
-                        data-testid="dropdown-tools"
+                        data-testid="dropdown-track"
                       >
-                        <Users className="h-4 w-4" />
-                        Tools
+                        <TrendingUp className="h-4 w-4" />
+                        Track & Analyze
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="w-56">
-                      <DropdownMenuLabel>Relationship Tools</DropdownMenuLabel>
+                      <DropdownMenuLabel>Monitor Your Progress</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <Link href="/health-score">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-health-score">
+                          <Heart className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <div className="font-medium">Health Score</div>
+                            <div className="text-xs text-muted-foreground">Track relationship wellness</div>
+                          </div>
+                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/insights">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-insights">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <div className="font-medium">AI Insights</div>
+                            <div className="text-xs text-muted-foreground">Personalized analytics</div>
+                          </div>
+                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href="/summaries">
+                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-summaries">
+                          <FileText className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <div className="font-medium">Weekly Summaries</div>
+                            <div className="text-xs text-muted-foreground">Review your journey</div>
+                          </div>
+                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                        </DropdownMenuItem>
+                      </Link>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="gap-2 text-muted-foreground hover:text-foreground"
+                        data-testid="dropdown-connect"
+                      >
+                        <Users className="h-4 w-4" />
+                        Connect & Share
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      <DropdownMenuLabel>Strengthen Your Bond</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <Link href="/partner-connection">
                         <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-partner-connection">
                           <Users className="h-4 w-4 text-primary" />
                           <div className="flex-1">
                             <div className="font-medium">Partner Connection</div>
-                            <div className="text-xs text-muted-foreground">Share progress</div>
+                            <div className="text-xs text-muted-foreground">Share your progress</div>
                           </div>
+                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
                         </DropdownMenuItem>
                       </Link>
                       <Link href="/journal">
                         <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-journal">
                           <Activity className="h-4 w-4 text-primary" />
                           <div className="flex-1">
-                            <div className="font-medium">Journal</div>
-                            <div className="text-xs text-muted-foreground">Reflect & grow</div>
+                            <div className="font-medium">Relationship Journal</div>
+                            <div className="text-xs text-muted-foreground">Reflect together</div>
                           </div>
+                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
                         </DropdownMenuItem>
                       </Link>
                       <Link href="/conversations">
@@ -318,18 +389,9 @@ export function AppHeader() {
                           <MessageSquare className="h-4 w-4 text-primary" />
                           <div className="flex-1">
                             <div className="font-medium">Daily Conversations</div>
-                            <div className="text-xs text-muted-foreground">3 free questions</div>
+                            <div className="text-xs text-muted-foreground">Deepen your connection</div>
                           </div>
-                        </DropdownMenuItem>
-                      </Link>
-                      <Link href="/reflections">
-                        <DropdownMenuItem className="gap-2 cursor-pointer" data-testid="link-reflections">
-                          <Sparkles className="h-4 w-4 text-primary" />
-                          <div className="flex-1">
-                            <div className="font-medium">Reflections</div>
-                            <div className="text-xs text-muted-foreground">Share deeper insights</div>
-                          </div>
-                          <Badge variant="destructive" className="text-xs">NEW</Badge>
+                          <Badge variant="secondary" className="text-xs">FREE</Badge>
                         </DropdownMenuItem>
                       </Link>
                     </DropdownMenuContent>
