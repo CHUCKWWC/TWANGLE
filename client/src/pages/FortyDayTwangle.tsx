@@ -16,6 +16,8 @@ interface Challenge {
   dayNumber: number;
   title: string;
   scripture: string;
+  scriptureText?: string;
+  translation?: string;
   summary: string;
   actionPrompt: string;
   journalQuestion: string;
@@ -331,6 +333,24 @@ export default function FortyDayTwangle() {
                 </CardHeader>
                 
                 <CardContent className="pt-6 space-y-6">
+                  {/* Scripture Text */}
+                  {currentChallenge?.scriptureText && (
+                    <div className="bg-muted/50 rounded-lg p-6">
+                      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                        <BookOpen className="w-5 h-5 text-primary" />
+                        Scripture
+                      </h3>
+                      <div className="space-y-3">
+                        <p className="text-foreground leading-relaxed text-base italic">
+                          "{currentChallenge.scriptureText}"
+                        </p>
+                        <p className="text-sm text-muted-foreground text-right">
+                          {currentChallenge.scripture} {currentChallenge.translation || "The Message"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Scripture Summary */}
                   <div className="bg-muted/50 rounded-lg p-6">
                     <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">

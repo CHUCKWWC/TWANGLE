@@ -731,6 +731,8 @@ export const challenges = pgTable("challenges", {
   dayNumber: integer("day_number").notNull().unique(),
   title: varchar("title").notNull(),
   scripture: varchar("scripture").notNull(),
+  scriptureText: text("scripture_text"), // Full scripture text from The Message translation
+  translation: varchar("translation").default("The Message"), // Translation version
   summary: text("summary").notNull(),
   actionPrompt: text("action_prompt").notNull(),
   journalQuestion: text("journal_question").notNull(),
