@@ -170,10 +170,9 @@ export default function Login() {
         <div className="text-center space-y-3">
           <div className="flex justify-center">
             <img 
-              src="/twangle-logo.jpg" 
+              src="/twangle-logo.png" 
               alt="Twangle - Two Tangled Together" 
               className="h-32 w-auto"
-              style={{ mixBlendMode: 'screen' }}
             />
           </div>
           
