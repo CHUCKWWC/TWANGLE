@@ -210,7 +210,7 @@ export function AppHeader() {
               data-testid="link-home"
             >
               <img 
-                src="/twangle-logo.png" 
+                src="/twangle-logo.jpg" 
                 alt="Twangle - Two Tangled Together" 
                 className="h-16 w-auto"
               />

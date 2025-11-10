@@ -170,7 +170,7 @@ export default function Login() {
         <div className="text-center space-y-3">
           <div className="flex justify-center">
             <img 
-              src="/twangle-logo.png" 
+              src="/twangle-logo.jpg" 
               alt="Twangle - Two Tangled Together" 
               className="h-32 w-auto"
             />
