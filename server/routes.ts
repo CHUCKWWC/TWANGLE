@@ -436,6 +436,196 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced dashboard stats endpoint
+  app.get('/api/dashboard/stats', isAuthenticated, logUserAccess, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      // Get all basic stats
+      const [
+        assessments,
+        chatSessions,
+        retreats,
+        subscription,
+        healthScore,
+        partnership,
+        journalEntries
+      ] = await Promise.all([
+        storage.getAssessmentsByUser(userId),
+        storage.getChatSessionsByUser(userId),
+        storage.getRetreatItineraries(userId),
+        storage.getSubscriptionByUserId(userId),
+        storage.getLatestHealthScore(userId),
+        storage.getActivePartnership(userId),
+        storage.getJournalEntries(userId, 50)
+      ]);
+
+      // Get today's conversation status and recent activity
+      const now = new Date();
+      let answeredTodayConversation = false;
+      let conversationStreak = 0;
+      
+      // Get conversation history if partnership exists
+      let conversationHistory: any[] = [];
+      if (partnership && partnership.status === 'active') {
+        conversationHistory = await storage.getConversationHistory(partnership.id, 30);
+        
+        // Check if user answered today's conversation
+        const todayStr = now.toDateString();
+        answeredTodayConversation = conversationHistory.some(item => {
+          const userResponse = item.responses?.find((r: any) => r.userId === userId);
+          if (!userResponse) return false;
+          return new Date(userResponse.createdAt).toDateString() === todayStr;
+        });
+      }
+
+      // Get this week's activity (last 7 days)
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const thisWeekJournals = journalEntries.filter(e => 
+        new Date(e.createdAt) >= weekAgo
+      ).length;
+      const thisWeekChats = chatSessions.filter(s => 
+        new Date(s.startedAt) >= weekAgo
+      ).length;
+      
+      // Count conversations this week
+      const thisWeekConversations = conversationHistory.filter(item => {
+        const userResponse = item.responses?.find((r: any) => r.userId === userId);
+        if (!userResponse) return false;
+        return new Date(userResponse.createdAt) >= weekAgo;
+      }).length;
+
+      // Get last week's activity for comparison
+      const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+      const lastWeekChats = chatSessions.filter(s => {
+        const date = new Date(s.startedAt);
+        return date >= twoWeeksAgo && date < weekAgo;
+      }).length;
+      
+      const lastWeekConversations = conversationHistory.filter(item => {
+        const userResponse = item.responses?.find((r: any) => r.userId === userId);
+        if (!userResponse) return false;
+        const date = new Date(userResponse.createdAt);
+        return date >= twoWeeksAgo && date < weekAgo;
+      }).length;
+
+      // Get partner info if partnership exists
+      let partnerInfo = null;
+      if (partnership && partnership.status === 'active') {
+        const partnerId = partnership.user1Id === userId ? partnership.user2Id : partnership.user1Id;
+        if (partnerId) {
+          const partner = await storage.getUser(partnerId);
+          if (partner) {
+            // Check if partner answered today's conversation
+            const todayStr = now.toDateString();
+            const partnerAnsweredToday = conversationHistory.some(item => {
+              const partnerResponse = item.responses?.find((r: any) => r.userId === partnerId);
+              if (!partnerResponse) return false;
+              return new Date(partnerResponse.createdAt).toDateString() === todayStr;
+            });
+
+            partnerInfo = {
+              firstName: partner.firstName,
+              displayName: partner.displayName,
+              profileImageUrl: partner.profileImageUrl,
+              answeredToday: partnerAnsweredToday
+            };
+          }
+        }
+        
+        // Calculate conversation streak (consecutive days both answered)
+        if (conversationHistory.length > 0) {
+          let currentDate = new Date(now);
+          currentDate.setHours(0, 0, 0, 0);
+          const partnerId = partnership.user1Id === userId ? partnership.user2Id : partnership.user1Id;
+          
+          while (conversationStreak < 100) {
+            const dateStr = currentDate.toDateString();
+            const dayResponses = conversationHistory.filter(item => {
+              const anyResponseToday = item.responses?.some((r: any) => 
+                new Date(r.createdAt).toDateString() === dateStr
+              );
+              return anyResponseToday;
+            });
+            
+            if (dayResponses.length > 0) {
+              const bothAnswered = dayResponses.some(item => {
+                const userAnswered = item.responses?.some((r: any) => r.userId === userId);
+                const partnerAnswered = item.responses?.some((r: any) => r.userId === partnerId);
+                return userAnswered && partnerAnswered;
+              });
+              
+              if (bothAnswered) {
+                conversationStreak++;
+                currentDate.setDate(currentDate.getDate() - 1);
+              } else {
+                break;
+              }
+            } else {
+              break;
+            }
+          }
+        }
+      }
+
+      // Get most recent chat session for "Continue" action
+      const recentChatSession = chatSessions.length > 0 ? chatSessions[0] : null;
+
+      res.json({
+        // Basic stats
+        assessmentCount: assessments.length,
+        chatSessionCount: chatSessions.length,
+        retreatCount: retreats.length,
+        journalCount: journalEntries.length,
+        conversationCount: user?.conversationResponseCount || 0,
+        
+        // Subscription
+        subscriptionStatus: subscription?.status || 'none',
+        subscriptionTier: subscription?.planTier || 'free',
+        
+        // Health score with trend
+        healthScore: healthScore ? {
+          overallScore: healthScore.overallScore,
+          breakdown: healthScore.breakdown,
+          calculatedAt: healthScore.calculatedAt
+        } : null,
+        
+        // Partnership
+        hasPartner: !!partnership && partnership.status === 'active',
+        partnerInfo,
+        conversationStreak,
+        
+        // Today's activity
+        answeredTodayConversation,
+        
+        // This week vs last week
+        thisWeek: {
+          conversations: thisWeekConversations,
+          journals: thisWeekJournals,
+          chatSessions: thisWeekChats
+        },
+        lastWeek: {
+          conversations: lastWeekConversations,
+          chatSessions: lastWeekChats
+        },
+        
+        // Recent activity for "Continue" actions
+        recentChatSession: recentChatSession ? {
+          id: recentChatSession.id,
+          lastMessageAt: recentChatSession.lastMessageAt,
+          messageCount: recentChatSession.messageCount
+        } : null,
+        
+        // User info
+        firstName: user?.firstName || user?.displayName || 'there'
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
   // Public social proof statistics endpoint (no authentication required)
   app.get('/api/social-proof', async (req: any, res) => {
     try {

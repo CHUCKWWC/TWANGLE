@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { TrialValueDashboard } from "@/components/TrialValueDashboard";
 import { TrialChecklist } from "@/components/TrialChecklist";
 import { 
@@ -14,22 +15,61 @@ import {
   Calendar,
   CheckCircle2,
   Utensils,
-  BookOpen
+  BookOpen,
+  Flame,
+  Users,
+  ArrowUp,
+  ArrowDown,
+  Sparkles,
+  Clock,
+  Target
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
-interface UserStats {
+interface DashboardStats {
   assessmentCount: number;
   chatSessionCount: number;
   retreatCount: number;
+  journalCount: number;
+  conversationCount: number;
   subscriptionStatus: string;
   subscriptionTier: string;
+  healthScore: {
+    overallScore: number;
+    breakdown: any;
+    calculatedAt: string;
+  } | null;
+  hasPartner: boolean;
+  partnerInfo: {
+    firstName: string;
+    displayName: string;
+    profileImageUrl: string | null;
+    answeredToday: boolean;
+  } | null;
+  conversationStreak: number;
+  answeredTodayConversation: boolean;
+  thisWeek: {
+    conversations: number;
+    journals: number;
+    chatSessions: number;
+  };
+  lastWeek: {
+    conversations: number;
+    chatSessions: number;
+  };
+  recentChatSession: {
+    id: string;
+    lastMessageAt: string;
+    messageCount: number;
+  } | null;
+  firstName: string;
 }
 
 export default function Dashboard() {
   const [, navigate] = useLocation();
 
-  const { data: stats, isLoading, isError, error, refetch } = useQuery<UserStats>({
-    queryKey: ["/api/user/stats"],
+  const { data: stats, isLoading, isError, error, refetch } = useQuery<DashboardStats>({
+    queryKey: ["/api/dashboard/stats"],
   });
 
   if (isLoading) {
@@ -66,19 +106,172 @@ export default function Dashboard() {
   const hasCompletedAssessment = (stats?.assessmentCount ?? 0) > 0;
   const hasUsedCoach = (stats?.chatSessionCount ?? 0) > 0;
   const hasPlannedRetreat = (stats?.retreatCount ?? 0) > 0;
+  
+  const conversationChange = (stats?.thisWeek.conversations ?? 0) - (stats?.lastWeek.conversations ?? 0);
+  const chatChange = (stats?.thisWeek.chatSessions ?? 0) - (stats?.lastWeek.chatSessions ?? 0);
+  
+  const totalThisWeek = (stats?.thisWeek.conversations ?? 0) + (stats?.thisWeek.journals ?? 0) + (stats?.thisWeek.chatSessions ?? 0);
+  const showCelebration = totalThisWeek >= 5 || (stats?.conversationStreak ?? 0) >= 3;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 pt-20">
       <div className="max-w-7xl mx-auto">
-        {/* Welcome Section */}
+        {/* Hero Section: Personalized Greeting + Health Score */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
-            Your Relationship Journey
-          </h1>
-          <p className="text-muted-foreground">
-            Track your progress and continue building a stronger connection
-          </p>
+          <div className="flex flex-col gap-6">
+            {/* Personalized Greeting */}
+            <div>
+              <h1 className="text-3xl md:text-4xl font-display font-bold mb-2" data-testid="text-greeting">
+                Welcome back, {stats?.firstName}!
+              </h1>
+              <p className="text-muted-foreground">
+                {totalThisWeek > 0 
+                  ? `You've taken ${totalThisWeek} step${totalThisWeek === 1 ? '' : 's'} toward a healthier relationship this week` 
+                  : "Start your journey to a healthier relationship today"
+                }
+              </p>
+            </div>
+
+            {/* Health Score + Celebration */}
+            {stats?.healthScore && (
+              <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent" data-testid="card-health-score">
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target className="w-5 h-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Relationship Health Score</h3>
+                        {showCelebration && (
+                          <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+                        )}
+                      </div>
+                      <div className="flex items-baseline gap-3 mb-3">
+                        <span className="text-4xl font-bold text-primary" data-testid="text-health-score">
+                          {stats.healthScore.overallScore}
+                        </span>
+                        <span className="text-muted-foreground text-sm">out of 100</span>
+                      </div>
+                      <Progress value={stats.healthScore.overallScore} className="h-2" />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Last calculated {formatDistanceToNow(new Date(stats.healthScore.calculatedAt), { addSuffix: true })}
+                      </p>
+                    </div>
+                    
+                    {showCelebration && (
+                      <div className="bg-primary/10 rounded-lg p-4 text-center">
+                        <Sparkles className="w-8 h-8 text-primary mx-auto mb-2" />
+                        <p className="text-sm font-semibold text-primary">Great momentum!</p>
+                        <p className="text-xs text-muted-foreground mt-1">Keep it up</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
+
+        {/* Daily Conversation Widget */}
+        <Card className="mb-8 border-primary/30" data-testid="card-daily-conversation">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4 flex-1">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-semibold">Today's Conversation</h3>
+                    {stats?.conversationStreak ? (
+                      <Badge variant="secondary" className="gap-1">
+                        <Flame className="w-3 h-3" />
+                        {stats.conversationStreak} day streak
+                      </Badge>
+                    ) : null}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {stats?.answeredTodayConversation
+                      ? stats?.hasPartner
+                        ? stats?.partnerInfo?.answeredToday
+                          ? "Both of you have answered! View your responses."
+                          : `Waiting for ${stats?.partnerInfo?.firstName || 'your partner'} to respond...`
+                        : "You've answered today's question"
+                      : stats?.hasPartner
+                        ? "A new question is waiting for you both"
+                        : "Answer today's question"
+                    }
+                  </p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => navigate("/conversations")}
+                data-testid="button-daily-conversation"
+                disabled={stats?.answeredTodayConversation && stats?.hasPartner && !stats?.partnerInfo?.answeredToday}
+              >
+                {stats?.answeredTodayConversation 
+                  ? stats?.hasPartner && stats?.partnerInfo?.answeredToday
+                    ? "View Responses"
+                    : "Waiting"
+                  : "Answer Now"
+                }
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Partner Status Widget */}
+        {stats?.hasPartner && stats?.partnerInfo && (
+          <Card className="mb-8" data-testid="card-partner-status">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">
+                    Connected with {stats.partnerInfo.firstName || stats.partnerInfo.displayName}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {stats.partnerInfo.answeredToday 
+                      ? "Answered today's conversation" 
+                      : "Haven't answered today yet"
+                    }
+                  </p>
+                </div>
+                {stats.conversationStreak > 0 && (
+                  <div className="flex items-center gap-2 bg-primary/10 rounded-lg px-4 py-2">
+                    <Flame className="w-5 h-5 text-primary" />
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-primary">{stats.conversationStreak}</p>
+                      <p className="text-xs text-muted-foreground">Day Streak</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Continue Chat Action */}
+        {stats?.recentChatSession && (
+          <Card className="mb-8 bg-primary/5 border-primary" data-testid="card-continue-chat">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <MessageCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-semibold">Continue your conversation</p>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    Last message {formatDistanceToNow(new Date(stats.recentChatSession.lastMessageAt), { addSuffix: true })}
+                  </p>
+                </div>
+                <Button size="sm" onClick={() => navigate("/coach")} data-testid="button-continue-chat">
+                  Resume
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Trial Value Dashboard */}
         <div className="mb-8">
@@ -90,43 +283,112 @@ export default function Dashboard() {
           <TrialChecklist />
         </div>
 
-        {/* Stats Overview */}
+        {/* This Week Summary */}
+        <Card className="mb-8" data-testid="card-week-summary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary" />
+              This Week's Activity
+            </CardTitle>
+            <CardDescription>Your progress over the last 7 days</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-lg bg-muted/50">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Conversations</p>
+                  {conversationChange !== 0 && (
+                    <Badge variant={conversationChange > 0 ? "default" : "secondary"} className="gap-1">
+                      {conversationChange > 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                      {Math.abs(conversationChange)}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-3xl font-bold">{stats?.thisWeek.conversations ?? 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {conversationChange > 0 
+                    ? `${conversationChange} more than last week` 
+                    : conversationChange < 0
+                      ? `${Math.abs(conversationChange)} less than last week`
+                      : "Same as last week"
+                  }
+                </p>
+              </div>
+
+              <div className="p-4 rounded-lg bg-muted/50">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Journal Entries</p>
+                </div>
+                <p className="text-3xl font-bold">{stats?.thisWeek.journals ?? 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Track your relationship insights
+                </p>
+              </div>
+
+              <div className="p-4 rounded-lg bg-muted/50">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-muted-foreground">Coach Sessions</p>
+                  {chatChange !== 0 && (
+                    <Badge variant={chatChange > 0 ? "default" : "secondary"} className="gap-1">
+                      {chatChange > 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                      {Math.abs(chatChange)}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-3xl font-bold">{stats?.thisWeek.chatSessions ?? 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {chatChange > 0 
+                    ? `${chatChange} more than last week` 
+                    : chatChange < 0
+                      ? `${Math.abs(chatChange)} less than last week`
+                      : "Same as last week"
+                  }
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Stats Overview with Context */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card data-testid="card-assessments">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Assessments Completed</CardTitle>
-              <Brain className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Assessments</CardTitle>
+              <Brain className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.assessmentCount ?? 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Understanding your attachment style
+                {hasCompletedAssessment 
+                  ? "Understanding your attachment style"
+                  : "Discover your attachment style"
+                }
               </p>
             </CardContent>
           </Card>
 
           <Card data-testid="card-coach-sessions">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Coach Conversations</CardTitle>
-              <MessageCircle className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Coach Sessions</CardTitle>
+              <MessageCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats?.chatSessionCount ?? 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Sessions with Coach Charles
+                24/7 relationship guidance
               </p>
             </CardContent>
           </Card>
 
-          <Card data-testid="card-retreats">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Retreats Planned</CardTitle>
-              <Map className="h-4 w-4 text-muted-foreground" />
+          <Card data-testid="card-total-conversations">
+            <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Conversations</CardTitle>
+              <Heart className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.retreatCount ?? 0}</div>
+              <div className="text-2xl font-bold">{stats?.conversationCount ?? 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                DIY couple getaways
+                Daily questions answered
               </p>
             </CardContent>
           </Card>
@@ -324,12 +586,12 @@ export default function Dashboard() {
               {hasCompletedAssessment && (
                 <Button 
                   variant="outline" 
-                  className="w-full justify-start" 
+                  className="w-full justify-start gap-2" 
                   onClick={() => navigate("/results")}
                   data-testid="button-view-results"
                 >
-                  <Brain className="w-4 h-4 mr-2" />
-                  View Assessment Results
+                  <Brain className="w-4 h-4" />
+                  <span className="flex-1 text-left">View Assessment Results</span>
                 </Button>
               )}
             </CardContent>
