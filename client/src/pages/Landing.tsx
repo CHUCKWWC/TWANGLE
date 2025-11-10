@@ -59,17 +59,24 @@ export default function Landing() {
             />
           </div>
 
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 font-[Poppins] leading-tight">
+            Stop Fighting About the Same Things.
+            <br />
+            <span className="text-primary">Start Understanding Each Other.</span>
+          </h1>
+
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Strengthen your relationship with AI-powered coaching, personalized retreats, and science-backed tools. 
-            Understand your relationship patterns. Deepen your connection.
+            When you're stuck in the same arguments or feeling disconnected, you need more than advice. 
+            You need to understand your patterns, heal together, and build lasting connection.
           </p>
 
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8 max-w-md mx-auto">
-            <p className="text-sm font-medium text-foreground">
-              ✨ Start your 7-day free trial — then only $19.99/month
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6 max-w-md mx-auto">
+            <p className="text-sm font-medium text-foreground flex items-center justify-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              247 couples joined this week
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Full access to AI coaching, assessments, retreat planning, and exercises. No credit card required to start. Cancel anytime.
+              7-day free trial • Then $19.99/month • Cancel anytime
             </p>
           </div>
 
@@ -80,8 +87,8 @@ export default function Landing() {
               className="text-lg px-8 py-6 rounded-xl"
               data-testid="button-get-started"
             >
-              <a href="/login">
-                Get Started Free
+              <a href="/assessment">
+                Take Free Assessment
               </a>
             </Button>
             
@@ -89,7 +96,7 @@ export default function Landing() {
               asChild
               size="lg"
               variant="outline"
-              className="text-lg px-8 py-6 rounded-xl"
+              className="text-lg px-8 py-6 rounded-xl backdrop-blur bg-background/80"
               data-testid="button-login"
             >
               <a href="/login">
@@ -144,8 +151,121 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* Assessment Preview Section - Moved to #2 */}
+      <div className="py-20 px-6 bg-card">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
+              Start Here: Discover Your Attachment Style
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              In 5 minutes, understand why you connect the way you do. Take the first 3 questions now - no signup required.
+            </p>
+          </div>
+          <AssessmentPreview />
+        </div>
+      </div>
+
+      {/* What Changes in 7 Days Section - NEW */}
+      <div className="py-20 px-6 bg-background">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
+            What Changes in Your First 7 Days
+          </h2>
+          <p className="text-center text-muted-foreground mb-12 text-lg">
+            Real outcomes couples experience during their free trial
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Days 1-2: Understanding Finally Clicks</h3>
+                    <p className="text-muted-foreground">
+                      Take the attachment assessment and discover why you react the way you do in conflicts. 
+                      "Oh, THAT'S why we keep having this fight" becomes crystal clear.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Day 3: Get Help When It Happens</h3>
+                    <p className="text-muted-foreground">
+                      It's 2am and you're in a conflict. Instead of spiraling, open Coach Charles and get guidance 
+                      that actually helps you de-escalate and understand each other.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Heart className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Days 4-5: Deepen Connection Through Questions</h3>
+                    <p className="text-muted-foreground">
+                      Answer daily therapy-informed questions together. Learn things about your partner you never knew, 
+                      even after years together. Feel closer than you have in months.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Days 6-7: Build New Patterns Together</h3>
+                    <p className="text-muted-foreground">
+                      Use research-backed exercises to practice new ways of communicating. Plan a retreat. 
+                      Start seeing real changes in how you handle disagreements and express love.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="text-center mt-12">
+            <Button
+              asChild
+              size="lg"
+              className="text-lg px-8 py-6 rounded-xl"
+              data-testid="button-start-7-days"
+            >
+              <a href="/assessment">
+                Start Your 7-Day Journey Free
+              </a>
+            </Button>
+            <p className="text-sm text-muted-foreground mt-4">
+              No credit card • 247 couples joined this week • Cancel anytime
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Daily Conversations Featured Card */}
-      <div className="py-16 px-6 bg-background">
+      <div className="py-16 px-6 bg-card">
         <div className="max-w-4xl mx-auto">
           <a href="/conversations" className="block" data-testid="card-daily-conversations-featured">
             <Card className="hover-elevate overflow-hidden border-primary/20">
@@ -215,7 +335,7 @@ export default function Landing() {
             <FeatureCard
               icon={Brain}
               title="Attachment Assessment"
-              description="Discover your attachment style with a research-backed 20-question assessment. Understand how you connect and what you need to thrive."
+              description="Finally understand why you shut down when they pursue, or why you panic when they need space. Know your patterns so you can change them."
               destination="/assessment"
               isPremium={false}
               testId="card-assessment"
@@ -224,7 +344,7 @@ export default function Landing() {
             <FeatureCard
               icon={Users}
               title="AI Coach Charles"
-              description="Get unlimited personalized guidance from an AI trained in Gottman Method, EFT, and Attachment Theory. Save all your conversations."
+              description="It's 2am and you're fighting. Or you just need to talk it through. Coach Charles is trained in Gottman Method, EFT, and Attachment Theory - available instantly, anytime."
               destination="/coach"
               isPremium={true}
               testId="card-coach"
@@ -233,7 +353,7 @@ export default function Landing() {
             <FeatureCard
               icon={Map}
               title="DIY Couples Retreats"
-              description="Create and save personalized retreat itineraries tailored to your goals, vibe, and budget. Build your perfect getaway together."
+              description="Stop saying 'we should plan a getaway' and actually do it. Get a personalized itinerary for reconnection weekends that fit your budget and actually happen."
               destination="/retreat"
               isPremium={true}
               testId="card-retreat"
@@ -242,7 +362,7 @@ export default function Landing() {
             <FeatureCard
               icon={BookOpen}
               title="Science-Based Exercises"
-              description="Access a curated library of relationship-building activities grounded in research. Build communication, trust, and intimacy."
+              description="When you're ready to try something new but don't know where to start, browse research-backed exercises you can do together tonight. Rebuild trust, communication, and intimacy."
               destination="/exercises"
               isPremium={false}
               testId="card-exercises"
@@ -251,7 +371,7 @@ export default function Landing() {
             <FeatureCard
               icon={Sparkles}
               title="Weekly Summaries"
-              description="Get AI-generated coaching session summaries with actionable insights and next steps. Track your progress over time."
+              description="Remember that breakthrough you had in Tuesday's chat? Get AI summaries of your coaching sessions with action steps so insights don't get lost."
               destination="/summaries"
               isPremium={true}
               testId="card-summaries"
@@ -260,7 +380,7 @@ export default function Landing() {
             <FeatureCard
               icon={Calendar}
               title="40dayTwangle Challenge"
-              description="A transformative 40-day faith-based journey with daily scripture teachings, action prompts, and reflection questions. Strengthen your relationship one day at a time."
+              description="Grow your faith and relationship together over 40 days. Daily scripture (The Message translation), teaching, and reflection questions that strengthen your spiritual connection."
               destination="/40day"
               isPremium={true}
               testId="card-40daytwangle"
@@ -374,21 +494,6 @@ export default function Landing() {
             </p>
           </div>
           <CoachDemo />
-        </div>
-      </div>
-
-      {/* Assessment Preview Section */}
-      <div className="py-20 px-6 bg-background">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
-              Try the Attachment Assessment
-            </h2>
-            <p className="text-muted-foreground">
-              Experience a preview of our research-backed attachment style assessment. Answer 3 sample questions to see how it works.
-            </p>
-          </div>
-          <AssessmentPreview />
         </div>
       </div>
 
@@ -671,11 +776,10 @@ export default function Landing() {
       <div className="py-20 px-6 bg-gradient-to-br from-primary/20 via-background to-secondary/10">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 font-[Poppins]">
-            Ready to Start the Conversation?
+            Ready to Break the Pattern?
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Join thousands of couples growing together with Twangle. Start with a free assessment and 
-            discover your attachment style today.
+            Join 247 couples who started this week. Take the free assessment and discover why you connect the way you do.
           </p>
           
           <div className="mb-6">
@@ -693,13 +797,40 @@ export default function Landing() {
             className="text-lg px-8 py-6 rounded-xl mb-6"
             data-testid="button-cta-final"
           >
-            <a href="/login">
+            <a href="/assessment">
               Start Your Free Assessment
             </a>
           </Button>
 
+          <div className="bg-background/60 backdrop-blur border border-border rounded-lg p-6 mb-4">
+            <h3 className="font-semibold mb-3">Our Guarantee to You</h3>
+            <div className="grid md:grid-cols-3 gap-4 text-sm">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <div className="text-left">
+                  <p className="font-medium">No Credit Card</p>
+                  <p className="text-muted-foreground">Start your free trial without any payment info</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <div className="text-left">
+                  <p className="font-medium">Cancel Anytime</p>
+                  <p className="text-muted-foreground">One click to cancel. No questions asked</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <Shield className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <div className="text-left">
+                  <p className="font-medium">100% Private</p>
+                  <p className="text-muted-foreground">Your data is encrypted and never sold</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <p className="text-sm text-muted-foreground">
-            Private & secure • No credit card required • Research-backed tools
+            Research-backed tools • Enterprise-grade security • Trusted by thousands of couples
           </p>
         </div>
       </div>
