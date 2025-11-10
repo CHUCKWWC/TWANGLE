@@ -210,10 +210,9 @@ export function AppHeader() {
               data-testid="link-home"
             >
               <img 
-                src="/twangle-logo.jpg" 
+                src="/twangle-logo.png" 
                 alt="Twangle - Two Tangled Together" 
                 className="h-15 w-auto"
-                style={{ mixBlendMode: 'screen' }}
               />
             </Link>
             
