@@ -53,7 +53,7 @@ export default function Landing() {
         <div className="relative z-10 max-w-4xl mx-auto px-6 py-20 text-center">
           <div className="flex items-center justify-center mb-8">
             <img 
-              src="/twangle-logo.png" 
+              src="/twangle-logo.jpg" 
               alt="Twangle - Two Tangled Together" 
               className="h-40 md:h-48 w-auto"
             />
