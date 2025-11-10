@@ -213,6 +213,7 @@ export function AppHeader() {
                 src="/twangle-logo.jpg" 
                 alt="Twangle - Two Tangled Together" 
                 className="h-15 w-auto"
+                style={{ mixBlendMode: 'screen' }}
               />
             </Link>
             

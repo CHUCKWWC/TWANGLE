@@ -56,6 +56,7 @@ export default function Landing() {
               src="/twangle-logo.jpg" 
               alt="Twangle - Two Tangled Together" 
               className="h-40 md:h-48 w-auto"
+              style={{ mixBlendMode: 'screen' }}
             />
           </div>
 

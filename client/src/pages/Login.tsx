@@ -173,6 +173,7 @@ export default function Login() {
               src="/twangle-logo.jpg" 
               alt="Twangle - Two Tangled Together" 
               className="h-32 w-auto"
+              style={{ mixBlendMode: 'screen' }}
             />
           </div>
           
