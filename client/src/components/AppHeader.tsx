@@ -1,6 +1,5 @@
 import { useLocation, Link } from "wouter";
 import { FileText, BookOpen, BarChart3, TrendingUp, LogIn, MessageCircle, Menu, Heart, Users, Activity, Sparkles, MessageSquare, Shield, Calendar, Mountain, Zap } from "lucide-react";
-import { FeedbackButton } from "@/components/FeedbackButton";
 import ThemeToggle from "@/components/ThemeToggle";
 import { UserMenu } from "@/components/UserMenu";
 import { Button } from "@/components/ui/button";
@@ -447,7 +446,6 @@ export function AppHeader() {
         )}
         {isWelcome && <div />}
         <div className="flex items-center gap-2">
-          <FeedbackButton />
           <ThemeToggle />
           {isAnonymous ? (
             <Button asChild variant="default" size="sm" data-testid="button-login">

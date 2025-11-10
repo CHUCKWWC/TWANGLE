@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { TrialCountdownBanner } from "@/components/TrialCountdownBanner";
 import { TrialExpiringModal } from "@/components/TrialExpiringModal";
+import { FeedbackButton } from "@/components/FeedbackButton";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import ForgotPassword from "@/pages/ForgotPassword";
@@ -61,6 +62,12 @@ function Router() {
     <>
       {isAuthenticated && <TrialCountdownBanner />}
       {isAuthenticated && <TrialExpiringModal />}
+      
+      {/* Fixed Feedback Button - below header */}
+      <div className="fixed top-[4.5rem] right-4 z-40 max-sm:right-3">
+        <FeedbackButton />
+      </div>
+      
       <Switch>
         <Route path="/shared/:token" component={SharedAssessment} />
         <Route path="/invite/:token" component={PartnerInvite} />

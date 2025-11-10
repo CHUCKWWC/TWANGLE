@@ -258,15 +258,6 @@ export default function Landing() {
             />
 
             <FeatureCard
-              icon={MessageSquare}
-              title="Daily Conversations"
-              description="Answer therapy-informed questions together with your partner. Deepen connection through honest, double-blind responses. 3 free, unlimited with premium."
-              destination="/conversations"
-              isPremium={false}
-              testId="card-conversations"
-            />
-
-            <FeatureCard
               icon={Calendar}
               title="40dayTwangle Challenge"
               description="A transformative 40-day faith-based journey with daily scripture teachings, action prompts, and reflection questions. Strengthen your relationship one day at a time."
