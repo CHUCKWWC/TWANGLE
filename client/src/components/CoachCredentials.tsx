@@ -25,10 +25,6 @@ export function CoachCredentials() {
                 <Award className="w-3 h-3" />
                 Gottman Method
               </Badge>
-              <Badge variant="secondary" className="gap-1" data-testid="badge-eft">
-                <GraduationCap className="w-3 h-3" />
-                EFT Certified
-              </Badge>
               <Badge variant="secondary" className="gap-1" data-testid="badge-attachment">
                 <GraduationCap className="w-3 h-3" />
                 Attachment Theory Expert
