@@ -11,7 +11,7 @@ export interface SEOProps {
   canonicalUrl?: string;
 }
 
-const DEFAULT_OG_IMAGE = 'https://twangle.org/og-image.jpg';
+const DEFAULT_OG_IMAGE = 'https://twangle.com/twangle-logo.png';
 const SITE_NAME = 'Twangle';
 const TWITTER_HANDLE = '@twangle';
 
@@ -26,7 +26,7 @@ export function SEO({
 }: SEOProps) {
   const [location] = useLocation();
   const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
-  const url = canonicalUrl || `https://twangle.org${location}`;
+  const url = canonicalUrl || `https://twangle.com${location}`;
 
   useEffect(() => {
     document.title = fullTitle;
