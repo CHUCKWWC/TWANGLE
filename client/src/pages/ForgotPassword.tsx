@@ -282,7 +282,7 @@ export default function ForgotPassword() {
         {/* Footer */}
         <p className="text-xs text-center text-muted-foreground">
           Need help?{" "}
-          <a href="mailto:support@twangle.com" className="text-primary underline">
+          <a href="mailto:support@twangle.org" className="text-primary underline">
             Contact support
           </a>
         </p>

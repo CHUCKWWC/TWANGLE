@@ -6,12 +6,12 @@ Use these links to promote Twangle on social media. Each link includes tracking 
 
 **Bio Link / Posts:**
 ```
-https://twangle.com/signup?utm_source=facebook&utm_medium=social&utm_campaign=signup
+https://twangle.org/signup?utm_source=facebook&utm_medium=social&utm_campaign=signup
 ```
 
 **Facebook Ads:**
 ```
-https://twangle.com/signup?utm_source=facebook&utm_medium=paid&utm_campaign=ad
+https://twangle.org/signup?utm_source=facebook&utm_medium=paid&utm_campaign=ad
 ```
 
 **Suggested Post Copy:**
@@ -24,7 +24,7 @@ Twangle helps couples discover their attachment patterns and build stronger rela
 🔒 Private & secure
 💳 No credit card required
 
-Start your free trial: https://twangle.com/signup?utm_source=facebook
+Start your free trial: https://twangle.org/signup?utm_source=facebook
 ```
 
 ---
@@ -33,12 +33,12 @@ Start your free trial: https://twangle.com/signup?utm_source=facebook
 
 **Bio Link:**
 ```
-https://twangle.com/signup?utm_source=twitter&utm_medium=social&utm_campaign=signup
+https://twangle.org/signup?utm_source=twitter&utm_medium=social&utm_campaign=signup
 ```
 
 **Tweet Links:**
 ```
-https://twangle.com/signup?utm_source=twitter&utm_medium=tweet&utm_campaign=signup
+https://twangle.org/signup?utm_source=twitter&utm_medium=tweet&utm_campaign=signup
 ```
 
 **Suggested Tweet Copy:**
@@ -51,7 +51,7 @@ Twangle uses AI + attachment theory to help couples:
 • Build lasting connection
 
 Start your 7-day free trial (no credit card)
-https://twangle.com/signup?utm_source=twitter
+https://twangle.org/signup?utm_source=twitter
 ```
 
 ---
@@ -60,18 +60,18 @@ https://twangle.com/signup?utm_source=twitter
 
 **Bio Link:**
 ```
-https://twangle.com/signup?utm_source=instagram&utm_medium=social&utm_campaign=signup
+https://twangle.org/signup?utm_source=instagram&utm_medium=social&utm_campaign=signup
 ```
 
 **Stories / Posts (use Link Sticker):**
 ```
-https://twangle.com/signup?utm_source=instagram&utm_medium=story&utm_campaign=signup
+https://twangle.org/signup?utm_source=instagram&utm_medium=story&utm_campaign=signup
 ```
 
 **Instagram Link in Bio Services** (Linktree, etc.):
 ```
 Title: Start Your Free Trial
-URL: https://twangle.com/signup?utm_source=instagram&utm_medium=bio&utm_campaign=linktree
+URL: https://twangle.org/signup?utm_source=instagram&utm_medium=bio&utm_campaign=linktree
 ```
 
 **Suggested Caption:**
@@ -87,7 +87,7 @@ Twangle combines AI coaching with proven therapy methods (Gottman Method, Attach
 
 7-day free trial • No credit card • Private & secure
 
-Link in bio 👆 or visit twangle.com/signup
+Link in bio 👆 or visit twangle.org/signup
 ```
 
 ---
@@ -96,18 +96,18 @@ Link in bio 👆 or visit twangle.com/signup
 
 **Bio Link:**
 ```
-https://twangle.com/signup?utm_source=tiktok&utm_medium=social&utm_campaign=signup
+https://twangle.org/signup?utm_source=tiktok&utm_medium=social&utm_campaign=signup
 ```
 
 **Video Links (in comments or video overlay):**
 ```
-https://twangle.com/signup?utm_source=tiktok&utm_medium=video&utm_campaign=signup
+https://twangle.org/signup?utm_source=tiktok&utm_medium=video&utm_campaign=signup
 ```
 
 **Suggested Bio:**
 ```
 💕 AI relationship coach for couples
-7-day free trial → twangle.com/signup
+7-day free trial → twangle.org/signup
 ```
 
 **Video Ideas:**
@@ -122,13 +122,13 @@ https://twangle.com/signup?utm_source=tiktok&utm_medium=video&utm_campaign=signu
 
 **Pin Links:**
 ```
-https://twangle.com/signup?utm_source=pinterest&utm_medium=social&utm_campaign=pin
+https://twangle.org/signup?utm_source=pinterest&utm_medium=social&utm_campaign=pin
 ```
 
 **Board Description:**
 ```
 Relationship coaching resources for couples | Discover your attachment style | AI-powered guidance
-Visit: https://twangle.com/signup?utm_source=pinterest
+Visit: https://twangle.org/signup?utm_source=pinterest
 ```
 
 ---
@@ -137,12 +137,12 @@ Visit: https://twangle.com/signup?utm_source=pinterest
 
 **Profile Link:**
 ```
-https://twangle.com/signup?utm_source=linkedin&utm_medium=social&utm_campaign=signup
+https://twangle.org/signup?utm_source=linkedin&utm_medium=social&utm_campaign=signup
 ```
 
 **Post Links:**
 ```
-https://twangle.com/signup?utm_source=linkedin&utm_medium=post&utm_campaign=signup
+https://twangle.org/signup?utm_source=linkedin&utm_medium=post&utm_campaign=signup
 ```
 
 ---
@@ -153,12 +153,12 @@ Quick reference for sharing:
 
 | Platform | Direct Link |
 |----------|-------------|
-| Facebook | `https://twangle.com/signup?utm_source=facebook` |
-| Twitter/X | `https://twangle.com/signup?utm_source=twitter` |
-| Instagram | `https://twangle.com/signup?utm_source=instagram` |
-| TikTok | `https://twangle.com/signup?utm_source=tiktok` |
-| Pinterest | `https://twangle.com/signup?utm_source=pinterest` |
-| LinkedIn | `https://twangle.com/signup?utm_source=linkedin` |
+| Facebook | `https://twangle.org/signup?utm_source=facebook` |
+| Twitter/X | `https://twangle.org/signup?utm_source=twitter` |
+| Instagram | `https://twangle.org/signup?utm_source=instagram` |
+| TikTok | `https://twangle.org/signup?utm_source=tiktok` |
+| Pinterest | `https://twangle.org/signup?utm_source=pinterest` |
+| LinkedIn | `https://twangle.org/signup?utm_source=linkedin` |
 
 ---
 
