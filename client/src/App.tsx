@@ -10,6 +10,7 @@ import { TrialExpiringModal } from "@/components/TrialExpiringModal";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
+import Signup from "@/pages/Signup";
 import ForgotPassword from "@/pages/ForgotPassword";
 import Home from "@/pages/Home";
 import Assessment from "@/pages/Assessment";
@@ -72,6 +73,7 @@ function Router() {
         <Route path="/shared/:token" component={SharedAssessment} />
         <Route path="/invite/:token" component={PartnerInvite} />
         <Route path="/login" component={Login} />
+        <Route path="/signup" component={Signup} />
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/" component={isAuthenticated ? Home : Landing} />
         <Route path="/assessment" component={Assessment} />

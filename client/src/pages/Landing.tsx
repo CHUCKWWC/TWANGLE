@@ -89,8 +89,8 @@ export default function Landing() {
               className="text-lg px-8 py-6 rounded-xl"
               data-testid="button-get-started"
             >
-              <a href="/assessment">
-                Take Free Assessment
+              <a href="/signup">
+                Start Free Trial
               </a>
             </Button>
             
