@@ -153,263 +153,68 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Assessment Preview Section - Moved to #2 */}
+      {/* Testimonials Section */}
       <div className="py-20 px-6 bg-card">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
-              Start Here: Discover Your Attachment Style
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              In 5 minutes, understand why you connect the way you do. Take the first 3 questions now - no signup required.
-            </p>
-          </div>
-          <AssessmentPreview />
-        </div>
-      </div>
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
+            Couples Are Growing Together
+          </h2>
+          <p className="text-center text-muted-foreground mb-12">
+            Real stories from real relationships
+          </p>
 
-      {/* Daily Conversations Featured Card */}
-      <div className="py-16 px-6 bg-card">
-        <div className="max-w-4xl mx-auto">
-          <a href="/conversations" className="block" data-testid="card-daily-conversations-featured">
-            <Card className="hover-elevate overflow-hidden border-primary/20">
-              <CardContent className="p-0">
-                <div className="grid md:grid-cols-2 gap-0">
-                  <div className="p-8 md:p-10 flex flex-col justify-center">
-                    <Badge variant="secondary" className="w-fit mb-4">
-                      FREE Feature
-                    </Badge>
-                    <h2 className="text-3xl font-bold mb-4 font-[Poppins]">
-                      Daily Conversations
-                    </h2>
-                    <p className="text-muted-foreground mb-6 text-lg">
-                      Answer therapy-informed questions together with your partner. Choose from 7 categories including Emotional Intimacy, Communication, Values, and more. Deepen connection through honest, double-blind responses.
-                    </p>
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <CheckCircle2 className="w-4 h-4 text-primary" />
-                        </div>
-                        <span className="text-sm">140 therapy-informed questions</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <CheckCircle2 className="w-4 h-4 text-primary" />
-                        </div>
-                        <span className="text-sm">7 themed categories to choose from</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <CheckCircle2 className="w-4 h-4 text-primary" />
-                        </div>
-                        <span className="text-sm">Double-blind system for honest answers</span>
-                      </div>
-                    </div>
-                    <Button size="lg" className="w-full md:w-auto" data-testid="button-try-conversations">
-                      Try Daily Conversations Free
-                    </Button>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground mb-4 italic">
+                  "The attachment assessment was eye-opening. We finally understand why we were talking past each other. 
+                  Coach Charles helped us find our way back."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Heart className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-8 md:p-10 flex items-center justify-center">
-                    <div className="text-center space-y-6">
-                      <MessageSquare className="w-24 h-24 mx-auto text-primary" />
-                      <div className="space-y-2">
-                        <p className="text-2xl font-bold">Start Today</p>
-                        <p className="text-muted-foreground">3 free questions, then unlock unlimited with premium</p>
-                      </div>
-                    </div>
+                  <div>
+                    <p className="font-semibold">Sarah & Mike</p>
+                    <p className="text-sm text-muted-foreground">Together 7 years</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </a>
-        </div>
-      </div>
 
-      {/* Comparison Table Section */}
-      <div className="py-20 px-6 bg-background">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
-            Why Couples Choose Twangle
-          </h2>
-          <p className="text-center text-muted-foreground mb-12">
-            Get professional relationship guidance at a fraction of the cost
-          </p>
-
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse" data-testid="comparison-table" role="table" aria-label="Comparison between Traditional Therapy and Twangle">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="py-4 px-6 text-left font-semibold">Feature</th>
-                  <th className="py-4 px-6 text-center font-semibold">Traditional Therapy</th>
-                  <th className="py-4 px-6 text-center font-semibold text-primary">Twangle</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-b border-border hover-elevate">
-                  <td className="py-4 px-6 font-medium">Cost</td>
-                  <td className="py-4 px-6 text-center text-muted-foreground">$150-300/session</td>
-                  <td className="py-4 px-6 text-center text-primary font-semibold">$19.99/month</td>
-                </tr>
-                <tr className="border-b border-border hover-elevate">
-                  <td className="py-4 px-6 font-medium">Availability</td>
-                  <td className="py-4 px-6 text-center text-muted-foreground">Weekly appointments</td>
-                  <td className="py-4 px-6 text-center text-primary font-semibold">24/7 instant access</td>
-                </tr>
-                <tr className="border-b border-border hover-elevate">
-                  <td className="py-4 px-6 font-medium">Wait Time</td>
-                  <td className="py-4 px-6 text-center text-muted-foreground">2-4 weeks</td>
-                  <td className="py-4 px-6 text-center text-primary font-semibold">Instant</td>
-                </tr>
-                <tr className="border-b border-border hover-elevate">
-                  <td className="py-4 px-6 font-medium">Focus</td>
-                  <td className="py-4 px-6 text-center text-muted-foreground">Individual or couples</td>
-                  <td className="py-4 px-6 text-center text-primary font-semibold">Couples-specific</td>
-                </tr>
-                <tr className="border-b border-border hover-elevate">
-                  <td className="py-4 px-6 font-medium">Progress Tracking</td>
-                  <td className="py-4 px-6 text-center text-muted-foreground">Manual notes</td>
-                  <td className="py-4 px-6 text-center text-primary font-semibold">Automated insights</td>
-                </tr>
-                <tr className="hover-elevate">
-                  <td className="py-4 px-6 font-medium">Exercises & Tools</td>
-                  <td className="py-4 px-6 text-center text-muted-foreground">Limited homework</td>
-                  <td className="py-4 px-6 text-center text-primary font-semibold">Full library + AI coach</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="text-center mt-8">
-            <p className="text-sm text-muted-foreground mb-4">
-              Note: Twangle complements but does not replace clinical therapy for serious mental health concerns
-            </p>
-            <div className="mb-4">
-              <p className="text-lg font-semibold mb-1">
-                7 days free, then $19.99/month
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Cancel anytime. No hidden fees.
-              </p>
-            </div>
-            <Button
-              asChild
-              size="lg"
-              className="px-8 py-6"
-              data-testid="button-start-trial-comparison"
-            >
-              <a href="/login">
-                Start Your Free Trial
-              </a>
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Coach Demo Section */}
-      <div className="py-20 px-6 bg-card">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
-              Experience Coach Charles
-            </h2>
-            <p className="text-muted-foreground">
-              See how AI-powered relationship coaching works. Try 3 free messages - no signup required.
-            </p>
-          </div>
-          <CoachDemo />
-        </div>
-      </div>
-
-      {/* Retreat Preview Section */}
-      <div className="py-20 px-6 bg-card">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
-              Preview Retreat Planning
-            </h2>
-            <p className="text-muted-foreground">
-              See how our AI creates personalized couples retreats tailored to your goals, budget, and preferences.
-            </p>
-          </div>
-          <RetreatPreview />
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <div className="py-20 px-6 bg-card">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
-            Everything You Need for Connection
-          </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Designed with relationship psychology and attachment theory to create meaningful growth together.
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <FeatureCard
-              icon={Brain}
-              title="Attachment Assessment"
-              description="Finally understand why you shut down when they pursue, or why you panic when they need space. Know your patterns so you can change them."
-              destination="/assessment"
-              isPremium={false}
-              testId="card-assessment"
-            />
-
-            <FeatureCard
-              icon={Users}
-              title="AI Coach Charles"
-              description="It's 2am and you're fighting. Or you just need to talk it through. Coach Charles is trained in Gottman Method, EFT, and Attachment Theory - available instantly, anytime."
-              destination="/coach"
-              isPremium={true}
-              testId="card-coach"
-            />
-
-            <FeatureCard
-              icon={Map}
-              title="DIY Couples Retreats"
-              description="Stop saying 'we should plan a getaway' and actually do it. Get a personalized itinerary for reconnection weekends that fit your budget and actually happen."
-              destination="/retreat"
-              isPremium={true}
-              testId="card-retreat"
-            />
-
-            <FeatureCard
-              icon={BookOpen}
-              title="Science-Based Exercises"
-              description="When you're ready to try something new but don't know where to start, browse research-backed exercises you can do together tonight. Rebuild trust, communication, and intimacy."
-              destination="/exercises"
-              isPremium={false}
-              testId="card-exercises"
-            />
-
-            <FeatureCard
-              icon={Sparkles}
-              title="Weekly Summaries"
-              description="Remember that breakthrough you had in Tuesday's chat? Get AI summaries of your coaching sessions with action steps so insights don't get lost."
-              destination="/summaries"
-              isPremium={true}
-              testId="card-summaries"
-            />
-
-            <FeatureCard
-              icon={Calendar}
-              title="40dayTwangle Challenge"
-              description="Grow your faith and relationship together over 40 days. Daily scripture (The Message translation), teaching, and reflection questions that strengthen your spiritual connection."
-              destination="/40day"
-              isPremium={true}
-              testId="card-40daytwangle"
-            />
-
-            <Card className="hover-elevate">
+            <Card>
               <CardContent className="p-6">
-                <div className="w-12 h-12 mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Private & Secure</h3>
-                <p className="text-muted-foreground">
-                  Your relationship data stays private with enterprise-grade security. 
-                  Built on trust and confidentiality.
+                <p className="text-muted-foreground mb-4 italic">
+                  "The DIY retreat builder helped us plan the perfect weekend getaway. The AI-generated itinerary 
+                  was thoughtful and actually worked for our budget."
                 </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Heart className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">James & Alex</p>
+                    <p className="text-sm text-muted-foreground">Together 3 years</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground mb-4 italic">
+                  "Having access to research-backed exercises has been game-changing. We work through one each week 
+                  and our communication has improved so much."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Heart className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Priya & Jordan</p>
+                    <p className="text-sm text-muted-foreground">Together 5 years</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -505,78 +310,273 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* Features Section */}
+      <div className="py-20 px-6 bg-card">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
+            Everything You Need for Connection
+          </h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            Designed with relationship psychology and attachment theory to create meaningful growth together.
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={Brain}
+              title="Attachment Assessment"
+              description="Finally understand why you shut down when they pursue, or why you panic when they need space. Know your patterns so you can change them."
+              destination="/assessment"
+              isPremium={false}
+              testId="card-assessment"
+            />
+
+            <FeatureCard
+              icon={Users}
+              title="AI Coach Charles"
+              description="It's 2am and you're fighting. Or you just need to talk it through. Coach Charles is trained in Gottman Method, EFT, and Attachment Theory - available instantly, anytime."
+              destination="/coach"
+              isPremium={true}
+              testId="card-coach"
+            />
+
+            <FeatureCard
+              icon={Map}
+              title="DIY Couples Retreats"
+              description="Stop saying 'we should plan a getaway' and actually do it. Get a personalized itinerary for reconnection weekends that fit your budget and actually happen."
+              destination="/retreat"
+              isPremium={true}
+              testId="card-retreat"
+            />
+
+            <FeatureCard
+              icon={BookOpen}
+              title="Science-Based Exercises"
+              description="When you're ready to try something new but don't know where to start, browse research-backed exercises you can do together tonight. Rebuild trust, communication, and intimacy."
+              destination="/exercises"
+              isPremium={false}
+              testId="card-exercises"
+            />
+
+            <FeatureCard
+              icon={Sparkles}
+              title="Weekly Summaries"
+              description="Remember that breakthrough you had in Tuesday's chat? Get AI summaries of your coaching sessions with action steps so insights don't get lost."
+              destination="/summaries"
+              isPremium={true}
+              testId="card-summaries"
+            />
+
+            <FeatureCard
+              icon={Calendar}
+              title="40dayTwangle Challenge"
+              description="Grow your faith and relationship together over 40 days. Daily scripture (The Message translation), teaching, and reflection questions that strengthen your spiritual connection."
+              destination="/40day"
+              isPremium={true}
+              testId="card-40daytwangle"
+            />
+
+            <Card className="hover-elevate">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Private & Secure</h3>
+                <p className="text-muted-foreground">
+                  Your relationship data stays private with enterprise-grade security. 
+                  Built on trust and confidentiality.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Comparison Table Section */}
+      <div className="py-20 px-6 bg-background">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
+            Why Couples Choose Twangle
+          </h2>
+          <p className="text-center text-muted-foreground mb-12">
+            Get professional relationship guidance at a fraction of the cost
+          </p>
+
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse" data-testid="comparison-table" role="table" aria-label="Comparison between Traditional Therapy and Twangle">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="py-4 px-6 text-left font-semibold">Feature</th>
+                  <th className="py-4 px-6 text-center font-semibold">Traditional Therapy</th>
+                  <th className="py-4 px-6 text-center font-semibold text-primary">Twangle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border hover-elevate">
+                  <td className="py-4 px-6 font-medium">Cost</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">$150-300/session</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">$19.99/month</td>
+                </tr>
+                <tr className="border-b border-border hover-elevate">
+                  <td className="py-4 px-6 font-medium">Availability</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">Weekly appointments</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">24/7 instant access</td>
+                </tr>
+                <tr className="border-b border-border hover-elevate">
+                  <td className="py-4 px-6 font-medium">Wait Time</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">2-4 weeks</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">Instant</td>
+                </tr>
+                <tr className="border-b border-border hover-elevate">
+                  <td className="py-4 px-6 font-medium">Focus</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">Individual or couples</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">Couples-specific</td>
+                </tr>
+                <tr className="border-b border-border hover-elevate">
+                  <td className="py-4 px-6 font-medium">Progress Tracking</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">Manual notes</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">Automated insights</td>
+                </tr>
+                <tr className="hover-elevate">
+                  <td className="py-4 px-6 font-medium">Exercises & Tools</td>
+                  <td className="py-4 px-6 text-center text-muted-foreground">Limited homework</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">Full library + AI coach</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="text-center mt-8">
+            <p className="text-sm text-muted-foreground mb-4">
+              Note: Twangle complements but does not replace clinical therapy for serious mental health concerns
+            </p>
+            <div className="mb-4">
+              <p className="text-lg font-semibold mb-1">
+                7 days free, then $19.99/month
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Cancel anytime. No hidden fees.
+              </p>
+            </div>
+            <Button
+              asChild
+              size="lg"
+              className="px-8 py-6"
+              data-testid="button-start-trial-comparison"
+            >
+              <a href="/login">
+                Start Your Free Trial
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Retreat Preview Section */}
+      <div className="py-20 px-6 bg-card">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
+              Preview Retreat Planning
+            </h2>
+            <p className="text-muted-foreground">
+              See how our AI creates personalized couples retreats tailored to your goals, budget, and preferences.
+            </p>
+          </div>
+          <RetreatPreview />
+        </div>
+      </div>
+
+      {/* Daily Conversations Featured Card */}
+      <div className="py-16 px-6 bg-card">
+        <div className="max-w-4xl mx-auto">
+          <a href="/conversations" className="block" data-testid="card-daily-conversations-featured">
+            <Card className="hover-elevate overflow-hidden border-primary/20">
+              <CardContent className="p-0">
+                <div className="grid md:grid-cols-2 gap-0">
+                  <div className="p-8 md:p-10 flex flex-col justify-center">
+                    <Badge variant="secondary" className="w-fit mb-4">
+                      FREE Feature
+                    </Badge>
+                    <h2 className="text-3xl font-bold mb-4 font-[Poppins]">
+                      Daily Conversations
+                    </h2>
+                    <p className="text-muted-foreground mb-6 text-lg">
+                      Answer therapy-informed questions together with your partner. Choose from 7 categories including Emotional Intimacy, Communication, Values, and more. Deepen connection through honest, double-blind responses.
+                    </p>
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <CheckCircle2 className="w-4 h-4 text-primary" />
+                        </div>
+                        <span className="text-sm">140 therapy-informed questions</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <CheckCircle2 className="w-4 h-4 text-primary" />
+                        </div>
+                        <span className="text-sm">7 themed categories to choose from</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                          <CheckCircle2 className="w-4 h-4 text-primary" />
+                        </div>
+                        <span className="text-sm">Double-blind system for honest answers</span>
+                      </div>
+                    </div>
+                    <Button size="lg" className="w-full md:w-auto" data-testid="button-try-conversations">
+                      Try Daily Conversations Free
+                    </Button>
+                  </div>
+                  <div className="bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-8 md:p-10 flex items-center justify-center">
+                    <div className="text-center space-y-6">
+                      <MessageSquare className="w-24 h-24 mx-auto text-primary" />
+                      <div className="space-y-2">
+                        <p className="text-2xl font-bold">Start Today</p>
+                        <p className="text-muted-foreground">3 free questions, then unlock unlimited with premium</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </a>
+        </div>
+      </div>
+
+      {/* Assessment Preview Section */}
+      <div className="py-20 px-6 bg-background">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
+              Start Here: Discover Your Attachment Style
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              In 5 minutes, understand why you connect the way you do. Take the first 3 questions now - no signup required.
+            </p>
+          </div>
+          <AssessmentPreview />
+        </div>
+      </div>
+
+      {/* Coach Demo Section */}
+      <div className="py-20 px-6 bg-card">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 font-[Poppins]">
+              Experience Coach Charles
+            </h2>
+            <p className="text-muted-foreground">
+              See how AI-powered relationship coaching works. Try 3 free messages - no signup required.
+            </p>
+          </div>
+          <CoachDemo />
+        </div>
+      </div>
+
       {/* Newsletter Section */}
       <div className="py-20 px-6 bg-background">
         <div className="max-w-2xl mx-auto">
           <NewsletterSignup />
-        </div>
-      </div>
-
-      {/* Testimonials Section */}
-      <div className="py-20 px-6 bg-card">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
-            Couples Are Growing Together
-          </h2>
-          <p className="text-center text-muted-foreground mb-12">
-            Real stories from real relationships
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground mb-4 italic">
-                  "The attachment assessment was eye-opening. We finally understand why we were talking past each other. 
-                  Coach Charles helped us find our way back."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Heart className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">Sarah & Mike</p>
-                    <p className="text-sm text-muted-foreground">Together 7 years</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground mb-4 italic">
-                  "The DIY retreat builder helped us plan the perfect weekend getaway. The AI-generated itinerary 
-                  was thoughtful and actually worked for our budget."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Heart className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">James & Alex</p>
-                    <p className="text-sm text-muted-foreground">Together 3 years</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground mb-4 italic">
-                  "Having access to research-backed exercises has been game-changing. We work through one each week 
-                  and our communication has improved so much."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Heart className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">Priya & Jordan</p>
-                    <p className="text-sm text-muted-foreground">Together 5 years</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
 
