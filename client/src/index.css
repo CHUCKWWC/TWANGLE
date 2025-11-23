@@ -240,7 +240,20 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground font-medium;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-text-stroke: 0.3px rgba(0, 0, 0, 0.05);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+    -webkit-text-stroke: 0.4px rgba(0, 0, 0, 0.06);
+  }
+
+  p, li, span, a, label, button {
+    text-rendering: optimizeLegibility;
   }
 }
 
