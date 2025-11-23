@@ -225,87 +225,6 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="py-20 px-6 bg-card">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
-            Everything You Need for Connection
-          </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Designed with relationship psychology and attachment theory to create meaningful growth together.
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <FeatureCard
-              icon={Brain}
-              title="Attachment Assessment"
-              description="Finally understand why you shut down when they pursue, or why you panic when they need space. Know your patterns so you can change them."
-              destination="/assessment"
-              isPremium={false}
-              testId="card-assessment"
-            />
-
-            <FeatureCard
-              icon={Users}
-              title="AI Coach Charles"
-              description="It's 2am and you're fighting. Or you just need to talk it through. Coach Charles is trained in Gottman Method, EFT, and Attachment Theory - available instantly, anytime."
-              destination="/coach"
-              isPremium={true}
-              testId="card-coach"
-            />
-
-            <FeatureCard
-              icon={Map}
-              title="DIY Couples Retreats"
-              description="Stop saying 'we should plan a getaway' and actually do it. Get a personalized itinerary for reconnection weekends that fit your budget and actually happen."
-              destination="/retreat"
-              isPremium={true}
-              testId="card-retreat"
-            />
-
-            <FeatureCard
-              icon={BookOpen}
-              title="Science-Based Exercises"
-              description="When you're ready to try something new but don't know where to start, browse research-backed exercises you can do together tonight. Rebuild trust, communication, and intimacy."
-              destination="/exercises"
-              isPremium={false}
-              testId="card-exercises"
-            />
-
-            <FeatureCard
-              icon={Sparkles}
-              title="Weekly Summaries"
-              description="Remember that breakthrough you had in Tuesday's chat? Get AI summaries of your coaching sessions with action steps so insights don't get lost."
-              destination="/summaries"
-              isPremium={true}
-              testId="card-summaries"
-            />
-
-            <FeatureCard
-              icon={Calendar}
-              title="40dayTwangle Challenge"
-              description="Grow your faith and relationship together over 40 days. Daily scripture (The Message translation), teaching, and reflection questions that strengthen your spiritual connection."
-              destination="/40day"
-              isPremium={true}
-              testId="card-40daytwangle"
-            />
-
-            <Card className="hover-elevate">
-              <CardContent className="p-6">
-                <div className="w-12 h-12 mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Private & Secure</h3>
-                <p className="text-muted-foreground">
-                  Your relationship data stays private with enterprise-grade security. 
-                  Built on trust and confidentiality.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-
       {/* Comparison Table Section */}
       <div className="py-20 px-6 bg-background">
         <div className="max-w-5xl mx-auto">
@@ -413,6 +332,87 @@ export default function Landing() {
             </p>
           </div>
           <RetreatPreview />
+        </div>
+      </div>
+
+      {/* Features Section */}
+      <div className="py-20 px-6 bg-card">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 font-[Poppins]">
+            Everything You Need for Connection
+          </h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            Designed with relationship psychology and attachment theory to create meaningful growth together.
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={Brain}
+              title="Attachment Assessment"
+              description="Finally understand why you shut down when they pursue, or why you panic when they need space. Know your patterns so you can change them."
+              destination="/assessment"
+              isPremium={false}
+              testId="card-assessment"
+            />
+
+            <FeatureCard
+              icon={Users}
+              title="AI Coach Charles"
+              description="It's 2am and you're fighting. Or you just need to talk it through. Coach Charles is trained in Gottman Method, EFT, and Attachment Theory - available instantly, anytime."
+              destination="/coach"
+              isPremium={true}
+              testId="card-coach"
+            />
+
+            <FeatureCard
+              icon={Map}
+              title="DIY Couples Retreats"
+              description="Stop saying 'we should plan a getaway' and actually do it. Get a personalized itinerary for reconnection weekends that fit your budget and actually happen."
+              destination="/retreat"
+              isPremium={true}
+              testId="card-retreat"
+            />
+
+            <FeatureCard
+              icon={BookOpen}
+              title="Science-Based Exercises"
+              description="When you're ready to try something new but don't know where to start, browse research-backed exercises you can do together tonight. Rebuild trust, communication, and intimacy."
+              destination="/exercises"
+              isPremium={false}
+              testId="card-exercises"
+            />
+
+            <FeatureCard
+              icon={Sparkles}
+              title="Weekly Summaries"
+              description="Remember that breakthrough you had in Tuesday's chat? Get AI summaries of your coaching sessions with action steps so insights don't get lost."
+              destination="/summaries"
+              isPremium={true}
+              testId="card-summaries"
+            />
+
+            <FeatureCard
+              icon={Calendar}
+              title="40dayTwangle Challenge"
+              description="Grow your faith and relationship together over 40 days. Daily scripture (The Message translation), teaching, and reflection questions that strengthen your spiritual connection."
+              destination="/40day"
+              isPremium={true}
+              testId="card-40daytwangle"
+            />
+
+            <Card className="hover-elevate">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 mb-4 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3 font-[Poppins]">Private & Secure</h3>
+                <p className="text-muted-foreground">
+                  Your relationship data stays private with enterprise-grade security. 
+                  Built on trust and confidentiality.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
