@@ -55,7 +55,7 @@ export default function Landing() {
             <img 
               src="/twangle-logo.png" 
               alt="Twangle - Two Tangled Together" 
-              className="h-32 md:h-40 w-auto crisp-image"
+              className="h-20 md:h-24 w-auto crisp-image"
               loading="eager"
               decoding="sync"
             />
