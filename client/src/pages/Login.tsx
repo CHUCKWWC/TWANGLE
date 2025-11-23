@@ -172,7 +172,7 @@ export default function Login() {
             <img 
               src="/twangle-logo.png" 
               alt="Twangle - Two Tangled Together" 
-              className="h-32 w-auto"
+              className="h-20 w-auto crisp-image"
             />
           </div>
           

@@ -211,7 +211,7 @@ export function AppHeader() {
               <img 
                 src="/twangle-logo.png" 
                 alt="Twangle - Two Tangled Together" 
-                className="h-15 w-auto"
+                className="h-12 w-auto crisp-image"
               />
             </Link>
             
