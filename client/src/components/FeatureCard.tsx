@@ -9,7 +9,7 @@ interface FeatureCardProps {
   title: string;
   description: string;
   destination: string;
-  isPremium?: boolean;
+  isPremium: boolean;
   testId?: string;
 }
 
@@ -18,10 +18,11 @@ export function FeatureCard({
   title, 
   description, 
   destination, 
-  isPremium = false,
+  isPremium: _isPremium = false,
   testId 
 }: FeatureCardProps) {
   const { user } = useAuth();
+  const isPremium = false; // All features are free now
   const isAnonymous = (user as any)?.isAnonymous;
   
   const handleClick = (e: React.MouseEvent) => {

@@ -320,7 +320,7 @@ export default function Conversations() {
                 <div className="p-4 sm:p-6 border-2 border-dashed rounded-lg text-center space-y-3" data-testid="div-limit-reached">
                   <Lock className="h-6 sm:h-8 w-6 sm:w-8 mx-auto text-muted-foreground" />
                   <p className="text-xs sm:text-sm font-medium">Upgrade to answer more questions</p>
-                  <p className="text-xs text-muted-foreground">Get unlimited daily conversations with a premium subscription</p>
+                  <p className="text-xs text-muted-foreground">Enjoy unlimited daily conversations for free</p>
                 </div>
               ) : (
                 <div className="space-y-3">

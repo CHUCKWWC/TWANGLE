@@ -30,12 +30,12 @@ const FAQ_DATA = [
     answer: 'Yes! Understanding your attachment style benefits all relationships—romantic, family, and friendships. Our exercises and coaching help you develop healthier relationship patterns before entering or during any relationship stage.',
   },
   {
-    question: 'What\'s included in the free version?',
-    answer: 'Free access includes the attachment style assessment, relationship exercises library, and date night planner. These tools provide valuable insights and activities without requiring a subscription.',
+    question: 'How much does Twangle cost?',
+    answer: 'Twangle is 100% free for all users. This includes the attachment style assessment, relationship exercises library, date night planner, AI coaching, and couples retreats. No subscription or credit card is required.',
   },
   {
-    question: 'What do I get with Premium?',
-    answer: 'Premium includes unlimited AI coaching sessions with Coach Charles, personalized couples retreat planning with AI-generated itineraries, and weekly coaching summaries to track your progress. It\'s $20/month with cancel anytime flexibility.',
+    question: 'Is everything really free?',
+    answer: 'Yes. Every feature on Twangle is completely free to help as many couples as possible strengthen their relationships with evidence-based methods.',
   },
   {
     question: 'How do I plan a couples retreat?',
@@ -46,8 +46,8 @@ const FAQ_DATA = [
     answer: 'Yes. All conversations and assessment results are encrypted and stored securely. We never share your personal data with third parties. You can delete your data anytime from your profile settings.',
   },
   {
-    question: 'Can both partners use the same account?',
-    answer: 'Currently, one subscription serves individual use. We recommend each partner create their own account to take assessments and receive personalized coaching. Both can share insights from their individual experiences.',
+    question: 'How do I share with my partner?',
+    answer: 'Both partners can create free accounts to take assessments and receive coaching. You can then share your individual insights with each other to grow together.',
   },
   {
     question: 'What is Emotionally Focused Therapy (EFT)?',
@@ -58,12 +58,8 @@ const FAQ_DATA = [
     answer: 'The attachment style assessment takes about 5-10 minutes. Answer 20 questions honestly about how you typically feel and behave in close relationships. Results and AI analysis are provided immediately after completion.',
   },
   {
-    question: 'Can I cancel my subscription anytime?',
-    answer: 'Yes, cancel anytime from your profile page. You\'ll retain access through your current billing period. No cancellation fees or questions asked. Resubscribe anytime to resume premium features.',
-  },
-  {
-    question: 'Do you offer refunds?',
-    answer: 'We offer a 30-day satisfaction guarantee. If you\'re not happy within the first month, contact us for a full refund. We want you to feel confident trying Twangle risk-free.',
+    question: 'Can I cancel anytime?',
+    answer: 'Since Twangle is completely free, there are no subscriptions to cancel. You can stop using the app or delete your account at any time from your profile settings.',
   },
   {
     question: 'How often should couples do relationship exercises?',
