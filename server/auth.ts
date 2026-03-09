@@ -126,9 +126,6 @@ export function setupAuth(app: Express) {
                 user = await storage.getUser(user.id);
               }
             } else {
-              const trialStartedAt = new Date();
-              const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-              
               user = await storage.createUser({
                 email,
                 authProvider: 'google',
@@ -138,8 +135,7 @@ export function setupAuth(app: Express) {
                 displayName: profile.displayName || email,
                 profileImageUrl: profile.photos?.[0]?.value || null,
                 emailVerified: 1,
-                trialStartedAt,
-                trialEndsAt,
+                hasLifetimeAccess: 1,
               });
             }
 
@@ -188,9 +184,6 @@ export function setupAuth(app: Express) {
                 user = await storage.getUser(user.id);
               }
             } else {
-              const trialStartedAt = new Date();
-              const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-              
               user = await storage.createUser({
                 email,
                 authProvider: 'facebook',
@@ -200,8 +193,7 @@ export function setupAuth(app: Express) {
                 displayName: profile.displayName || email,
                 profileImageUrl: profile.photos?.[0]?.value || null,
                 emailVerified: 1,
-                trialStartedAt,
-                trialEndsAt,
+                hasLifetimeAccess: 1,
               });
             }
 
@@ -253,9 +245,6 @@ export function setupAuth(app: Express) {
       const emailVerificationToken = generateToken();
       const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-      const trialStartedAt = new Date();
-      const trialEndsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
       const user = await storage.createUser({
         email,
         password: hashedPassword,
@@ -264,8 +253,7 @@ export function setupAuth(app: Express) {
         displayName: firstName && lastName ? `${firstName} ${lastName}` : (firstName || email),
         emailVerificationToken,
         emailVerificationExpires,
-        trialStartedAt,
-        trialEndsAt,
+        hasLifetimeAccess: 1,
       });
 
       if (user.email) {

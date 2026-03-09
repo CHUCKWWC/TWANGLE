@@ -61,9 +61,6 @@ function Router() {
 
   return (
     <>
-      {isAuthenticated && <TrialCountdownBanner />}
-      {isAuthenticated && <TrialExpiringModal />}
-      
       {/* Fixed Feedback Button - below header */}
       <div className="fixed top-[4.5rem] right-4 z-40 max-sm:right-3">
         <FeedbackButton />

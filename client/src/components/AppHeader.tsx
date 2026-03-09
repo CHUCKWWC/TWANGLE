@@ -77,7 +77,7 @@ export function AppHeader() {
         href="/coach" 
         icon={MessageCircle} 
         label="AI Coach" 
-        badge={{ text: "PREMIUM", variant: "default" }}
+        badge={{ text: "FREE", variant: "secondary" }}
         onClick={() => setMobileMenuOpen(false)}
       />
       <MobileNavLink 
@@ -109,7 +109,7 @@ export function AppHeader() {
             href="/retreat" 
             icon={Mountain} 
             label="Retreat Builder" 
-            badge={{ text: "PREMIUM", variant: "default" }}
+            badge={{ text: "FREE", variant: "secondary" }}
             onClick={() => setMobileMenuOpen(false)}
           />
           
@@ -120,21 +120,21 @@ export function AppHeader() {
             href="/health-score" 
             icon={Heart} 
             label="Health Score" 
-            badge={{ text: "PREMIUM", variant: "default" }}
+            badge={{ text: "FREE", variant: "secondary" }}
             onClick={() => setMobileMenuOpen(false)}
           />
           <MobileNavLink 
             href="/insights" 
             icon={TrendingUp} 
             label="Insights" 
-            badge={{ text: "PREMIUM", variant: "default" }}
+            badge={{ text: "FREE", variant: "secondary" }}
             onClick={() => setMobileMenuOpen(false)}
           />
           <MobileNavLink 
             href="/summaries" 
             icon={FileText} 
             label="Summaries" 
-            badge={{ text: "PREMIUM", variant: "default" }}
+            badge={{ text: "FREE", variant: "secondary" }}
             onClick={() => setMobileMenuOpen(false)}
           />
           
@@ -145,14 +145,14 @@ export function AppHeader() {
             href="/partner-connection" 
             icon={Users} 
             label="Partner Connection" 
-            badge={{ text: "PREMIUM", variant: "default" }}
+            badge={{ text: "FREE", variant: "secondary" }}
             onClick={() => setMobileMenuOpen(false)}
           />
           <MobileNavLink 
             href="/journal" 
             icon={Activity} 
             label="Journal" 
-            badge={{ text: "PREMIUM", variant: "default" }}
+            badge={{ text: "FREE", variant: "secondary" }}
             onClick={() => setMobileMenuOpen(false)}
           />
           <MobileNavLink 
@@ -241,7 +241,7 @@ export function AppHeader() {
                 href="/coach" 
                 icon={MessageCircle} 
                 label="Coach" 
-                badge={{ text: "PREMIUM", variant: "default" }}
+                badge={{ text: "FREE", variant: "secondary" }}
               />
               <NavButton 
                 href="/exercises" 
@@ -292,7 +292,7 @@ export function AppHeader() {
                             <div className="font-medium">Retreat Builder</div>
                             <div className="text-xs text-muted-foreground">Plan your getaway</div>
                           </div>
-                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                          <Badge variant="secondary" className="text-xs">FREE</Badge>
                         </DropdownMenuItem>
                       </Link>
                     </DropdownMenuContent>
@@ -320,7 +320,7 @@ export function AppHeader() {
                             <div className="font-medium">Health Score</div>
                             <div className="text-xs text-muted-foreground">Track relationship wellness</div>
                           </div>
-                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                          <Badge variant="secondary" className="text-xs">FREE</Badge>
                         </DropdownMenuItem>
                       </Link>
                       <Link href="/insights">
@@ -330,7 +330,7 @@ export function AppHeader() {
                             <div className="font-medium">AI Insights</div>
                             <div className="text-xs text-muted-foreground">Personalized analytics</div>
                           </div>
-                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                          <Badge variant="secondary" className="text-xs">FREE</Badge>
                         </DropdownMenuItem>
                       </Link>
                       <Link href="/summaries">
@@ -340,7 +340,7 @@ export function AppHeader() {
                             <div className="font-medium">Weekly Summaries</div>
                             <div className="text-xs text-muted-foreground">Review your journey</div>
                           </div>
-                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                          <Badge variant="secondary" className="text-xs">FREE</Badge>
                         </DropdownMenuItem>
                       </Link>
                     </DropdownMenuContent>
@@ -368,7 +368,7 @@ export function AppHeader() {
                             <div className="font-medium">Partner Connection</div>
                             <div className="text-xs text-muted-foreground">Share your progress</div>
                           </div>
-                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                          <Badge variant="secondary" className="text-xs">FREE</Badge>
                         </DropdownMenuItem>
                       </Link>
                       <Link href="/journal">
@@ -378,7 +378,7 @@ export function AppHeader() {
                             <div className="font-medium">Relationship Journal</div>
                             <div className="text-xs text-muted-foreground">Reflect together</div>
                           </div>
-                          <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                          <Badge variant="secondary" className="text-xs">FREE</Badge>
                         </DropdownMenuItem>
                       </Link>
                       <Link href="/conversations">
