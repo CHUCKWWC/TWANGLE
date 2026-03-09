@@ -78,7 +78,7 @@ export default function Landing() {
               247 couples joined this week
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              7-day free trial • Then $19.99/month • Cancel anytime
+              Completely Free • No credit card required • Unlimited Access
             </p>
           </div>
 
@@ -90,7 +90,7 @@ export default function Landing() {
               data-testid="button-get-started"
             >
               <a href="/signup">
-                Start Free Trial
+                Get Started Free
               </a>
             </Button>
             
@@ -228,7 +228,7 @@ export default function Landing() {
             Get Started in Minutes
           </h2>
           <p className="text-center text-muted-foreground mb-16">
-            Start your free 7-day trial and transform your relationship together.
+            Create your free account and transform your relationship together.
           </p>
 
           <div className="space-y-12">
@@ -239,11 +239,11 @@ export default function Landing() {
               <div className="flex-1">
                 <h3 className="text-2xl font-semibold mb-3 font-[Poppins]">Create Your Free Account</h3>
                 <p className="text-muted-foreground mb-4">
-                  Sign up in seconds and start your 7-day free trial. No credit card required.
-                  Access all premium features instantly—unlimited AI coaching, assessments, and more.
+                  Sign up in seconds. No credit card required.
+                  Access all features instantly—unlimited AI coaching, assessments, and more.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">7-day free trial</span>
+                  <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Free Forever</span>
                   <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">No credit card</span>
                   <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary">Full access</span>
                 </div>
@@ -290,10 +290,10 @@ export default function Landing() {
           <div className="text-center mt-16">
             <div className="mb-4">
               <p className="text-lg font-semibold mb-1">
-                7 days free, then $19.99/month
+                Completely Free Forever
               </p>
               <p className="text-sm text-muted-foreground">
-                Cancel anytime. All features included.
+                No hidden fees. No credit card required.
               </p>
             </div>
             <Button
@@ -303,7 +303,7 @@ export default function Landing() {
               data-testid="button-get-started-bottom"
             >
               <a href="/login">
-                Start Your Free Trial
+                Get Started Free
               </a>
             </Button>
           </div>
@@ -414,7 +414,7 @@ export default function Landing() {
                 <tr className="border-b border-border hover-elevate">
                   <td className="py-4 px-6 font-medium">Cost</td>
                   <td className="py-4 px-6 text-center text-muted-foreground">$150-300/session</td>
-                  <td className="py-4 px-6 text-center text-primary font-semibold">$19.99/month</td>
+                  <td className="py-4 px-6 text-center text-primary font-semibold">Free Forever</td>
                 </tr>
                 <tr className="border-b border-border hover-elevate">
                   <td className="py-4 px-6 font-medium">Availability</td>
@@ -451,10 +451,10 @@ export default function Landing() {
             </p>
             <div className="mb-4">
               <p className="text-lg font-semibold mb-1">
-                7 days free, then $19.99/month
+                100% Free Access
               </p>
               <p className="text-sm text-muted-foreground">
-                Cancel anytime. No hidden fees.
+                No hidden fees. No payment information needed.
               </p>
             </div>
             <Button
@@ -464,7 +464,7 @@ export default function Landing() {
               data-testid="button-start-trial-comparison"
             >
               <a href="/login">
-                Start Your Free Trial
+                Join Free Now
               </a>
             </Button>
           </div>
