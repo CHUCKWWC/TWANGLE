@@ -335,7 +335,7 @@ export default function Landing() {
               title="AI Coach Charles"
               description="It's 2am and you're fighting. Or you just need to talk it through. Coach Charles is trained in Gottman Method, EFT, and Attachment Theory - available instantly, anytime."
               destination="/coach"
-              isPremium={true}
+              isPremium={false}
               testId="card-coach"
             />
 
@@ -344,7 +344,7 @@ export default function Landing() {
               title="DIY Couples Retreats"
               description="Stop saying 'we should plan a getaway' and actually do it. Get a personalized itinerary for reconnection weekends that fit your budget and actually happen."
               destination="/retreat"
-              isPremium={true}
+              isPremium={false}
               testId="card-retreat"
             />
 
@@ -362,7 +362,7 @@ export default function Landing() {
               title="Weekly Summaries"
               description="Remember that breakthrough you had in Tuesday's chat? Get AI summaries of your coaching sessions with action steps so insights don't get lost."
               destination="/summaries"
-              isPremium={true}
+              isPremium={false}
               testId="card-summaries"
             />
 
@@ -371,7 +371,7 @@ export default function Landing() {
               title="40dayTwangle Challenge"
               description="Grow your faith and relationship together over 40 days. Daily scripture (The Message translation), teaching, and reflection questions that strengthen your spiritual connection."
               destination="/40day"
-              isPremium={true}
+              isPremium={false}
               testId="card-40daytwangle"
             />
 
@@ -532,7 +532,7 @@ export default function Landing() {
                       <MessageSquare className="w-24 h-24 mx-auto text-primary" />
                       <div className="space-y-2">
                         <p className="text-2xl font-bold">Start Today</p>
-                        <p className="text-muted-foreground">3 free questions, then unlock unlimited with premium</p>
+                        <p className="text-muted-foreground">Unlimited free questions for all users</p>
                       </div>
                     </div>
                   </div>

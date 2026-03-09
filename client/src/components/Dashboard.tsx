@@ -32,8 +32,8 @@ interface DashboardStats {
   retreatCount: number;
   journalCount: number;
   conversationCount: number;
-  subscriptionStatus: string;
-  subscriptionTier: string;
+  userStatus: string;
+  userTier: string;
   healthScore: {
     overallScore: number;
     breakdown: any;
@@ -431,7 +431,7 @@ export default function Dashboard() {
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <MessageCircle className="w-6 h-6 text-primary" />
                   </div>
-                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                  <Badge variant="secondary" className="text-xs">FREE</Badge>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="flex-1">
@@ -453,7 +453,7 @@ export default function Dashboard() {
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <Map className="w-6 h-6 text-primary" />
                   </div>
-                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                  <Badge variant="secondary" className="text-xs">FREE</Badge>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="flex-1">
@@ -475,7 +475,7 @@ export default function Dashboard() {
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                     <BookOpen className="w-6 h-6 text-primary" />
                   </div>
-                  <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                  <Badge variant="secondary" className="text-xs">FREE</Badge>
                 </div>
                 <div className="flex items-start gap-4">
                   <div className="flex-1">
@@ -581,7 +581,7 @@ export default function Dashboard() {
               >
                 <TrendingUp className="w-4 h-4" />
                 <span className="flex-1 text-left">View Weekly Summaries</span>
-                <Badge variant="default" className="text-xs">PREMIUM</Badge>
+                <Badge variant="secondary" className="text-xs">FREE</Badge>
               </Button>
               {hasCompletedAssessment && (
                 <Button 

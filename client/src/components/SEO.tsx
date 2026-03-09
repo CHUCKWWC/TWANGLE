@@ -118,13 +118,13 @@ export const SEO_CONTENT = {
     keywords: 'relationship progress, coaching summaries, relationship tracking, personal growth, accountability',
   },
   pricing: {
-    title: 'Pricing - Affordable Relationship Coaching Plans',
-    description: 'Choose the plan that fits your needs. Free access to assessments, exercises, and date planning. Premium features include unlimited AI coaching and retreat planning.',
-    keywords: 'relationship coaching pricing, therapy cost, couples counseling rates, subscription plans',
+    title: 'Pricing - Free Forever Relationship Coaching',
+    description: 'Twangle is 100% free forever. Get full access to attachment style assessments, relationship exercises, AI coaching, and couples retreat planning without any cost.',
+    keywords: 'free relationship coaching, free attachment style test, free couples therapy tools, relationship help',
   },
-  profile: {
-    title: 'Your Profile - Manage Your Twangle Account',
-    description: 'Manage your account settings, view your subscription, and track your relationship journey.',
-    keywords: 'account settings, profile management, subscription',
+  settings: {
+    title: 'Settings',
+    description: 'Manage your account settings and track your relationship journey.',
+    keywords: 'account settings, profile management',
   },
 };

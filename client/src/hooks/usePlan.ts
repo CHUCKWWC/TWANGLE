@@ -41,18 +41,18 @@ export function usePlan() {
     trialEndsAt: apiData.trialEndsAt ? new Date(apiData.trialEndsAt) : undefined,
   } : undefined;
 
-  const tier: PlanTier = data?.tier || "free";
-  const hasAccess = data?.hasLifetimeAccess || data?.isActive || data?.onTrial || false;
+  const tier: PlanTier = "premium";
+  const hasAccess = true;
 
   return {
     tier,
     hasAccess,
-    isActive: data?.isActive || false,
-    hasLifetimeAccess: data?.hasLifetimeAccess || false,
-    currentPeriodEnd: data?.currentPeriodEnd,
-    cancelAtPeriodEnd: data?.cancelAtPeriodEnd || false,
-    onTrial: data?.onTrial || false,
-    trialEndsAt: data?.trialEndsAt,
+    isActive: true,
+    hasLifetimeAccess: true,
+    currentPeriodEnd: undefined,
+    cancelAtPeriodEnd: false,
+    onTrial: false,
+    trialEndsAt: undefined,
     isLoading,
     error,
   };
