@@ -446,6 +446,23 @@ export function AppHeader() {
         )}
         {isWelcome && <div />}
         <div className="flex items-center gap-2">
+          <a 
+            href="https://cash.app/$watsn" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            data-testid="link-donate"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            title="Support Twangle on Cash App"
+          >
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="text-muted-foreground hover:text-foreground"
+              aria-label="Donate to Twangle"
+            >
+              <Heart className="h-4 w-4" />
+            </Button>
+          </a>
           <ThemeToggle />
           {isAnonymous ? (
             <Button asChild variant="default" size="sm" data-testid="button-login">
